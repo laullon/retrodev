@@ -1,0 +1,182 @@
+{
+   "ProjectName": "sprites.example",
+   "images": [
+      {
+         "filePath": "gfx/sprites.png"
+      }
+   ],
+   "audio": [],
+   "sources": [],
+   "scripts": [
+      {
+         "filePath": "$(sdk)/amstrad.cpc/exporters/cpc.utils.as"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/exporters/cpc.sprites.as"
+      }
+   ],
+   "data": [],
+   "buildBitmaps": [],
+   "buildTiles": [],
+   "buildSprites": [
+      {
+         "name": "sprites",
+         "sourceFilePath": "gfx/sprites.png",
+         "params": {
+            "SParams": {
+               "TargetSystem": "Amstrad CPC/CPC+",
+               "TargetMode": "Mode 0",
+               "PaletteType": "GA Palette",
+               "ColorSelectionMode": "RGB Clamping",
+               "PaletteLocked": [
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false
+               ],
+               "PaletteEnabled": [
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true
+               ],
+               "PaletteColors": [
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1
+               ]
+            },
+            "RParams": {
+               "ResMode": "Fit",
+               "InterpMode": "NearestNeighbor",
+               "TargetResolution": "Custom",
+               "TargetWidth": 368,
+               "TargetHeight": 128,
+               "SourceRect": {
+                  "X": 0,
+                  "Y": 0,
+                  "Width": 736,
+                  "Height": 128
+               },
+               "UseTransparentColor": false,
+               "TransparentColorR": 255,
+               "TransparentColorG": 0,
+               "TransparentColorB": 255,
+               "TransparentColorTolerance": 0
+            },
+            "DParams": {
+               "Method": "None",
+               "Percentage": 100,
+               "ErrorDiffusion": false,
+               "Pattern": false,
+               "PatternLow": 1.9,
+               "PatternHigh": 2.1
+            },
+            "QParams": {
+               "Smoothness": false,
+               "SortPalette": false,
+               "ReductionMethod": "HigherFrequencies",
+               "ReductionTime": false,
+               "UseSourcePalette": false
+            },
+            "CParams": {
+               "ColorCorrectionRed": 100,
+               "ColorCorrectionGreen": 100,
+               "ColorCorrectionBlue": 100,
+               "Contrast": 100,
+               "Saturation": 100,
+               "Brightness": 100,
+               "ColorBits": 24,
+               "PaletteReductionLower": "None (0x00)",
+               "PaletteReductionUpper": "None (0xFF)"
+            }
+         },
+         "spriteParams": {
+            "Sprites": [
+               {
+                  "X": 178,
+                  "Y": 10,
+                  "Width": 10,
+                  "Height": 24,
+                  "Name": "Sprite0"
+               },
+               {
+                  "X": 146,
+                  "Y": 40,
+                  "Width": 10,
+                  "Height": 24,
+                  "Name": "Sprite1"
+               },
+               {
+                  "X": 162,
+                  "Y": 39,
+                  "Width": 10,
+                  "Height": 26,
+                  "Name": "Sprite2"
+               },
+               {
+                  "X": 177,
+                  "Y": 38,
+                  "Width": 12,
+                  "Height": 28,
+                  "Name": "Sprite3"
+               },
+               {
+                  "X": 225,
+                  "Y": 69,
+                  "Width": 12,
+                  "Height": 28,
+                  "Name": "Sprite4"
+               }
+            ]
+         },
+         "exportParams": {
+            "scriptPath": "$(sdk)/amstrad.cpc/exporters/cpc.sprites.as",
+            "outputName": "out/sprites.bin",
+            "scriptParams": "header=false"
+         }
+      }
+   ],
+   "buildMaps": [],
+   "buildBuilds": [],
+   "buildPalettes": [],
+   "buildFolders": [],
+   "selectedBuildItem": ""
+}

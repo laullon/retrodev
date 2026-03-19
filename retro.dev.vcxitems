@@ -1,0 +1,284 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{7388fa03-04d2-42dd-9dad-d970f26351b0}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory).clang-format" />
+    <None Include="$(MSBuildThisFileDirectory).github\copilot-instructions.md" />
+    <None Include="$(MSBuildThisFileDirectory).gitignore" />
+    <None Include="$(MSBuildThisFileDirectory)bld\csx\build.flags.csx" />
+    <None Include="$(MSBuildThisFileDirectory)bld\csx\build.resources.csx" />
+    <None Include="$(MSBuildThisFileDirectory)bld\ext\bin2obj.csx" />
+    <None Include="$(MSBuildThisFileDirectory)bld\ext\clang.csx" />
+    <None Include="$(MSBuildThisFileDirectory)bld\ext\clang.doc.csx" />
+    <None Include="$(MSBuildThisFileDirectory)bld\ext\git.csx" />
+    <None Include="$(MSBuildThisFileDirectory)doc\tech\adding-systems.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\tech\building.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\tech\contributing.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\tech\porting.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\tech\quantization-methods.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\tech\rasm-api.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\tech\rasm-directives.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\tech\source-layout.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\to-do.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\usage\bitmaps.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\usage\build.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\usage\editor.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\usage\export-scripts.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\usage\maps.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\usage\palette.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\usage\sprites.md" />
+    <None Include="$(MSBuildThisFileDirectory)doc\usage\tiles.md" />
+    <None Include="$(MSBuildThisFileDirectory)example\scripts\cpc.screen.as" />
+    <None Include="$(MSBuildThisFileDirectory)example\scripts\cpc.sprites.as" />
+    <None Include="$(MSBuildThisFileDirectory)example\scripts\cpc.tiles.as" />
+    <None Include="$(MSBuildThisFileDirectory)example\scripts\cpc.utils.as" />
+    <None Include="$(MSBuildThisFileDirectory)example\scripts\map.binary.as" />
+    <None Include="$(MSBuildThisFileDirectory)ext\lib.ascript.csx" />
+    <None Include="$(MSBuildThisFileDirectory)ext\lib.ctre.csx" />
+    <None Include="$(MSBuildThisFileDirectory)ext\lib.freetype.csx" />
+    <None Include="$(MSBuildThisFileDirectory)ext\lib.glaze.csx" />
+    <None Include="$(MSBuildThisFileDirectory)ext\lib.imgui.csx" />
+    <None Include="$(MSBuildThisFileDirectory)ext\lib.rasm.csx" />
+    <None Include="$(MSBuildThisFileDirectory)ext\lib.sdl.csx" />
+    <None Include="$(MSBuildThisFileDirectory)ext\lib.sdl.image.csx" />
+    <None Include="$(MSBuildThisFileDirectory)kombine.csx" />
+    <None Include="$(MSBuildThisFileDirectory)license.md" />
+    <None Include="$(MSBuildThisFileDirectory)readme.md" />
+    <None Include="$(MSBuildThisFileDirectory)src\retro.dev.gui.csx" />
+    <None Include="$(MSBuildThisFileDirectory)src\retro.dev.lib.csx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ext\imgui.cfg\retrodev.imconfig.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.filedialog.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.hex.editor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.spinner.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.splitter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.text.editor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.zoomable.image.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ext\rasm.ext\rasm.api.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\app.console.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\app.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\app.icons.h.old" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\app.icons.mdi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\app.resources.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.about.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.confirm.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.help.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\os\win\resource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\resources.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\retro.main.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\retrodev.gui.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\bitmaps\document.bitmap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\build\document.build.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\build\document.build.rasm.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\build\document.build.settings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\data\document.data.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\image\document.image.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\image\image.import.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.document.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.documents.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.menu.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.project.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\maps\document.map.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\palette\document.palette.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\text\document.text.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\sprites\document.sprite.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\views\tiles\document.tiles.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\conversion.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\data.export.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\image.palette.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\image.viewer.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\painting.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\palette.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\preview.controls.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\sprite.extraction.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\sprite.list.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\tile.extraction.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\tile.list.widget.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\image\image.color.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\image\image.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\map\map.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\palette\palette.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\palette\palette.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\source\source.emulator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\source\source.emulator.native.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\source\source.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\source\source.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\source\source.rasm.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\amstrad.cpc\amstrad.cpc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\amstrad.cpc\cpc.bitmap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\amstrad.cpc\cpc.palette.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\amstrad.cpc\cpc.sprites.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\amstrad.cpc\cpc.tileset.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\convert.bitmap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\convert.bitmap.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\convert.palette.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\convert.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\convert.sprites.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\convert.sprites.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\convert.tileset.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\convert.tileset.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\convert\converters.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\export\export.bitmap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\export\export.engine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\export\export.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\export\export.map.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\export\export.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\export\export.sprites.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\export\export.tileset.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\imgui.cfg\retrodev.imconfig.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\imgui.ext\imgui.splitter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\log\log.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\color.correction.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\color.correction.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\dithering.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\dithering.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\quantization.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\quantization.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\resize.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\resize.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.build.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.color.correction.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.dithering.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.image.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.map.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.palette.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.project.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.quantization.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.resize.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.converter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.sprites.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.tileset.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\project.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\retrodev.lib.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\system\amstrad.cpc\devices\cpc.screen.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\system\version.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\utils\utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.filedialog.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.hex.editor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.spinner.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.splitter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.text.editor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\imgui.zoomable.image.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.angelscript.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.asm.z80.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.c.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.cpp.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.glsl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.hlsl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.json.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.lua.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.python.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\imgui.ext\langs\lang.sql.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ext\rasm.ext\rasm.api.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\cmd\main.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\app\app.console.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\app\app.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\app\app.resources.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.about.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.confirm.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.error.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.help.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\os\win\entry.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\resources.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\retro.main.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\bitmaps\document.bitmap.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\build\document.build.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\build\document.build.rasm.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\build\document.build.settings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\data\document.data.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\image\document.image.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\image\image.import.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.document.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.documents.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.menu.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\main.view.project.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\maps\document.map.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\palette\document.palette.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\text\document.text.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\sprites\document.sprite.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\views\tiles\document.tiles.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\conversion.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\data.export.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\image.palette.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\image.viewer.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\painting.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\palette.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\preview.controls.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\sprite.extraction.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\sprite.list.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\tile.extraction.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\tile.list.widget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\image\image.color.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\image\image.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\palette\palette.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\source\lnx\source.emulator.native.lnx.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\source\osx\source.emulator.native.osx.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\source\source.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\source\source.emulator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\source\source.rasm.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\source\win\source.emulator.native.win.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\convert\amstrad.cpc\cpc.bitmap.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\convert\amstrad.cpc\cpc.palette.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\convert\amstrad.cpc\cpc.sprites.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\convert\amstrad.cpc\cpc.tileset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\convert\converters.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\export\export.bitmap.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\export\export.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\export\export.engine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\export\export.map.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\export\export.sprites.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\export\export.tileset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\imgui.ext\imgui.splitter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\log\log.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\color.correction.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\color.correction.params.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\dithering.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\dithering.params.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\quantization.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\quantization.params.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\resize.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\resize.params.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\project\project.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\retrodev.lib.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\system\amstrad.cpc\devices\cpc.screen.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\utils\utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="$(MSBuildThisFileDirectory)src\gui\res\fonts\fixedsys-excelsior-mono.ttf" />
+    <Font Include="$(MSBuildThisFileDirectory)src\gui\res\fonts\fontawesome-webfont.ttf" />
+    <Font Include="$(MSBuildThisFileDirectory)src\gui\res\fonts\materialdesign.ttf" />
+    <Font Include="$(MSBuildThisFileDirectory)src\gui\res\fonts\ubuntu-light.ttf" />
+    <Font Include="$(MSBuildThisFileDirectory)src\gui\res\fonts\ubuntu-medium.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="$(MSBuildThisFileDirectory)src\gui\os\win\retrodev.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="$(MSBuildThisFileDirectory)src\gui\os\win\retrodev.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="$(MSBuildThisFileDirectory)src\gui\os\win\icon.ico" />
+    <Image Include="$(MSBuildThisFileDirectory)src\gui\os\win\retrodev.ico" />
+    <Image Include="$(MSBuildThisFileDirectory)src\gui\res\images\about-logo.png" />
+    <Image Include="$(MSBuildThisFileDirectory)src\gui\res\images\doc-logo.png" />
+  </ItemGroup>
+</Project>

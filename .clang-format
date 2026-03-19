@@ -1,0 +1,45 @@
+# Clang-format configuration for retro.dev
+# Rules: tabs for indentation, opening braces on same line, all scopes indented.
+
+BasedOnStyle: LLVM
+
+# Use tabs, never spaces
+UseTab: Always
+IndentWidth: 4
+TabWidth: 4
+
+# Opening braces always on the same line (Attach style)
+BreakBeforeBraces: Attach
+
+# Indent namespaces, classes, and access specifiers
+NamespaceIndentation: All
+IndentAccessModifiers: false
+AccessModifierOffset: -4
+
+# Indent case labels inside switch
+IndentCaseLabels: true
+
+# Column limit — set high to avoid unwanted line breaks
+ColumnLimit: 180
+
+# Pointer and reference alignment
+PointerAlignment: Left
+
+# Keep short constructs on one line where sensible
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+
+# Do not add comments on closing namespace braces
+FixNamespaceComments: false
+
+# Align include blocks but do not sort them (preserves intentional ordering)
+SortIncludes: Never
+IncludeBlocks: Preserve
+
+# Trailing whitespace / newline hygiene
+InsertTrailingCommas: None
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1

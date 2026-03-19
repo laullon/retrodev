@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{1b143c0a-1a81-4cb7-8bd7-c520bb87a75a}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="..\..\..\retro.dev.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <NMakeBuildCommandLine>mkb -kfile:../../../kombine.csx build debug deps</NMakeBuildCommandLine>
+    <NMakeOutput>retro.dev.gui</NMakeOutput>
+    <NMakeCleanCommandLine>mkb -kfile:../../../kombine.csx clean debug</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>mkb -kfile:../../../kombine.csx build debug deps</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>DEBUG;NRELEASE</NMakePreprocessorDefinitions>
+    <OutDir>$(SolutionDir)out/tmp/build/</OutDir>
+    <IntDir>$(SolutionDir)out/tmp/build/$(Platform)\$(Configuration)\</IntDir>
+    <PublicModuleDirectories>
+    </PublicModuleDirectories>
+    <NMakeIncludeSearchPath>$(SolutionDir)src\lib\;$(SolutionDir)src\gui\;$(SolutionDir)ext\imgui.cfg\;$(SolutionDir)ext\imgui.ext\;$(SolutionDir)ext\imgui\backends\;$(SolutionDir)ext\imgui\;$(SolutionDir)ext\sdl.img\include\;$(SolutionDir)ext\sdl\include\;$(SolutionDir)ext\glaze\include\;$(SolutionDir)ext\ascript\sdk\angelscript\include\;$(SolutionDir)ext\ascript\sdk\add_on\scriptbuilder\;$(SolutionDir)ext\ascript\sdk\add_on\scriptstdstring\;$(SolutionDir)ext\ascript\sdk\add_on\scriptfile\;$(SolutionDir)ext\ascript\sdk\add_on\scriptarray\;$(SolutionDir)ext\ascript\sdk\add_on\scriptmath\;$(SolutionDir)ext\ascript\sdk\add_on\scriptgrid\;$(SolutionDir)ext\rasm.ext\;$(SolutionDir)ext\rasm\;$(SolutionDir)ext\ctre\single-header\;$(WindowsSDK_IncludePath)</NMakeIncludeSearchPath>
+    <AdditionalOptions>/std:c++20</AdditionalOptions>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <NMakeBuildCommandLine>mkb -kfile:../../../kombine.csx build release</NMakeBuildCommandLine>
+    <NMakeOutput>retro.dev.gui</NMakeOutput>
+    <NMakeCleanCommandLine>mkb -kfile:../../../kombine.csx clean release</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>mkb -kfile:../../../kombine.csx build release</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>RELEASE;NDEBUG</NMakePreprocessorDefinitions>
+    <OutDir>$(SolutionDir)out/tmp/build/</OutDir>
+    <IntDir>$(SolutionDir)out/tmp/build/$(Platform)\$(Configuration)\</IntDir>
+    <NMakeIncludeSearchPath>$(SolutionDir)src\lib\;$(SolutionDir)src\gui\;$(SolutionDir)ext\imgui.cfg\;$(SolutionDir)ext\imgui.ext\;$(SolutionDir)ext\imgui\backends\;$(SolutionDir)ext\imgui\;$(SolutionDir)ext\sdl.img\include\;$(SolutionDir)ext\sdl\include\;$(SolutionDir)ext\glaze\include\;$(SolutionDir)ext\ascript\sdk\angelscript\include\;$(SolutionDir)ext\ascript\sdk\add_on\scriptbuilder\;$(SolutionDir)ext\ascript\sdk\add_on\scriptstdstring\;$(SolutionDir)ext\ascript\sdk\add_on\scriptfile\;$(SolutionDir)ext\ascript\sdk\add_on\scriptarray\;$(SolutionDir)ext\ascript\sdk\add_on\scriptmath\;$(SolutionDir)ext\ascript\sdk\add_on\scriptgrid\;$(SolutionDir)ext\rasm.ext\;$(SolutionDir)ext\rasm\;$(SolutionDir)ext\ctre\single-header\;$(WindowsSDK_IncludePath)</NMakeIncludeSearchPath>
+    <AdditionalOptions>/std:c++20</AdditionalOptions>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ItemGroup>
+    <ClInclude Update="C:\Workspaces\02.kollective\01.gitea\02.kltv.retrodev\src\gui\app\app.icons.h.old">
+      <FileType>Document</FileType>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,31 @@
+#
+# Output artifacts ignore
+#
+out/
+out/tmp/
+out/bin/
+out/lib/
+
+#
+# Visual Studio cache
+#
+.vs/
+
+#
+# Generated files
+#
+src/gui/gen/
+
+#
+# Ignore third party dependency repos
+#
+ext/freetype/
+ext/glaze/
+ext/imgui/
+ext/sdl/
+ext/sdl.img/
+ext/ascript/
+ext/rasm/
+ext/ctre/
+
+

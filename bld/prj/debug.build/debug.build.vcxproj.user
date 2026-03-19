@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ShowAllFiles>false</ShowAllFiles>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerCommand>mkb.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>-ksrb -ksdbg build release deps</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArgumentsHistory>-ksrb -ksdbg  -ko:debug chromium debug|-ksrb -ksdbg -ko:debug build cef|-ksrb -ksdbg -ko:debug build|-ksrb -ksdbg build|-ksrb -ksdbg build release deps|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerDebuggerType>NativeWithManagedCore</LocalDebuggerDebuggerType>
+  </PropertyGroup>
+</Project>

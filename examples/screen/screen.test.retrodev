@@ -1,0 +1,193 @@
+{
+   "ProjectName": "screen",
+   "images": [
+      {
+         "filePath": "gfx/screen.png"
+      }
+   ],
+   "audio": [],
+   "sources": [
+      {
+         "filePath": "src/main.asm"
+      }
+   ],
+   "scripts": [
+      {
+         "filePath": "$(sdk)/amstrad.cpc/exporters/cpc.screen.as"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/exporters/cpc.utils.as"
+      }
+   ],
+   "data": [
+      {
+         "filePath": "out/screen.dsk"
+      }
+   ],
+   "buildBitmaps": [
+      {
+         "name": "screen",
+         "sourceFilePath": "gfx/screen.png",
+         "params": {
+            "SParams": {
+               "TargetSystem": "Amstrad CPC/CPC+",
+               "TargetMode": "Mode 0",
+               "PaletteType": "GA Palette",
+               "ColorSelectionMode": "RGB Clamping",
+               "PaletteLocked": [
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false
+               ],
+               "PaletteEnabled": [
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true
+               ],
+               "PaletteColors": [
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1
+               ]
+            },
+            "RParams": {
+               "ResMode": "Fit",
+               "InterpMode": "NearestNeighbor",
+               "TargetResolution": "Normal",
+               "TargetWidth": 160,
+               "TargetHeight": 200,
+               "SourceRect": {
+                  "X": 0,
+                  "Y": 0,
+                  "Width": 1536,
+                  "Height": 1024
+               },
+               "UseTransparentColor": false,
+               "TransparentColorR": 255,
+               "TransparentColorG": 0,
+               "TransparentColorB": 255,
+               "TransparentColorTolerance": 0
+            },
+            "DParams": {
+               "Method": "None",
+               "Percentage": 100,
+               "ErrorDiffusion": false,
+               "Pattern": false,
+               "PatternLow": 1.9,
+               "PatternHigh": 2.1
+            },
+            "QParams": {
+               "Smoothness": false,
+               "SortPalette": false,
+               "ReductionMethod": "HigherFrequencies",
+               "ReductionTime": false,
+               "UseSourcePalette": false
+            },
+            "CParams": {
+               "ColorCorrectionRed": 100,
+               "ColorCorrectionGreen": 100,
+               "ColorCorrectionBlue": 100,
+               "Contrast": 100,
+               "Saturation": 100,
+               "Brightness": 100,
+               "ColorBits": 24,
+               "PaletteReductionLower": "None (0x00)",
+               "PaletteReductionUpper": "None (0xFF)"
+            }
+         },
+         "exportParams": {
+            "scriptPath": "../../out/bin/win/release/retro.dev.gui/sdk/amstrad.cpc/exporters/cpc.screen.as",
+            "outputName": "out/screen.bin",
+            "scriptParams": "layout=screenmemory;exportPalette=true;paletteFormat=hardwareindex"
+         }
+      }
+   ],
+   "buildTiles": [],
+   "buildSprites": [],
+   "buildMaps": [],
+   "buildBuilds": [
+      {
+         "name": "build.screen",
+         "sourceParams": {
+            "tool": "RASM",
+            "sources": [
+               "src/main.asm"
+            ],
+            "includeDirs": [],
+            "defines": [],
+            "dependencies": [
+               "screen"
+            ],
+            "toolOptions": {
+               "RASM": "-rasm -eo -os out/screen.rasm -oa"
+            },
+            "emulatorParams": {
+               "emulator": "ACE-DL",
+               "common": {
+                  "mediaFile": "out/screen.dsk",
+                  "snapshot": "",
+                  "symbolFile": "out/screen.rasm",
+                  "command": "screen.bin",
+                  "sendCPM": false,
+                  "machine": ""
+               },
+               "acedl": {
+                  "crtc": -1,
+                  "ram": 0,
+                  "firmware": "",
+                  "speed": 0,
+                  "alone": false,
+                  "skipConfigFile": false
+               }
+            }
+         },
+         "exportParams": {
+            "scriptPath": "",
+            "outputName": "",
+            "scriptParams": ""
+         }
+      }
+   ],
+   "buildPalettes": [],
+   "buildFolders": [],
+   "selectedBuildItem": "build.screen"
+}

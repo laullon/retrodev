@@ -1,0 +1,537 @@
+{
+   "ProjectName": "palette.example",
+   "images": [
+      {
+         "filePath": "gfx/screen.png"
+      },
+      {
+         "filePath": "gfx/tiles.png"
+      },
+      {
+         "filePath": "gfx/srpites.png"
+      },
+      {
+         "filePath": "gfx/tiles_level.jpg"
+      }
+   ],
+   "audio": [],
+   "sources": [],
+   "scripts": [],
+   "data": [],
+   "buildBitmaps": [
+      {
+         "name": "screen",
+         "sourceFilePath": "gfx/screen.png",
+         "params": {
+            "SParams": {
+               "TargetSystem": "Amstrad CPC/CPC+",
+               "TargetMode": "Mode 0",
+               "PaletteType": "GA Palette",
+               "ColorSelectionMode": "RGB Clamping",
+               "PaletteLocked": [
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false
+               ],
+               "PaletteEnabled": [
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true
+               ],
+               "PaletteColors": [
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1
+               ]
+            },
+            "RParams": {
+               "ResMode": "Fit",
+               "InterpMode": "NearestNeighbor",
+               "TargetResolution": "Normal",
+               "TargetWidth": 160,
+               "TargetHeight": 200,
+               "SourceRect": {
+                  "X": 0,
+                  "Y": 0,
+                  "Width": 1536,
+                  "Height": 1024
+               },
+               "UseTransparentColor": false,
+               "TransparentColorR": 255,
+               "TransparentColorG": 0,
+               "TransparentColorB": 255,
+               "TransparentColorTolerance": 0
+            },
+            "DParams": {
+               "Method": "None",
+               "Percentage": 100,
+               "ErrorDiffusion": false,
+               "Pattern": false,
+               "PatternLow": 1.9,
+               "PatternHigh": 2.1
+            },
+            "QParams": {
+               "Smoothness": false,
+               "SortPalette": false,
+               "ReductionMethod": "HigherFrequencies",
+               "ReductionTime": false,
+               "UseSourcePalette": false
+            },
+            "CParams": {
+               "ColorCorrectionRed": 100,
+               "ColorCorrectionGreen": 100,
+               "ColorCorrectionBlue": 100,
+               "Contrast": 100,
+               "Saturation": 100,
+               "Brightness": 100,
+               "ColorBits": 24,
+               "PaletteReductionLower": "None (0x00)",
+               "PaletteReductionUpper": "None (0xFF)"
+            }
+         },
+         "exportParams": {
+            "scriptPath": "",
+            "outputName": "screen.bin",
+            "scriptParams": ""
+         }
+      },
+      {
+         "name": "tiles",
+         "sourceFilePath": "gfx/tiles.png",
+         "params": {
+            "SParams": {
+               "TargetSystem": "Amstrad CPC/CPC+",
+               "TargetMode": "Mode 0",
+               "PaletteType": "GA Palette",
+               "ColorSelectionMode": "RGB Clamping",
+               "PaletteLocked": [
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false
+               ],
+               "PaletteEnabled": [
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true
+               ],
+               "PaletteColors": [
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1
+               ]
+            },
+            "RParams": {
+               "ResMode": "Fit",
+               "InterpMode": "NearestNeighbor",
+               "TargetResolution": "Normal",
+               "TargetWidth": 160,
+               "TargetHeight": 200,
+               "SourceRect": {
+                  "X": 0,
+                  "Y": 0,
+                  "Width": 320,
+                  "Height": 320
+               },
+               "UseTransparentColor": false,
+               "TransparentColorR": 255,
+               "TransparentColorG": 0,
+               "TransparentColorB": 255,
+               "TransparentColorTolerance": 0
+            },
+            "DParams": {
+               "Method": "None",
+               "Percentage": 100,
+               "ErrorDiffusion": false,
+               "Pattern": false,
+               "PatternLow": 1.9,
+               "PatternHigh": 2.1
+            },
+            "QParams": {
+               "Smoothness": false,
+               "SortPalette": false,
+               "ReductionMethod": "HigherFrequencies",
+               "ReductionTime": false,
+               "UseSourcePalette": false
+            },
+            "CParams": {
+               "ColorCorrectionRed": 100,
+               "ColorCorrectionGreen": 100,
+               "ColorCorrectionBlue": 100,
+               "Contrast": 100,
+               "Saturation": 100,
+               "Brightness": 100,
+               "ColorBits": 24,
+               "PaletteReductionLower": "None (0x00)",
+               "PaletteReductionUpper": "None (0xFF)"
+            }
+         },
+         "exportParams": {
+            "scriptPath": "",
+            "outputName": "tiles.bin",
+            "scriptParams": ""
+         }
+      },
+      {
+         "name": "srpites",
+         "sourceFilePath": "gfx/srpites.png",
+         "params": {
+            "SParams": {
+               "TargetSystem": "Amstrad CPC/CPC+",
+               "TargetMode": "Mode 0",
+               "PaletteType": "GA Palette",
+               "ColorSelectionMode": "RGB Clamping",
+               "PaletteLocked": [
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false
+               ],
+               "PaletteEnabled": [
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true
+               ],
+               "PaletteColors": [
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1
+               ]
+            },
+            "RParams": {
+               "ResMode": "Fit",
+               "InterpMode": "NearestNeighbor",
+               "TargetResolution": "Normal",
+               "TargetWidth": 160,
+               "TargetHeight": 200,
+               "SourceRect": {
+                  "X": 0,
+                  "Y": 0,
+                  "Width": 288,
+                  "Height": 204
+               },
+               "UseTransparentColor": false,
+               "TransparentColorR": 255,
+               "TransparentColorG": 0,
+               "TransparentColorB": 255,
+               "TransparentColorTolerance": 0
+            },
+            "DParams": {
+               "Method": "None",
+               "Percentage": 100,
+               "ErrorDiffusion": false,
+               "Pattern": false,
+               "PatternLow": 1.9,
+               "PatternHigh": 2.1
+            },
+            "QParams": {
+               "Smoothness": false,
+               "SortPalette": false,
+               "ReductionMethod": "HigherFrequencies",
+               "ReductionTime": false,
+               "UseSourcePalette": false
+            },
+            "CParams": {
+               "ColorCorrectionRed": 100,
+               "ColorCorrectionGreen": 100,
+               "ColorCorrectionBlue": 100,
+               "Contrast": 100,
+               "Saturation": 100,
+               "Brightness": 100,
+               "ColorBits": 24,
+               "PaletteReductionLower": "None (0x00)",
+               "PaletteReductionUpper": "None (0xFF)"
+            }
+         },
+         "exportParams": {
+            "scriptPath": "",
+            "outputName": "srpites.bin",
+            "scriptParams": ""
+         }
+      },
+      {
+         "name": "tiles_level",
+         "sourceFilePath": "gfx/tiles_level.jpg",
+         "params": {
+            "SParams": {
+               "TargetSystem": "Amstrad CPC/CPC+",
+               "TargetMode": "Mode 0",
+               "PaletteType": "GA Palette",
+               "ColorSelectionMode": "RGB Clamping",
+               "PaletteLocked": [
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false,
+                  false
+               ],
+               "PaletteEnabled": [
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true,
+                  true
+               ],
+               "PaletteColors": [
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1,
+                  -1
+               ]
+            },
+            "RParams": {
+               "ResMode": "Fit",
+               "InterpMode": "NearestNeighbor",
+               "TargetResolution": "Normal",
+               "TargetWidth": 160,
+               "TargetHeight": 200,
+               "SourceRect": {
+                  "X": 0,
+                  "Y": 0,
+                  "Width": 1000,
+                  "Height": 459
+               },
+               "UseTransparentColor": false,
+               "TransparentColorR": 255,
+               "TransparentColorG": 0,
+               "TransparentColorB": 255,
+               "TransparentColorTolerance": 0
+            },
+            "DParams": {
+               "Method": "None",
+               "Percentage": 100,
+               "ErrorDiffusion": false,
+               "Pattern": false,
+               "PatternLow": 1.9,
+               "PatternHigh": 2.1
+            },
+            "QParams": {
+               "Smoothness": false,
+               "SortPalette": false,
+               "ReductionMethod": "HigherFrequencies",
+               "ReductionTime": false,
+               "UseSourcePalette": false
+            },
+            "CParams": {
+               "ColorCorrectionRed": 100,
+               "ColorCorrectionGreen": 100,
+               "ColorCorrectionBlue": 100,
+               "Contrast": 100,
+               "Saturation": 100,
+               "Brightness": 100,
+               "ColorBits": 24,
+               "PaletteReductionLower": "None (0x00)",
+               "PaletteReductionUpper": "None (0xFF)"
+            }
+         },
+         "exportParams": {
+            "scriptPath": "",
+            "outputName": "tiles_level.bin",
+            "scriptParams": ""
+         }
+      }
+   ],
+   "buildTiles": [],
+   "buildSprites": [],
+   "buildMaps": [],
+   "buildBuilds": [],
+   "buildPalettes": [
+      {
+         "name": "palette.solver",
+         "paletteParams": {
+            "targetSystem": "Amstrad CPC/CPC+",
+            "targetPaletteType": "GA Palette",
+            "zones": [
+               {
+                  "name": "Main",
+                  "lineStart": 0,
+                  "lineEnd": 199,
+                  "targetMode": "Mode 0",
+                  "participants": [
+                     {
+                        "buildItemName": "screen",
+                        "buildItemType": "Bitmap",
+                        "role": "ScreenZone",
+                        "tag": ""
+                     },
+                     {
+                        "buildItemName": "tiles",
+                        "buildItemType": "Bitmap",
+                        "role": "Level",
+                        "tag": "Level 1"
+                     },
+                     {
+                        "buildItemName": "srpites",
+                        "buildItemType": "Bitmap",
+                        "role": "ScreenZone",
+                        "tag": ""
+                     },
+                     {
+                        "buildItemName": "tiles_level",
+                        "buildItemType": "Bitmap",
+                        "role": "Level",
+                        "tag": "Level 2"
+                     }
+                  ]
+               }
+            ]
+         },
+         "exportParams": {
+            "scriptPath": "",
+            "outputName": "",
+            "scriptParams": ""
+         }
+      }
+   ],
+   "buildFolders": [],
+   "selectedBuildItem": ""
+}

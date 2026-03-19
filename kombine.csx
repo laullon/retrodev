@@ -1,0 +1,363 @@
+/*---------------------------------------------------------------------------------------------------------
+
+	Retro Dev 
+
+	Main build script
+
+	(c) TLOTB 2026
+
+---------------------------------------------------------------------------------------------------------*/
+#load "bld/ext/clang.csx"
+#load "bld/ext/clang.doc.csx"
+#load "bld/ext/git.csx"
+#load "bld/csx/build.flags.csx"
+
+#r "bld/bin/mkb.dll"
+using Kltv.Kombine.Api;
+using Kltv.Kombine.Types;
+using static Kltv.Kombine.Api.Statics;
+using static Kltv.Kombine.Api.Tool;
+
+
+// Build right now is limited to Windows
+//
+if (Host.IsWindows() == false) {
+	Msg.PrintAndAbort("RetroDev can be built only on Windows right now.");
+}
+
+// Initialize the build flags
+BuildFlags.Init();
+
+
+// Show the help 
+//
+//---------------------------------------------------
+int help(string[] args){
+	Msg.Print("");
+	Msg.Print("RetroDev");
+	Msg.Print("  build - Build RetroDev");
+	Msg.Print("      parameters: ");
+	Msg.Print("                  ----How to build----");
+	Msg.Print("                  verbose (show the clang invocation)");
+	Msg.Print("                  debug(default) or release");
+	Msg.Print("                  production (remove debug information / developer settings)");
+	Msg.Print("                  ----What to build----");
+	Msg.Print("                  deps (build also the dependencies)");
+	Msg.Print("");
+	Msg.Print("  dependencies - Manage the dependencies used by the application.");
+	Msg.Print("      parameters:");
+	Msg.Print("                  update (update the dependencies)");
+	Msg.Print("                  install (install the dependencies)");
+	Msg.Print("                  clean (clean the dependencies)");
+	Msg.Print("");
+	Msg.Print("  format - Apply clang-format to all source files");
+	Msg.Print("");
+	Msg.Print("  clean - Clean the output artifacts");
+	Msg.Print("      parameters:");
+	Msg.Print("                  debug(default) or release");
+	Msg.Print("                  deps (clean also the dependencies artifacts)");
+	Msg.Print("                     application is always cleaned");
+	Msg.Print("");
+	Msg.Print("  help - This help");
+	return 0;
+}
+
+
+// Build RetroDev Action
+//
+//---------------------------------------------------
+int build(string[] args) {
+	Msg.Print("Building RetroDev...");
+	BuildFlags.Print();
+	// Define Clang Options for all the subprojects
+	//
+	//---------------------------------------------------
+	Clang clang = new Clang();
+	// Place to store the compile commands database
+	clang.OpenCompileCommands("out/tmp/compile_commands.json");
+	// Clang Compiler Flags
+	// Construct the compiler flags to use as default for building.
+	// If you want to change the flags, go to this function.
+	buildCompilerFlags(clang);
+	// Fetch or construct the output paths for the artifacts
+	// If you want to change the output, go to this function.
+	buildOutputPaths();
+	// And set the options as default
+	clang.Options.SetAsDefault();
+	// Build or register dependencies
+	//---------------------------------------------------
+	if (BuildFlags.Flags.Deps) {
+		Kombine("ext/lib.freetype.csx", "build", args);
+		Kombine("ext/lib.sdl.csx", "build",args);
+		Kombine("ext/lib.sdl.image.csx", "build",args);
+		Kombine("ext/lib.imgui.csx", "build",args);
+		Kombine("ext/lib.glaze.csx", "build", args);
+		Kombine("ext/lib.ascript.csx", "build", args);
+		Kombine("ext/lib.rasm.csx", "build", args);
+		Kombine("ext/lib.ctre.csx", "build", args);
+	} else {
+		Kombine("ext/lib.freetype.csx", "register", args);
+		Kombine("ext/lib.sdl.csx", "register",args);
+		Kombine("ext/lib.sdl.image.csx", "register",args);
+		Kombine("ext/lib.imgui.csx", "register",args);
+		Kombine("ext/lib.glaze.csx", "register", args);
+		Kombine("ext/lib.ascript.csx", "register", args);
+		Kombine("ext/lib.rasm.csx", "register", args);
+		Kombine("ext/lib.ctre.csx", "register", args);
+	}
+	// For release builds, stamp the version header with a real build number
+	// and restore it afterwards regardless of success or failure.
+	string versionHeader = RealPath("src/lib/system/version.h");
+	string versionBackup = RealPath("src/lib/system/version.h.bak");
+	if (BuildFlags.Flags.BuildMode == "release") {
+		stampVersionHeader(versionHeader, versionBackup);
+		if (Kombine("src/retro.dev.lib.csx", "build", args,false) != 0) {
+			restoreVersionHeader(versionHeader, versionBackup);
+			return -1;
+		}	
+		if (Kombine("src/retro.dev.gui.csx", "build", args,false) != 0) {
+			restoreVersionHeader(versionHeader, versionBackup);
+			return -1;
+		}
+		restoreVersionHeader(versionHeader, versionBackup);
+
+	} else {
+		Kombine("src/retro.dev.lib.csx", "build", args);
+		Kombine("src/retro.dev.gui.csx", "build", args);
+	}
+	// Copy the sdk folder from the solution root to the binary output folder
+	// so the tool can find it when launched from the output directory during development.
+	KValue OutputBin = KValue.Import("OutputBin");
+	string sdkSource = RealPath("sdk/");
+	string sdkDest = RealPath(OutputBin + "retro.dev.gui/sdk/");
+	Msg.Print("Syncing sdk folder to output...");
+	Folders.Copy(sdkSource, sdkDest,
+		Folders.CopyOptions.IncludeSubFolders |
+		Folders.CopyOptions.OnlyModifiedFiles |
+		Folders.CopyOptions.DeleteMissingFiles);
+	return 0;
+}
+
+//
+// Dependencies management action
+//
+//---------------------------------------------------
+int dependencies(string[] args) {
+	buildOutputPaths();
+	// Build the subprojects
+	Msg.Print("Dependencies for RetroDev...");
+	// Dependencies for each dependency library
+	//---------------------------------------------------
+	Kombine("ext/lib.freetype.csx", "dependencies", args);
+	Kombine("ext/lib.sdl.csx", "dependencies",args);
+	Kombine("ext/lib.sdl.image.csx", "dependencies",args);
+	Kombine("ext/lib.imgui.csx", "dependencies",args);
+	Kombine("ext/lib.glaze.csx", "dependencies", args);
+	Kombine("ext/lib.ascript.csx", "dependencies", args);
+	Kombine("ext/lib.rasm.csx", "dependencies", args);
+	Kombine("ext/lib.ctre.csx", "dependencies", args);
+	Kombine("src/retro.dev.lib.csx", "dependencies", args);
+	Kombine("src/retro.dev.gui.csx", "dependencies", args);
+	return 0;
+}
+
+//
+// Clean artifacts action
+//
+//---------------------------------------------------
+int clean(string[] args){
+	Msg.Print("Clean build artifacts RetroDev...");
+	Msg.BeginIndent();
+	// Paths are required to be set before cleaning since we will clean
+	// the requested configuration.
+	buildOutputPaths();
+	//---------------------------------------------------
+	if (BuildFlags.Flags.Deps) {
+		Msg.Print("Cleaning dependencies for RetroDev...");
+		Kombine("ext/lib.freetype.csx", "clean", args);
+		Kombine("ext/lib.sdl.csx", "clean", args);
+		Kombine("ext/lib.sdl.image.csx", "clean", args);
+		Kombine("ext/lib.imgui.csx", "clean", args);
+		Kombine("ext/lib.glaze.csx", "clean", args);
+		Kombine("ext/lib.ascript.csx", "clean", args);
+		Kombine("ext/lib.rasm.csx", "clean", args);
+		Kombine("ext/lib.ctre.csx", "clean", args);
+	}
+	Msg.Print("Cleaning application...");
+	Kombine("src/retro.dev.lib.csx", "clean", args);
+	Kombine("src/retro.dev.gui.csx", "clean", args);
+	Msg.EndIndent();
+	return 0;
+}
+
+//
+// Format source files action
+//
+//---------------------------------------------------
+int format(string[] args) {
+	Msg.Print("Formatting RetroDev sources...");
+	Msg.BeginIndent();
+	KList src = new KList();
+	src += Glob("src/**/*.h");
+	src += Glob("src/**/*.cpp");
+	src += Glob("src/**/*.c");
+	src += Glob("ext/imgui.ext/**/*.h");
+	src += Glob("ext/imgui.ext/**/*.cpp");
+	src += Glob("ext/rasm.ext/**/*.h");
+	src += Glob("ext/rasm.ext/**/*.cpp");
+	src += Glob("ext/rasm.ext/**/*.c");
+	Clang.Format(src, "-i");
+	Msg.EndIndent();
+	return 0;
+}
+
+//
+// Stamp the version header with a generated build number for release builds.
+// Backs up the original tokenized header first.
+// Writes out/pkg/version.txt with the full version string.
+//
+//------------------------------------------------------------------------------------------
+void stampVersionHeader(string headerPath, string backupPath) {
+	// Back up the tokenized header
+	System.IO.File.Copy(headerPath, backupPath, true);
+	// Generate the build number and compose the full version string
+	string buildNumber = GenVersionBuildNumber();
+	string src = System.IO.File.ReadAllText(headerPath);
+	string stamped = src.Replace("@BUILD@", buildNumber);
+	System.IO.File.WriteAllText(headerPath, stamped);
+	// Write out/pkg/version.txt for downstream packaging tools
+	string major = "";
+	string minor = "";
+	foreach (string line in src.Split('\n')) {
+		if (line.Contains("k_versionMajor")) {
+			int eq = line.IndexOf('='); int semi = eq >= 0 ? line.IndexOf(';', eq) : -1;
+			if (eq >= 0 && semi > eq) major = line.Substring(eq + 1, semi - eq - 1).Trim();
+		}
+		if (line.Contains("k_versionMinor")) {
+			int eq = line.IndexOf('='); int semi = eq >= 0 ? line.IndexOf(';', eq) : -1;
+			if (eq >= 0 && semi > eq) minor = line.Substring(eq + 1, semi - eq - 1).Trim();
+		}
+	}
+	string versionString = major + "." + minor + "." + buildNumber;
+	Folders.Create(RealPath("out/pkg/"));
+	System.IO.File.WriteAllText(RealPath("out/pkg/version.txt"), versionString);
+	Msg.Print("Version stamped: " + versionString);
+}
+//
+// Restore the tokenized version header from its backup and remove the backup.
+//
+//------------------------------------------------------------------------------------------
+void restoreVersionHeader(string headerPath, string backupPath) {
+	// Retry up to 10 times with a 1-second delay between attempts
+	// (the file may be briefly locked by the compiler or linker).
+	bool restored = false;
+	for (int attempt = 1; attempt <= 10; attempt++) {
+		try {
+			System.IO.File.Copy(backupPath, headerPath, true);
+			restored = true;
+			break;
+		} catch (System.Exception) {}
+		Msg.Print($"restoreVersionHeader: attempt {attempt}/10 failed, retrying in 1s...");
+		System.Threading.Thread.Sleep(10000);
+	}
+	if (!restored) {
+		Msg.PrintError("restoreVersionHeader: version.h could not be restored from backup after 10 attempts. Manual restore required: copy version.h.bak to version.h");
+	} else {
+		System.IO.File.Delete(backupPath);
+		Msg.Print("Version header restored.");
+	}
+}
+//
+// Build the output paths to be used by the subprojects artifacts
+// The output paths are exported to be used by the subprojects
+//
+//------------------------------------------------------------------------------------------
+void buildOutputPaths() {
+	// The opuput paths for the artifacts defined here
+	KValue OutputBin = RealPath("out/bin/");
+	KValue OutputLib = RealPath("out/lib/");
+	KValue OutputTmp = RealPath("out/tmp/");
+	// Add the current building target system into the output paths
+	OutputBin += Host.GetOSKind();
+	OutputLib += Host.GetOSKind();
+	OutputTmp += Host.GetOSKind();
+	// Add the current building configuration into the output paths
+	if (BuildFlags.Flags.BuildMode == "release") {
+		OutputBin += "/release/";
+		OutputLib += "/release/";
+		OutputTmp += "/release/";
+	} 
+	else if (BuildFlags.Flags.BuildMode == "debug") {
+		OutputBin += "/debug/";
+		OutputLib += "/debug/";
+		OutputTmp += "/debug/";
+	} else{
+		Msg.PrintAndAbort("Invalid Build Configuration: " + BuildFlags.Flags.BuildMode);
+	}
+	// Export the newly defined ones for the subprojects
+	OutputBin.Export("OutputBin");
+	OutputLib.Export("OutputLib");
+	OutputTmp.Export("OutputTmp");
+}
+
+//
+// Construct the compiler flags to use as default for building.
+// If you want to change the flags affecting all the subprojects this is the place
+//
+//------------------------------------------------------------------------------------------
+void buildCompilerFlags(Clang clang) {
+	// Set Verbose by command line
+	if (BuildFlags.Flags.Verbose) {
+		clang.Options.Verbose = true;
+	}
+	// Language version & disable built in char8_t for utf8 (so u8 casts to const char* like C++11)
+	clang.Options.SwitchesCC = new KList() { 
+		"-std=c17" , 
+		"-fno-char8_t"};
+	clang.Options.SwitchesCXX = new KList() { 
+		"-std=c++20", 
+		"-fno-char8_t", 
+		"-pedantic", 
+		"-Wall", 
+		"-Wextra", 
+		"-Wno-unused", 
+		"-Wno-c++26-extensions", 
+		"-fno-exceptions"};
+	if (Host.IsWindows()){
+		clang.Options.Defines = new KList() {
+			"WINDOWS", 
+			"_WIN64",
+			"_WIN32",
+			"_CRT_SECURE_NO_WARNINGS" };
+		if (BuildFlags.Flags.BuildMode == "release") {
+			clang.Options.SwitchesCC +=  "-O2";
+			clang.Options.SwitchesCXX += "-O2";
+			clang.Options.SwitchesCC += "-fms-runtime-lib=static";
+			clang.Options.SwitchesCXX += "-fms-runtime-lib=static";
+			clang.Options.Defines += "NDEBUG";
+			clang.Options.Defines += "RELEASE";
+		} else if (BuildFlags.Flags.BuildMode == "debug") {
+			KList options = new KList() { 
+				"-g", 
+				"-glldb", 
+				"-gfull", 
+				"-O0" };
+			clang.Options.SwitchesCC += options;
+			clang.Options.SwitchesCXX += options;
+			clang.Options.SwitchesCC += "-fms-runtime-lib=static_dbg";
+			clang.Options.SwitchesCXX += "-fms-runtime-lib=static_dbg";
+			clang.Options.Defines += "DEBUG";
+			clang.Options.Defines += "NRELEASE";
+			clang.Options.SwitchesLD = new KList() { 
+				"-g", 
+				"-glldb", 
+				"-gfull" };
+		} else {
+			Msg.PrintAndAbort("Invalid Build Configuration:" + BuildFlags.Flags.BuildMode);
+		}
+	}
+	if (Host.IsLinux()){
+	}
+	if (Host.IsMacOS()){
+	}
+}
