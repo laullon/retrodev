@@ -61,11 +61,12 @@ int help(string[] args){
 	Msg.Print("");
 	Msg.Print("  publish - Assemble the release package and optionally publish it to GitHub.");
 	Msg.Print("      Requires a prior release build (out/pkg/version.txt must exist).");
+	Msg.Print("      Always packages the release build output (build mode is forced to release).");
 	Msg.Print("      Stages the release binary, sdk/ and examples/ into a zip named");
 	Msg.Print("      retrodev-<version>.zip in out/pkg/.");
 	Msg.Print("      If the tlotb_token environment variable is set, a GitHub release is");
 	Msg.Print("      created on tlotb/retrodev and the zip is uploaded automatically.");
-	Msg.Print("      Release notes are left empty and must be filled in manually on GitHub.");
+	Msg.Print("      Release notes are read from doc/changelog.md (entries above the first version tag).");
 	Msg.Print("");
 	Msg.Print("  help - This help");
 	return 0;
@@ -423,6 +424,11 @@ int publish(string[] args) {
 		Msg.PrintAndAbort("Version number is empty in out/pkg/version.txt.");
 	}
 	Msg.Print("Publishing RetroDev version " + versionNumber);
+	//
+	// publish always packages the release build output — force the mode regardless
+	// of what flags were passed on the command line
+	//
+	BuildFlags.Flags.BuildMode = "release";
 	//
 	// Extract unreleased changelog entries (everything before the first version tag)
 	//
