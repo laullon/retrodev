@@ -85,14 +85,14 @@
             "RParams": {
                "ResMode": "Fit",
                "InterpMode": "NearestNeighbor",
-               "TargetResolution": "Custom",
+               "TargetResolution": "Normal",
                "TargetWidth": 160,
-               "TargetHeight": 800,
+               "TargetHeight": 200,
                "SourceRect": {
                   "X": 0,
                   "Y": 0,
                   "Width": 320,
-                  "Height": 800
+                  "Height": 200
                },
                "UseTransparentColor": false,
                "TransparentColorR": 255,
@@ -128,8 +128,8 @@
             }
          },
          "tileParams": {
-            "TileWidth": 8,
-            "TileHeight": 16,
+            "TileWidth": 6,
+            "TileHeight": 8,
             "OffsetX": 0,
             "OffsetY": 0,
             "PaddingX": 0,
@@ -137,9 +137,9 @@
             "DeletedTiles": []
          },
          "exportParams": {
-            "scriptPath": "$(sdk)/amstrad.cpc/exporters/cpc.tiles.as",
-            "outputName": "out/tiles.bin",
-            "scriptParams": "layout=chunky;header=true"
+            "scriptPath": "",
+            "outputName": "tiles.bin",
+            "scriptParams": ""
          }
       }
    ],

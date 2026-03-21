@@ -19,8 +19,6 @@ TODO list
     - When inside a function you use a macro, macro time should compute in function time
     - When inside a macro you use another macro or function, time should compute in macro time     
 - Improve usability
-    - Remove sprite using contextual menu on the list
-    - Add sprite must add the system and mode constrainst to the selection
     - Palette solver must warn or do not allow to use an item in more than one participant declaration
         - This is something that may be true (graphics participating two zones but is unsolved)
 - Optimizations

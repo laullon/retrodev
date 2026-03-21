@@ -95,6 +95,10 @@ namespace RetrodevGui {
 		// cleared once the confirm dialog resolves (either direction).
 		//
 		inline static std::string s_pendingCloseDocumentName;
+		//
+		// Close a set of tabs by index (sorted ascending), warning once for all unsaved ones.
+		//
+		static void CloseDocumentSet(std::vector<int> indicesToClose);
 	};
 
 } 

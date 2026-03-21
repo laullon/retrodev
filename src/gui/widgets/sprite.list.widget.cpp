@@ -115,6 +115,18 @@ namespace RetrodevGui {
 						result.selectedSpriteIndex = i;
 					}
 					//
+					// Context menu on right-click: remove sprite
+					//
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+					if (ImGui::BeginPopupContextItem("##spritectx")) {
+						if (ImGui::MenuItem("Remove")) {
+							result.spriteDeleted      = true;
+							result.deletedSpriteIndex = i;
+						}
+						ImGui::EndPopup();
+					}
+					ImGui::PopStyleVar();
+					//
 					// Show tooltip with sprite info
 					//
 					if (ImGui::IsItemHovered()) {

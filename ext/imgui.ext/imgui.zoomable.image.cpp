@@ -284,48 +284,58 @@ namespace ImGui {
 				//
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 					//
-					// Start selection
+					// Start selection — snap anchor to logical pixel floor when enabled
 					//
 					selectionStart = s->mousePosition;
+					if (s->snapToLogicalPixels) {
+						selectionStart.x = std::floor(selectionStart.x);
+						selectionStart.y = std::floor(selectionStart.y);
+					}
 					isSelecting = true;
 					s->selectionActive = false;
 				}
 				if (isSelecting && io.MouseDown[0]) {
 					//
-					// Update selection area (draw XOR box)
+					// Snap end corner to logical pixel boundary (draw-time only, not on mousePosition)
 					//
-					ImVec2 selectionEnd = s->mousePosition;
+					ImVec2 snappedEnd = s->mousePosition;
+					if (s->snapToLogicalPixels) {
+						snappedEnd.x = std::floor(snappedEnd.x) + 1.0f;
+						snappedEnd.y = std::floor(snappedEnd.y) + 1.0f;
+					}
 					//
-					// Calculate selection rect (top-left, width, height)
+					// Update logical selection rect (top-left, width, height)
 					//
-					float x1 = std::min(selectionStart.x, selectionEnd.x);
-					float y1 = std::min(selectionStart.y, selectionEnd.y);
-					float x2 = std::max(selectionStart.x, selectionEnd.x);
-					float y2 = std::max(selectionStart.y, selectionEnd.y);
+					float x1 = std::min(selectionStart.x, snappedEnd.x);
+					float y1 = std::min(selectionStart.y, snappedEnd.y);
+					float x2 = std::max(selectionStart.x, snappedEnd.x);
+					float y2 = std::max(selectionStart.y, snappedEnd.y);
 					s->selection = ImVec4(x1, y1, x2 - x1, y2 - y1);
 					//
-					// Draw selection box (XOR-style dashed lines)
+					// Compute screen coords from snapped logical corners
 					//
 					ImDrawList* drawList = ImGui::GetWindowDrawList();
+					ImVec2 screenBoxStart = ImVec2(screenDisplayPos.x + (x1 / coordSize.x - t1.x) * displaySize.x / uvSpanX,
+												  screenDisplayPos.y + (y1 / coordSize.y - t1.y) * displaySize.y / uvSpanY);
+					ImVec2 screenBoxEnd = ImVec2(screenDisplayPos.x + (x2 / coordSize.x - t1.x) * displaySize.x / uvSpanX,
+												screenDisplayPos.y + (y2 / coordSize.y - t1.y) * displaySize.y / uvSpanY);
 					//
-					// Convert logical coordinates to screen coordinates
+					// Thickness = one logical pixel in screen space
 					//
-					ImVec2 screenStart = ImVec2(screenDisplayPos.x + (selectionStart.x / coordSize.x - t1.x) * displaySize.x / uvSpanX,
-												screenDisplayPos.y + (selectionStart.y / coordSize.y - t1.y) * displaySize.y / uvSpanY);
-					ImVec2 screenEnd = ImVec2(screenDisplayPos.x + (selectionEnd.x / coordSize.x - t1.x) * displaySize.x / uvSpanX,
-											  screenDisplayPos.y + (selectionEnd.y / coordSize.y - t1.y) * displaySize.y / uvSpanY);
+					const float lpxW = displaySize.x / (coordSize.x * uvSpanX);
+					const float lpxH = displaySize.y / (coordSize.y * uvSpanY);
+					const float snapThickness = std::min(lpxW, lpxH);
 					//
-					// Draw dashed rectangle
+					// Solid white rect, alpha blended
 					//
-					drawList->AddRect(screenStart, screenEnd, IM_COL32(255, 255, 255, 255), 0.0f, 0, 2.0f);
-					drawList->AddRect(ImVec2(screenStart.x - 1, screenStart.y - 1), ImVec2(screenEnd.x + 1, screenEnd.y + 1), IM_COL32(0, 0, 0, 255), 0.0f, 0, 2.0f);
+					drawList->AddRect(screenBoxStart, screenBoxEnd, IM_COL32(255, 255, 255, 200), 0.0f, 0, snapThickness);
 				}
 				//
 				// Draw crosshair cursor in selection mode
 				//
 				if (!isSelecting) {
 					ImDrawList* drawList = ImGui::GetWindowDrawList();
-					ImVec2 mouseScreenPos = io.MousePos;
+					const ImVec2 mouseScreenPos = io.MousePos;
 					const float crosshairSize = 10.0f;
 					//
 					// Draw crosshair (white with black outline)
@@ -430,20 +440,7 @@ namespace ImGui {
 		//
 		if (s->selectionActive && !isSelecting && s->selection.z > 0.0f && s->selection.w > 0.0f) {
 			ImDrawList* drawList = ImGui::GetWindowDrawList();
-			//
-			// Use logicalSize if set, otherwise use textureSize
-			//
 			const ImVec2 coordSize = (s->logicalSize.x > 0 && s->logicalSize.y > 0) ? s->logicalSize : textureSize;
-			//
-			// Calculate line thickness based on texture to logical size ratio
-			// If textureSize is 640 and logicalSize is 320, ratio is 2.0, so lines should be 2 pixels thick
-			//
-			float lineThickness = 1.0f;
-			if (s->logicalSize.x > 0 && s->logicalSize.y > 0) {
-				float ratioX = textureSize.x / coordSize.x;
-				float ratioY = textureSize.y / coordSize.y;
-				lineThickness = std::max(ratioX, ratioY);
-			}
 			//
 			// Convert logical selection coordinates to screen coordinates
 			//
@@ -452,10 +449,15 @@ namespace ImGui {
 			ImVec2 screenEnd = ImVec2(screenDisplayPos.x + ((s->selection.x + s->selection.z) / coordSize.x - t1.x) * displaySize.x / uvSpanX,
 									  screenDisplayPos.y + ((s->selection.y + s->selection.w) / coordSize.y - t1.y) * displaySize.y / uvSpanY);
 			//
-			// Draw XOR-style marching ants selection rectangle
-			// Uses dashed line pattern with alternating black and white segments
+			// Thickness and dash length = one logical pixel in screen space
 			//
-			const float dashLength = 6.0f;
+			const float lpxW = displaySize.x / (coordSize.x * uvSpanX);
+			const float lpxH = displaySize.y / (coordSize.y * uvSpanY);
+			const float lineThickness = std::min(lpxW, lpxH);
+			const float dashLength = lineThickness;
+			//
+			// Marching ants: animated dashed border, alpha blended
+			//
 			static float dashOffset = 0.0f;
 			dashOffset += 0.5f;
 			if (dashOffset >= dashLength * 2.0f)
@@ -467,7 +469,7 @@ namespace ImGui {
 			bool isWhite = (static_cast<int>(dashOffset / dashLength) % 2) == 0;
 			while (x < screenEnd.x) {
 				float segmentEnd = std::min(x + dashLength, screenEnd.x);
-				ImU32 color = isWhite ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255);
+				ImU32 color = isWhite ? IM_COL32(255, 255, 255, 200) : IM_COL32(0, 0, 0, 160);
 				drawList->AddLine(ImVec2(x, screenStart.y), ImVec2(segmentEnd, screenStart.y), color, lineThickness);
 				x = segmentEnd;
 				isWhite = !isWhite;
@@ -479,7 +481,7 @@ namespace ImGui {
 			isWhite = (static_cast<int>(dashOffset / dashLength) % 2) == 0;
 			while (x < screenEnd.x) {
 				float segmentEnd = std::min(x + dashLength, screenEnd.x);
-				ImU32 color = isWhite ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255);
+				ImU32 color = isWhite ? IM_COL32(255, 255, 255, 200) : IM_COL32(0, 0, 0, 160);
 				drawList->AddLine(ImVec2(x, screenEnd.y), ImVec2(segmentEnd, screenEnd.y), color, lineThickness);
 				x = segmentEnd;
 				isWhite = !isWhite;
@@ -491,7 +493,7 @@ namespace ImGui {
 			isWhite = (static_cast<int>(dashOffset / dashLength) % 2) == 0;
 			while (y < screenEnd.y) {
 				float segmentEnd = std::min(y + dashLength, screenEnd.y);
-				ImU32 color = isWhite ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255);
+				ImU32 color = isWhite ? IM_COL32(255, 255, 255, 200) : IM_COL32(0, 0, 0, 160);
 				drawList->AddLine(ImVec2(screenStart.x, y), ImVec2(screenStart.x, segmentEnd), color, lineThickness);
 				y = segmentEnd;
 				isWhite = !isWhite;
@@ -503,7 +505,7 @@ namespace ImGui {
 			isWhite = (static_cast<int>(dashOffset / dashLength) % 2) == 0;
 			while (y < screenEnd.y) {
 				float segmentEnd = std::min(y + dashLength, screenEnd.y);
-				ImU32 color = isWhite ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255);
+				ImU32 color = isWhite ? IM_COL32(255, 255, 255, 200) : IM_COL32(0, 0, 0, 160);
 				drawList->AddLine(ImVec2(screenEnd.x, y), ImVec2(screenEnd.x, segmentEnd), color, lineThickness);
 				y = segmentEnd;
 				isWhite = !isWhite;

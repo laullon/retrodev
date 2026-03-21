@@ -70,6 +70,21 @@ namespace RetrodevLib {
 		// Human-readable message summarising the result for display in the UI
 		//
 		std::string message;
+		//
+		// Overflow method that was applied when producing the fixed palette this participant
+		// was mapped against. Transient — not serialised.
+		//
+		PaletteOverflowMethod overflowMethodApplied = PaletteOverflowMethod::HardCap;
+		//
+		// Colors actually used by this participant in the final fixed palette.
+		// Populated only when status == OK. Transient — not serialised.
+		//
+		struct ColorSwatch {
+			int slot = 0;
+			int colorIndex = -1;
+			uint8_t r = 0, g = 0, b = 0;
+		};
+		std::vector<ColorSwatch> assignedColors;
 	};
 
 	//
@@ -131,6 +146,37 @@ namespace RetrodevLib {
 		// GFXParams used for each converter (palette locked to the solution slots)
 		//
 		std::unordered_map<int, GFXParams> converterGfx;
+		//
+		// Per-overflow-color remap decisions made during the cap step for this solution.
+		// One entry for each color in the union that exceeded the pen budget.
+		// Transient — not serialised.
+		//
+		struct OverflowRemap {
+			//
+			// The color that could not fit in the palette
+			//
+			int overflowColorIndex = -1;
+			uint8_t overflowR = 0, overflowG = 0, overflowB = 0;
+			//
+			// The accepted slot this overflow color was nearest to, and its color before
+			// any remap was applied
+			//
+			int slot = -1;
+			int nearestColorIndex = -1;
+			uint8_t nearestR = 0, nearestG = 0, nearestB = 0;
+			//
+			// The color the slot was changed to after blending (equals nearestColorIndex for
+			// HardCap where the slot is unchanged and the overflow color is simply dropped)
+			//
+			int resultColorIndex = -1;
+			uint8_t resultR = 0, resultG = 0, resultB = 0;
+			//
+			// True when the overflow color was dropped without modifying any accepted slot
+			// (HardCap behaviour)
+			//
+			bool dropped = false;
+		};
+		std::vector<OverflowRemap> overflowRemaps;
 	};
 
 	//
@@ -204,7 +250,7 @@ namespace RetrodevLib {
 	//   Pass 1 (global Always): Always participants from ALL zones are quantized together
 	//                           into a single base palette so the same pen slots hold the
 	//                           same colors in every zone and every level.
-	//   Pass 2 (zone base): per zone, Zone/ScreenZone participants are fitted on top of
+	//   Pass 2 (zone base): per zone, ZoneAlways participants are fitted on top of
 	//                       the global Always pens. The resulting palette is the zone base
 	//                       that is stable across all levels within that zone.
 	//   Pass 3 (level tags): per zone per level-tag, Level participants are fitted on top

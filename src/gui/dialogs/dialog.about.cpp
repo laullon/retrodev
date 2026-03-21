@@ -10,6 +10,7 @@
 #include <app/app.resources.h>
 #include <app/app.icons.mdi.h>
 #include <SDL3_image/SDL_image.h>
+#include <system/version.h>
 
 namespace RetrodevGui {
 
@@ -60,7 +61,7 @@ namespace RetrodevGui {
 		//
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-		ImGui::SetNextWindowSize(ImVec2(860.0f, 0.0f), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(1060.0f, 0.0f), ImGuiCond_Appearing);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20.0f, 16.0f));
 		if (ImGui::BeginPopupModal("About RetroDev", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
 			ImGui::Dummy(ImVec2(0.0f, 6.0f));
@@ -96,7 +97,7 @@ namespace RetrodevGui {
 			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 220, 0, 255));
 			ImGui::Text("RetroDev");
 			ImGui::PopStyleColor();
-			ImGui::TextDisabled("Version 0.1.0  —  Built with love for retro machines");
+			ImGui::TextDisabled("Version %s  —  Built with love for retro machines", RetrodevLib::GetVersion().c_str());
 			ImGui::Spacing();
 			ImGui::TextWrapped("A modern development toolchain for classic home computers. "
 							   "Convert, edit and export graphics, sprites and other assets "
@@ -157,13 +158,13 @@ namespace RetrodevGui {
 			ImVec2 avail = ImGui::GetContentRegionAvail();
 			float indent = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.x * 2.0f;
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
-			if (ImGui::BeginChild("##thanks", ImVec2(avail.x - indent, ImGui::GetTextLineHeightWithSpacing() * 4.0f), ImGuiChildFlags_None)) {
+			if (ImGui::BeginChild("##thanks", ImVec2(avail.x - indent, ImGui::GetTextLineHeightWithSpacing() * 5.0f), ImGuiChildFlags_None)) {
 				ImGui::Spacing();
 				ImGui::TextWrapped(
-					"Special thanks to Roudoudou, DemoniakLudo, Bladerunner / TLOTB, Estrayk / Paradox and Mowgly "
+					"Special thanks to Roudoudou, DemoniakLudo, Mr.Capa, Bladerunner / TLOTB, Estrayk / Paradox and Mowgly "
 					"for their feedback, testing, information and ideas throughout development. "
-					"And to the Amstrad Power Telegram Channel \xe2\x80\x94 for the endless enthusiasm, "
-					"encouragement and keeping the motivation high when it mattered most.");
+					"And to the Amstrad Power Telegram Channel \xe2\x80\x94 for the endless enthusiasm they "
+					"put on keeping alive Amstrad machines.");
 			}
 			ImGui::EndChild();
 			//
@@ -172,7 +173,7 @@ namespace RetrodevGui {
 			ImGui::SeparatorText(ICON_HAND_WAVE " Greetings");
 			ImGui::Spacing();
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
-			if (ImGui::BeginChild("##greetings", ImVec2(avail.x - indent, ImGui::GetTextLineHeightWithSpacing() * 5.0f), ImGuiChildFlags_None)) {
+			if (ImGui::BeginChild("##greetings", ImVec2(avail.x - indent, ImGui::GetTextLineHeightWithSpacing() * 6.0f), ImGuiChildFlags_None)) {
 				ImGui::Spacing();
 				ImGui::TextWrapped(
 					"Greetings fly out to the groups and projects that keep the Amstrad CPC scene alive and thriving: "

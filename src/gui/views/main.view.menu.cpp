@@ -249,8 +249,17 @@ namespace RetrodevGui {
 		if (ImGui::FileDialog::Instance().IsDone("NewProjectDialog")) {
 			if (ImGui::FileDialog::Instance().HasResult()) {
 				std::string projectPath = ImGui::FileDialog::Instance().GetResult().string();
-				if (!RetrodevLib::Project::New(projectPath)) {
-					ErrorDialog::Show("Failed to create project:\n" + projectPath);
+				//
+				// If the target file already exists, ask for confirmation before overwriting
+				//
+				if (std::filesystem::exists(projectPath)) {
+					ConfirmDialog::Show("A project already exists at this location.\nOverwrite it?", [projectPath]() {
+						if (!RetrodevLib::Project::New(projectPath))
+							ErrorDialog::Show("Failed to create project:\n" + projectPath);
+					});
+				} else {
+					if (!RetrodevLib::Project::New(projectPath))
+						ErrorDialog::Show("Failed to create project:\n" + projectPath);
 				}
 			}
 			ImGui::FileDialog::Instance().Close();

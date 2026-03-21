@@ -10,6 +10,7 @@
 #load "bld/ext/clang.csx"
 #load "bld/ext/clang.doc.csx"
 #load "bld/ext/git.csx"
+#load "bld/ext/github.csx"
 #load "bld/csx/build.flags.csx"
 
 #r "bld/bin/mkb.dll"
@@ -57,6 +58,14 @@ int help(string[] args){
 	Msg.Print("                  debug(default) or release");
 	Msg.Print("                  deps (clean also the dependencies artifacts)");
 	Msg.Print("                     application is always cleaned");
+	Msg.Print("");
+	Msg.Print("  publish - Assemble the release package and optionally publish it to GitHub.");
+	Msg.Print("      Requires a prior release build (out/pkg/version.txt must exist).");
+	Msg.Print("      Stages the release binary, sdk/ and examples/ into a zip named");
+	Msg.Print("      retrodev-<version>.zip in out/pkg/.");
+	Msg.Print("      If the tlotb_token environment variable is set, a GitHub release is");
+	Msg.Print("      created on tlotb/retrodev and the zip is uploaded automatically.");
+	Msg.Print("      Release notes are left empty and must be filled in manually on GitHub.");
 	Msg.Print("");
 	Msg.Print("  help - This help");
 	return 0;
@@ -360,4 +369,148 @@ void buildCompilerFlags(Clang clang) {
 	}
 	if (Host.IsMacOS()){
 	}
+}
+
+//
+// Extract the unreleased section from doc/changelog.md.
+// Returns all lines from the top of the file up to (but not including) the first
+// line that starts with "## Version". If no version tag exists the entire file is returned.
+//
+//------------------------------------------------------------------------------------------
+string extractReleaseNotes(string changelogPath) {
+	if (!System.IO.File.Exists(changelogPath))
+		return "";
+	System.Text.StringBuilder sb = new System.Text.StringBuilder();
+	foreach (string line in System.IO.File.ReadAllLines(changelogPath)) {
+		if (line.StartsWith("## Version"))
+			break;
+		sb.AppendLine(line);
+	}
+	return sb.ToString().Trim();
+}
+//
+// Prepend a version tag line to doc/changelog.md so that entries added after this
+// point will be collected for the next release, and the current entries are archived.
+//
+//------------------------------------------------------------------------------------------
+void stampChangelogVersion(string changelogPath, string versionNumber) {
+	string existing = System.IO.File.Exists(changelogPath)
+		? System.IO.File.ReadAllText(changelogPath)
+		: "";
+	string stamp = "## Version " + versionNumber + "\n\n";
+	System.IO.File.WriteAllText(changelogPath, stamp + existing);
+	Msg.Print("Changelog stamped with version " + versionNumber);
+}
+//
+// Assemble the release package into out/pkg and optionally publish it to GitHub.
+// Steps:
+//   1) Extract unreleased entries from doc/changelog.md (lines before the first version tag).
+//   2) Copy the release binary output + sdk/ + examples/ into a staging folder.
+//   3) Zip the staging folder as retrodev-<version>.zip in out/pkg/.
+//   4) If the tlotb_token environment variable is set, create a GitHub release and upload the zip.
+//   5) Stamp doc/changelog.md with the new version tag so future entries start fresh.
+//
+int publish(string[] args) {
+	//
+	// Read the version number written by stampVersionHeader during the release build
+	//
+	string pkgVersionFile = RealPath("out/pkg/version.txt");
+	if (!System.IO.File.Exists(pkgVersionFile)) {
+		Msg.PrintAndAbort("out/pkg/version.txt not found. Run a release build first.");
+	}
+	string versionNumber = System.IO.File.ReadAllText(pkgVersionFile).Trim();
+	if (versionNumber == "") {
+		Msg.PrintAndAbort("Version number is empty in out/pkg/version.txt.");
+	}
+	Msg.Print("Publishing RetroDev version " + versionNumber);
+	//
+	// Extract unreleased changelog entries (everything before the first version tag)
+	//
+	string changelogPath = RealPath("doc/changelog.md");
+	string releaseNotes = extractReleaseNotes(changelogPath);
+	if (releaseNotes == "") {
+		Msg.Print("No release notes found in doc/changelog.md — release will have an empty body.");
+	} else {
+		Msg.Print("Release notes extracted from doc/changelog.md.");
+	}
+	//
+	// Resolve paths
+	//
+	buildOutputPaths();
+	KValue OutputBin = KValue.Import("OutputBin");
+	string binDir    = RealPath(OutputBin + "retro.dev.gui/");
+	string sdkDir    = RealPath("sdk/");
+	string examplesDir = RealPath("examples/");
+	string stagingDir  = RealPath("out/pkg/staging/");
+	string zipName     = "retrodev-" + versionNumber + ".zip";
+	string zipPath     = RealPath("out/pkg/" + zipName);
+	//
+	// Build the staging folder: binary output + sdk + examples
+	//
+	Msg.Print("Assembling package in staging folder...");
+	Folders.Delete(stagingDir);
+	Folders.Create(stagingDir);
+	Folders.Copy(binDir, stagingDir,
+		Folders.CopyOptions.IncludeSubFolders |
+		Folders.CopyOptions.OnlyModifiedFiles);
+	//
+	// Copy sdk/ only if it is not already present in the binary output (the build action
+	// syncs it there, but we include the canonical root copy for the package)
+	//
+	string stagingSdk = stagingDir + "sdk/";
+	if (!System.IO.Directory.Exists(stagingSdk)) {
+		Folders.Copy(sdkDir, stagingSdk,
+			Folders.CopyOptions.IncludeSubFolders |
+			Folders.CopyOptions.OnlyModifiedFiles);
+	}
+	//
+	// Always include examples/ from the project root
+	//
+	Folders.Copy(examplesDir, stagingDir + "examples/",
+		Folders.CopyOptions.IncludeSubFolders |
+		Folders.CopyOptions.OnlyModifiedFiles);
+	//
+	// Compress the staging folder into the final zip
+	//
+	Msg.Print("Creating " + zipName + "...");
+	Compress.Zip.CompressFolder(stagingDir, zipPath, true, false);
+	Folders.Delete(stagingDir);
+	Msg.Print("Package ready: out/pkg/" + zipName);
+	//
+	// Publish to GitHub only if the dada_token environment variable is available
+	//
+	KValue token = KValue.Import("tlotb_token", "");
+	if (token == "") {
+		Msg.Print("tlotb_token not set — skipping GitHub release. Package is at out/pkg/" + zipName);
+		return 0;
+	}
+	Msg.Print("tlotb_token found — creating GitHub release...");
+	Github github = new Github();
+	github.Repository = "retrodev";
+	github.Owner = "tlotb";
+	github.Token = token.ToString();
+	//
+	// Create the release (draft=false, no release notes — added manually on GitHub)
+	//
+	string releaseTag = "Release-" + versionNumber;
+	string releaseId = github.CreateRelease(releaseTag, "Release " + versionNumber, releaseNotes, false);
+	if (releaseId == "") {
+		Msg.PrintAndAbort("Failed to create the GitHub release.");
+	}
+	//
+	// Upload the single zip asset
+	//
+	string[] assets = new string[] { zipPath };
+	if (github.UploadAssets(releaseId, assets) == false) {
+		Msg.PrintAndAbort("Failed to upload assets to the GitHub release.");
+	}
+	if (github.PublishRelease(releaseId) == false) {
+		Msg.PrintAndAbort("Failed to publish the GitHub release.");
+	}
+	Msg.Print("GitHub release published: " + releaseTag);
+	//
+	// Stamp the changelog so future entries are collected for the next release
+	//
+	stampChangelogVersion(changelogPath, versionNumber);
+	return 0;
 }

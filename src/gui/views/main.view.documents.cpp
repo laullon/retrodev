@@ -171,6 +171,46 @@ namespace RetrodevGui {
 		}
 	}
 	//
+	// Close documents by index set, warning once if any have unsaved changes.
+	// indicesToClose must be sorted ascending.
+	//
+	void DocumentsView::CloseDocumentSet(std::vector<int> indicesToClose) {
+		//
+		// Partition into clean (close immediately) and dirty (need confirmation)
+		//
+		std::string dirtyNames;
+		for (int idx : indicesToClose) {
+			if (documents[idx]->IsModified()) {
+				if (!dirtyNames.empty())
+					dirtyNames += '\n';
+				dirtyNames += "  \"" + documents[idx]->GetName() + "\"";
+			}
+		}
+		//
+		// Close all clean tabs immediately (iterate in reverse to keep indices stable)
+		//
+		for (int k = (int)indicesToClose.size() - 1; k >= 0; k--) {
+			if (!documents[indicesToClose[k]]->IsModified())
+				DocumentsView::CloseDocument(indicesToClose[k]);
+		}
+		//
+		// If any dirty tabs remain, show a single confirmation dialog
+		//
+		if (!dirtyNames.empty()) {
+			ConfirmDialog::Show(
+				"The following tabs have unsaved changes:\n" + dirtyNames + "\n\nClose without saving?",
+				[]() {
+					//
+					// Close all remaining modified documents from back to front
+					//
+					for (int j = (int)documents.size() - 1; j >= 0; j--) {
+						if (documents[j]->IsModified())
+							DocumentsView::CloseDocument(j);
+					}
+				});
+		}
+	}
+	//
 	// Close all open documents and reset the active document index
 	// Called when the project is closed
 	//
@@ -220,6 +260,46 @@ namespace RetrodevGui {
 				bool tabOpen = true;
 				if (ImGui::BeginTabItem(doc->GetName().c_str(), &tabOpen, tabFlags)) {
 					renderedThisFrame = i;
+					//
+					// Tab context menu
+					//
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+					if (ImGui::BeginPopupContextItem()) {
+							if (ImGui::MenuItem("Close")) {
+							//
+							// Reuse the existing single-tab close path
+							//
+							tabOpen = false;
+						}
+						if (ImGui::MenuItem("Close All")) {
+							//
+							// Collect every open tab index
+							//
+							std::vector<int> all;
+							for (int k = 0; k < (int)documents.size(); k++)
+								all.push_back(k);
+							CloseDocumentSet(std::move(all));
+							ImGui::EndPopup();
+							ImGui::PopStyleVar();
+							ImGui::EndTabItem();
+							break;
+						}
+						if (ImGui::MenuItem("Close All But This")) {
+							//
+							// Collect every tab index except the current one
+							//
+							std::vector<int> others;
+							for (int k = 0; k < (int)documents.size(); k++)
+								if (k != i) others.push_back(k);
+							CloseDocumentSet(std::move(others));
+							ImGui::EndPopup();
+							ImGui::PopStyleVar();
+							ImGui::EndTabItem();
+							break;
+						}
+						ImGui::EndPopup();
+					}
+					ImGui::PopStyleVar();
 					if (ImGui::BeginChild("##DocContent", ImVec2(0.0f, 0.0f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
 						s_performingDocument = doc.get();
 						doc->Perform();

@@ -21,7 +21,10 @@
    ],
    "data": [
       {
-         "filePath": "out/screen.dsk"
+         "filePath": "out/screen.bin"
+      },
+      {
+         "filePath": "out/screen.pal"
       }
    ],
    "buildBitmaps": [
@@ -135,9 +138,9 @@
             }
          },
          "exportParams": {
-            "scriptPath": "../../out/bin/win/release/retro.dev.gui/sdk/amstrad.cpc/exporters/cpc.screen.as",
+            "scriptPath": "$(sdk)/amstrad.cpc/exporters/cpc.screen.as",
             "outputName": "out/screen.bin",
-            "scriptParams": "layout=screenmemory;exportPalette=true;paletteFormat=hardwareindex"
+            "scriptParams": "layout=screenmemory;exportPalette=false;paletteFormat=systemindex"
          }
       }
    ],

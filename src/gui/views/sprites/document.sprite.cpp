@@ -57,6 +57,7 @@ namespace RetrodevGui {
 		m_extractionZoomStateLeft.showInfo = true;
 		m_extractionZoomStateLeft.name = name + " (sprite)";
 		m_extractionZoomStateLeft.showPixelGrid = true;
+		m_extractionZoomStateLeft.snapToLogicalPixels = true;
 		m_extractionZoomStateRight.textureSize = texSize;
 		m_extractionZoomStateRight.maintainAspectRatio = true;
 		m_extractionZoomStateRight.showPixelGrid = true;
@@ -613,8 +614,27 @@ namespace RetrodevGui {
 				// Update selection coordinates in widget during dragging
 				//
 				if (SpriteExtractionWidget::IsSelectionModeActive()) {
-					SpriteExtractionWidget::SetSelection(static_cast<int>(m_extractionZoomStateLeft.selection.x), static_cast<int>(m_extractionZoomStateLeft.selection.y),
-														 static_cast<int>(m_extractionZoomStateLeft.selection.z), static_cast<int>(m_extractionZoomStateLeft.selection.w));
+					//
+					// Round float logical coords to nearest integer — raw mouse coords are sub-pixel
+					// fractional values; truncation would silently eat pixels (e.g. 2.7 -> 2)
+					//
+					int selX = static_cast<int>(std::lroundf(m_extractionZoomStateLeft.selection.x));
+					int selY = static_cast<int>(std::lroundf(m_extractionZoomStateLeft.selection.y));
+					int selW = static_cast<int>(std::lroundf(m_extractionZoomStateLeft.selection.z));
+					int selH = static_cast<int>(std::lroundf(m_extractionZoomStateLeft.selection.w));
+					//
+					// Snap selection size to encoding alignment multiples only when constraint is active
+					// Use ceiling rounding so the selection can grow freely to the next valid multiple
+					//
+					if (SpriteExtractionWidget::IsConstrainActive() && selW > 0 && selH > 0) {
+						int cw = SpriteExtractionWidget::GetConstraintW();
+						int ch = SpriteExtractionWidget::GetConstraintH();
+						if (cw > 1) selW = std::max(cw, ((selW + cw - 1) / cw) * cw);
+						if (ch > 1) selH = std::max(ch, ((selH + ch - 1) / ch) * ch);
+						m_extractionZoomStateLeft.selection.z = static_cast<float>(selW);
+						m_extractionZoomStateLeft.selection.w = static_cast<float>(selH);
+					}
+					SpriteExtractionWidget::SetSelection(selX, selY, selW, selH);
 				}
 			}
 			ImGui::EndChild();
@@ -645,6 +665,30 @@ namespace RetrodevGui {
 						m_extractionZoomStateLeft.selectionActive = true;
 					}
 				}
+				if (spriteListResult.spriteDeleted && spriteListResult.deletedSpriteIndex >= 0
+					&& spriteListResult.deletedSpriteIndex < static_cast<int>(spriteParams->Sprites.size())) {
+					spriteParams->Sprites.erase(spriteParams->Sprites.begin() + spriteListResult.deletedSpriteIndex);
+					//
+					// Clamp selection to valid range after removal
+					//
+					if (m_selectedSpriteIndex >= static_cast<int>(spriteParams->Sprites.size()))
+						m_selectedSpriteIndex = static_cast<int>(spriteParams->Sprites.size()) - 1;
+					//
+					// Re-extract from converted image with updated sprite list
+					//
+					if (m_spriteExtractor && m_converter) {
+						auto convertedImage = m_converter->GetConverted(params);
+						if (convertedImage)
+							m_spriteExtractor->Extract(convertedImage, spriteParams);
+					}
+					//
+					// Invalidate cached sprite preview
+					//
+					m_selectedSpritePreview    = nullptr;
+					m_cachedSpritePreviewIndex = -1;
+					SetModified(true);
+					RetrodevLib::Project::MarkAsModified();
+				}
 			}
 			ImGui::EndChild();
 		}
@@ -663,7 +707,8 @@ namespace RetrodevGui {
 			//
 			ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 			if (ImGui::CollapsingHeader("Sprite Extraction")) {
-				auto extractionResult = SpriteExtractionWidget::Render(spriteParams, m_spriteExtractor, m_selectedSpriteIndex);
+				RetrodevLib::Image::Size alignment = m_converter ? m_converter->GetEncodingAlignment(params) : RetrodevLib::Image::Size{1, 1};
+				auto extractionResult = SpriteExtractionWidget::Render(spriteParams, m_spriteExtractor, m_selectedSpriteIndex, alignment.Width, alignment.Height);
 				//
 				// Handle extraction parameter changes
 				//
@@ -694,7 +739,7 @@ namespace RetrodevGui {
 				// Check if Done button was clicked (selection mode deactivated but we have a valid selection)
 				//
 				static bool wasInSelectionMode = false;
-				if (wasInSelectionMode && !extractionResult.selectionModeActive) {
+				if (wasInSelectionMode && !extractionResult.selectionModeActive && !extractionResult.cancelRequested) {
 					//
 					// Read selection coordinates from the widget (not zoom state)
 					// This ensures we get the final selection values

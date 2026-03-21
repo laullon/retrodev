@@ -19,7 +19,9 @@ The toolbar at the top of the application window contains:
 
 Pressing **`F5`** is equivalent to clicking **Debug** — it builds the active item and launches the emulator on success.
 
-Before invoking the assembler, Retrodev saves any unsaved documents and project changes, then processes all declared dependencies in order, ensuring their output files are on disk. Build output, errors and warnings appear in the **Console** panel.
+<div align="center"><img src="../img/debugging.png" alt="Emulator launched at breakpoint after Debug" width="800" /></div>
+
+Before invoking the assembler
 
 ## Source tab
 

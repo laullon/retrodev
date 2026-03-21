@@ -304,6 +304,8 @@ Emulator configuration lives in the **Debug** tab of the Build project item — 
 
 Emulators can be passed media files (`.dsk`, `.cdt`), snapshots, and debug symbol definitions, among other options. Some options are common across all supported emulators; others are emulator-specific — for example, selecting the exact hardware model (such as Amstrad CPC 464 vs 664). Refer to the documentation for the emulator you are using for the full list of supported options.
 
+<div align="center"><img src="doc/img/debugging.png" alt="Emulator launched at breakpoint after Debug" width="800" /></div>
+
 ---
 
 ## 9. Contributing and Technical Information
@@ -404,7 +406,8 @@ The following ImGui widgets were adapted from community sources and in several c
 ### Images
 
 Graphical content generated with DALL-E (Retrodev Logo & co)
-Sample pixel art images taken from: https://opengameart.org/
+Example Graphics:
+Alien sprites and platform tiles: Mr.Capa: https://capasoft.eu
 
 ---
 

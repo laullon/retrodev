@@ -52,12 +52,13 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		//
 		Image::Size GetDefaultResolution(int targetMode) override;
 		//
-		// Returns the pixel size for the given parameters
-		// Mode 0: pixel is 4:2
-		// Mode 1: pixel is 2:2
-		// Mode 2: pixel is 1:2
+		// Returns the encoding alignment for the given parameters
+		// Mode 0: 1 byte = 2 pixels  -> width must be multiple of 2
+		// Mode 1: 1 byte = 4 pixels  -> width must be multiple of 4
+		// Mode 2: 1 byte = 8 pixels  -> width must be multiple of 8
+		// Height is always 1 (no row-packing constraint on CPC)
 		//
-		Image::Size GetPixelSize(const GFXParams* params) override;
+		Image::Size GetEncodingAlignment(const GFXParams* params) override;
 		//
 		// Get the original bitmap to be converted
 		//

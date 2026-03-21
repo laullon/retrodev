@@ -102,20 +102,21 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		return Image::Size{160, 200};
 	}
 	//
-	// Returns the pixel size for the given parameters
-	// Mode 0: pixel is 4:2
-	// Mode 1: pixel is 2:2
-	// Mode 2: pixel is 1:2
+	// Returns the encoding alignment for the given parameters
+	// Mode 0: 1 byte = 2 pixels  -> width must be multiple of 2
+	// Mode 1: 1 byte = 4 pixels  -> width must be multiple of 4
+	// Mode 2: 1 byte = 8 pixels  -> width must be multiple of 8
+	// Height is always 1 (no row-packing constraint on CPC)
 	//
-	Image::Size CPCBitmap::GetPixelSize(const GFXParams* params) {
+	Image::Size CPCBitmap::GetEncodingAlignment(const GFXParams* params) {
 		if (params == nullptr)
 			return Image::Size{1, 1};
 		if (params->SParams.TargetMode == CPCModes::Mode0)
-			return Image::Size{4, 2};
+			return Image::Size{2, 1};
 		else if (params->SParams.TargetMode == CPCModes::Mode1)
-			return Image::Size{2, 2};
+			return Image::Size{4, 1};
 		else if (params->SParams.TargetMode == CPCModes::Mode2)
-			return Image::Size{1, 2};
+			return Image::Size{8, 1};
 		return Image::Size{1, 1};
 	}
 	//

@@ -45,5 +45,21 @@ namespace RetrodevGui {
 		// Collapsing header states (persistent across frames)
 		//
 		static bool m_extractionOpen;
+		//
+		// Pixel-grid constraint state (persistent across frames)
+		//
+		static bool m_constrainToGrid;
+		static int m_constraintW;
+		static int m_constraintH;
+		//
+		// Previous constraint values — used to detect mode changes and reset the checkbox
+		//
+		static int m_prevConstraintW;
+		static int m_prevConstraintH;
+		//
+		// Previous values for direction-aware snapping
+		//
+		static int m_prevTileWidth;
+		static int m_prevTileHeight;
 	};
 } // namespace RetrodevGui

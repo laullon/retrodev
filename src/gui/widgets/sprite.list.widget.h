@@ -15,8 +15,10 @@
 namespace RetrodevGui {
 
 	struct SpriteListWidgetResult {
-		bool spriteSelected = false;
-		int selectedSpriteIndex = -1;
+		bool spriteSelected      = false;
+		int  selectedSpriteIndex = -1;
+		bool spriteDeleted       = false;
+		int  deletedSpriteIndex  = -1;
 	};
 
 	class SpriteListWidget {

@@ -16,6 +16,10 @@ To create a palette build item, right-click any folder or build item inside the 
 
 To remove a palette build item, right-click its entry in the Project panel and select **Remove palette**.
 
+## Renaming a palette build item
+
+At the top of the palette document an editable **Build Item Name** field shows the current name. Edit it and press **Enter** to rename the item. If the new name is already taken the rename is rejected and the field reverts to the existing name.
+
 ## Document layout
 
 The palette document is divided into three areas:
@@ -64,11 +68,11 @@ Each participant has three properties:
 
 | Role | Description |
 |---|---|
-| Always | Present on every frame and in every level. Its colours must be reserved in the base palette for this zone at all times. Typical use: HUD, status bar, player sprite. |
+| Always | Present in every zone and every level. Its colours are pooled globally across all zones so the same pen slots hold the same colours everywhere. Typical use: HUD, status bar, player sprite. |
+| Zone Always | Always present within this zone across all levels, but not shared across other zones. Its colours are added on top of the global Always base for this zone only. |
 | Level | Present only when a specific game level is active. Use the **Tag** field to name the level (e.g. `Level1`). Only graphics sharing the same tag are combined when solving that level. |
-| Screen Zone | Present only within a sub-region of the screen defined by the raster interrupt, but across multiple levels. Use the **Tag** field to name the sub-region (e.g. `Sky`, `Underground`). Note: this is a participant role tag, not the same as the palette zone's scanline range. |
 
-**Tag** — shown for Level and Screen Zone roles. A free-text string grouping participants that appear together. All participants with the same tag are solved together as a group on top of the zone base palette.
+**Tag** — shown only for the Level role. A free-text string grouping participants that appear together. All participants with the same tag are solved together as a group on top of the zone base palette. Click the **▼** arrow button next to the tag field to pick an existing tag from the current zone instead of typing it manually.
 
 To add a participant, click **+** in the Participants header inside the right panel. A new empty participant is added and selected. Set its Build Item, Role and Tag. To remove a participant, right-click it in the list and select **Remove**.
 
@@ -86,15 +90,26 @@ Clicking a thumbnail selects it. The selected thumbnail is highlighted with a bl
 
 ## The solver
 
+### Overflow method
+
+Next to the **Solve** and **Validate** buttons, the **Overflow** combo controls what happens when a set of participants has more unique colours than the hardware pen budget allows:
+
+| Method | Description |
+|---|---|
+| Hard Cap | Truncate the union colour list at the pen limit. Priority order (Always > Zone Always > Level) ensures the most important colours survive. Dropped colours are remapped to the nearest surviving entry. |
+| Soft Cap | For each overflow colour, find the nearest accepted entry and replace it with the system colour closest to their 50/50 RGB midpoint. Packs more perceptual variety into fewer pens at some cost to accuracy. |
+| Weighted Blend | Like Soft Cap but the blend is 67% accepted + 33% overflow. Accepted colours shift only slightly toward overflow neighbours, preserving dominant colour fidelity better while still gaining some coverage. |
+| Median | Cluster each overflow colour with the accepted entry it is nearest to, then replace the accepted entry with the RGB centroid of the whole cluster. Multiple overflow colours hitting the same accepted entry are absorbed equally, spreading the compromise evenly. |
+
 ### Three-pass solve
 
-Clicking **Solve** runs the solver across all zones and all participants. The solve does not modify any build item — it only produces a result in memory.
+Clicking **Solve** runs the solver across all zones and all participants.
 
 The solver operates in three passes:
 
 **Pass 1 — global Always base.** All `Always` participants from every zone are quantized together into a single base palette. This ensures the same pen slots hold the same hardware colours in every zone and every level. Always participants are the most important and receive priority in the pen budget.
 
-**Pass 2 — zone base.** For each zone, `Screen Zone` participants are fitted on top of the global Always pens. This produces the stable zone base palette: the set of pens that are occupied regardless of which level is active.
+**Pass 2 — zone base.** For each zone, `Zone Always` participants are fitted on top of the global Always pens. This produces the stable zone base palette: the set of pens that are occupied regardless of which level is active.
 
 **Pass 3 — level tags.** For each zone, for each distinct Level tag, the `Level` participants with that tag are fitted on top of the zone base palette. Each (zone × tag) combination produces one independent solution. Level participants only consume pens beyond what the base already uses.
 
@@ -102,7 +117,9 @@ The solve never modifies the project. All palette work is done on temporary conv
 
 ### Solution result list
 
-After solving, the right bottom panel shows a list of all (zone × tag) entries. Each entry is colour-coded:
+After solving, a summary line appears above the result list showing whether all zones and tags fit within their pen budgets (green) or whether at least one combination overflowed (red).
+
+Below the summary the right bottom panel shows a list of all (zone × tag) entries. Each entry is colour-coded:
 
 - **Green** — all participants for this combination fit within the pen budget.
 - **Red** — one or more participants overflowed the pen budget.
@@ -118,7 +135,15 @@ Per-participant result icons:
 | ? | Missing / Load Failed | The build item was not found in the project or its source image could not be loaded. |
 | − | Skipped | The participant does not apply to this solve context (e.g. a Level participant whose tag does not match). |
 
-For level and screen zone solutions, the result list first shows inherited base participants (Always and Screen Zone), then the participants specific to this tag.
+For level solutions, the result list first shows inherited base participants under an **Inherited:** heading (Always and Zone Always from the base pass), then the participants specific to this tag under a **This level:** heading.
+
+### Overflow remap strip
+
+When overflow colours exist for a selected solution, a strip of colour swatches appears below the per-participant results, one swatch per overflow colour. Hovering a swatch shows a tooltip with the overflow colour's RGB values, the nearest accepted pen slot, and how that slot was updated (or left unchanged) by the chosen overflow method.
+
+### Solved palette strip
+
+Below the per-participant results (and the overflow remap strip if present), a compact row of colour swatches shows the final solved palette — one swatch per pen slot. Occupied slots show their solved hardware colour; free slots appear as dark grey. Hovering a swatch shows the pen number, system colour index and RGB values.
 
 ### Validate
 
@@ -133,7 +158,7 @@ Validate is only available after a successful solve. If any participating build 
 1. Create a **Palette** build item and open it.
 2. Select **Target System** and **Palette Type**.
 3. Add one or more **zones** with appropriate scanline ranges and screen modes.
-4. For each zone, add **participants** (bitmaps, tilesets, sprites) with their roles and tags.
+4. For each zone, add **participants** (bitmaps, tilesets, sprites) with their roles. Level participants also require a tag.
 5. Click **Solve** and inspect the result list. Check that all entries are green.
 6. If there are overflows, reduce the number of colours in the affected graphics (via their own conversion settings) or reorganise participants into different zones.
 7. Once the solve is clean, click **Validate** to write the assignments back.

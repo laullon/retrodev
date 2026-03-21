@@ -109,57 +109,57 @@ namespace RetrodevGui {
 		 "computer software. It replaces the classic fragile toolchain (batch files, scattered "
 		 "converters, command-line assemblers) with a single application that handles the full "
 		 "workflow:\n\n"
-		 "  Graphics conversion   Import any modern image and convert it to the native pixel and palette format of the target machine.\n"
-		 "  Tile & sprite extract  Slice converted images into tiles or sprites.\n"
-		 "  Tile map editor        Paint multi-layer scrolling maps with parallax preview.\n"
-		 "  Palette solver         Find a shared hardware palette for all your graphics.\n"
-		 "  Integrated editor      Write Z80 assembly and AngelScript without leaving the app.\n"
-		 "  Scripted export        Write AngelScript scripts that produce exact binary output.\n"
-		 "  Project workflow       Everything lives in a single .retrodev project file.\n\n"
-		 "Supported target systems:\n\n"
-		 "  Amstrad CPC / CPC+   Full support\n"
-		 "  ZX Spectrum          Planned\n"
-		 "  Commodore 64         Planned\n"
-		 "  MSX                  Planned"},
+		 "  `Graphics conversion`   Import any modern image and convert it to the native pixel and palette format of the target machine.\n"
+		 "  `Tile & sprite extract`  Slice converted images into tiles or sprites.\n"
+		 "  `Tile map editor`        Paint multi-layer scrolling maps with parallax preview.\n"
+		 "  `Palette solver`         Find a shared hardware palette for all your graphics.\n"
+		 "  `Integrated editor`      Write Z80 assembly and AngelScript without leaving the app.\n"
+		 "  `Scripted export`        Write AngelScript scripts that produce exact binary output.\n"
+		 "  `Project workflow`       Everything lives in a single .retrodev project file.\n\n"
+		 "`Supported target systems:`\n\n"
+		 "  `Amstrad CPC / CPC+`   Full support\n"
+		 "  `ZX Spectrum`          Planned\n"
+		 "  `Commodore 64`         Planned\n"
+		 "  `MSX`                  Planned"},
 
 		{SEC_GETTINGSTARTED, "Projects",
 		 "A Retrodev project (.retrodev) stores all build item configuration and asset references "
 		 "in a single file. The project directory and its files are yours to organise freely — "
 		 "Retrodev adds nothing to your folder structure.\n\n"
-		 "File -> New Project     Create a new project and choose a save path.\n"
-		 "File -> Open Project    Load an existing .retrodev file from disk.\n"
-		 "File -> Save Project    Save all changes (Ctrl+S).\n"
-		 "File -> Close Project   Close the current project.\n\n"
-		 "Recent projects appear in the File -> Recent submenu.\n\n"
+		 "`File -> New Project`     Create a new project and choose a save path.\n"
+		 "`File -> Open Project`    Load an existing .retrodev file from disk.\n"
+		 "`File -> Save Project`    Save all changes (`Ctrl+S`).\n"
+		 "`File -> Close Project`   Close the current project.\n\n"
+		 "Recent projects appear in the `File -> Recent` submenu.\n\n"
 		 "Installation requires no installer. Unzip the release archive and run retrodev.exe — "
 		 "all dependencies are bundled."},
 
 		{SEC_GETTINGSTARTED, "Project Layout",
 		 "When a project is open, the Project panel shows three independent sections:\n\n"
-		 "SDK\n"
+		 "`SDK`\n"
 		 "  Read-only view of the sdk/ folder that ships alongside retrodev.exe. It contains "
 		 "Z80 macros, reusable routines and AngelScript helpers shared across all projects. "
 		 "Paths into the SDK are stored with a $(sdk)/ prefix and resolved at build time "
 		 "regardless of where the SDK folder actually lives on your machine.\n\n"
-		 "Project\n"
+		 "`Project`\n"
 		 "  Entirely virtual — stores what Retrodev should *do* with your files: bitmap "
 		 "conversions, tile extractions, sprite extractions, maps, builds and palettes. "
 		 "Nothing here corresponds directly to files on disk. Items can be organised into "
 		 "virtual folders by drag-and-drop; the arrangement is cosmetic only.\n\n"
-		 "Files\n"
+		 "`Files`\n"
 		 "  File view rooted at the project folder. These are your raw input files. "
 		 "Right-click any file to create a project item with that file already set as source. "
 		 "Double-click to open files in the appropriate editor or viewer."},
 
 		{SEC_GETTINGSTARTED, "Files Panel",
 		 "The Files panel shows the project directory tree. Files open as follows:\n\n"
-		 "  .png / .bmp / .jpg / .tga   Image viewer / pixel paint editor\n"
-		 "  .asm / .z80                 Z80 assembly editor\n"
-		 "  .as                         AngelScript editor\n"
+		 "  `.png / .bmp / .jpg / .tga`   Image viewer / pixel paint editor\n"
+		 "  `.asm / .z80`                 Z80 assembly editor\n"
+		 "  `.as`                         AngelScript editor\n"
 		 "  Anything else               Hex / data viewer\n\n"
 		 "Right-click anywhere in the panel to create a new blank image, a new text "
 		 "document or a new folder directly in the project directory.\n\n"
-		 "Right-click an image file to add a Bitmap, Tiles or Sprites build item with "
+		 "Right-click an image file to add a `Bitmap`, `Tiles` or `Sprites` build item with "
 		 "that file already set as the source — no manual path entry required."},
 
 		//
@@ -170,126 +170,126 @@ namespace RetrodevGui {
 		 "of the target system. The editor shows the original image on the left and a live "
 		 "hardware-converted preview on the right. Every parameter change updates the preview "
 		 "automatically.\n\n"
-		 "To create: right-click an image in the Files panel and select Add bitmap conversion.\n"
-		 "To remove: right-click the entry in the Build section and select Remove.\n\n"
-		 "Preview controls (both panels):\n\n"
-		 "  Zoom       Mouse wheel over the panel.\n"
-		 "  Pan        Click and drag.\n"
-		 "  Reset      Double-click to fit.\n"
-		 "  Pixel grid Appears automatically at high zoom.\n"
-		 "  Info bar   Shows image name, native resolution, zoom and cursor position.\n\n"
-		 "The converted panel has two extra display options (preview only, not in output):\n\n"
-		 "  Aspect     Applies hardware pixel aspect ratio correction.\n"
-		 "  Scanlines  Overlays a CRT scanline effect (only when Aspect is enabled)."},
+		 "To create: right-click an image in the Files panel and select `Add bitmap conversion`.\n"
+		 "To remove: right-click the entry in the Build section and select `Remove`.\n\n"
+		 "`Preview controls (both panels):`\n\n"
+		 "  `Zoom`       Mouse wheel over the panel.\n"
+		 "  `Pan`        Click and drag.\n"
+		 "  `Reset`      Double-click to fit.\n"
+		 "  `Pixel grid` Appears automatically at high zoom.\n"
+		 "  `Info bar`   Shows image name, native resolution, zoom and cursor position.\n\n"
+		 "`The converted panel has two extra display options (preview only, not in output):`\n\n"
+		 "  `Aspect`     Applies hardware pixel aspect ratio correction.\n"
+		 "  `Scanlines`  Overlays a CRT scanline effect (only when Aspect is enabled)."},
 
 		{SEC_PROJECTITEMS, "Conversion Pipeline",
 		 "The conversion runs in a fixed order:\n\n"
-		 "  1. Resize        Scale the source image to the target resolution.\n"
-		 "  2. Colour Correction  Per-pixel adjustments before palette matching.\n"
-		 "  3. Quantization  Map each pixel to the closest hardware colour.\n"
-		 "  4. Dithering     Distribute quantization error to neighbouring pixels.\n\n"
+		 "  `1. Resize`          Scale the source image to the target resolution.\n"
+		 "  `2. Colour Correction`  Per-pixel adjustments before palette matching.\n"
+		 "  `3. Quantization`    Map each pixel to the closest hardware colour.\n"
+		 "  `4. Dithering`       Distribute quantization error to neighbouring pixels.\n\n"
 		 "Understanding this order matters when tuning: colour correction affects what "
-		  "the quantizer sees, and both steps operate on the already-resized image at "
-		  "native target resolution.\n\n"
-		  "Target system and mode:\n\n"
-		  "Selects the hardware to convert for. The choice of system determines which video "
-		  "modes, resolutions and palette types are available. The screen mode controls both "
-		  "the horizontal resolution and the maximum number of colours the hardware can "
-		  "display at once.\n\n"
-		  "Resolution presets:\n\n"
-		  "  Normal    Standard screen area for the selected mode.\n"
-		  "  Overscan  Extended hardware area beyond the standard boundary.\n"
-		  "  Custom    Arbitrary target dimensions.\n"
-		  "  Original  Uses the source image dimensions, no rescaling.\n\n"
-		  "Palette type selects which hardware palette the converted image will target. "
-		  "The available types depend on the selected system — a system may expose more "
-		  "than one when its hardware provides distinct colour sets for different purposes. "
-		  "Changing the palette type invalidates the current palette configuration."},
+		 "the quantizer sees, and both steps operate on the already-resized image at "
+		 "native target resolution.\n\n"
+		 "`Target system and mode:`\n\n"
+		 "Selects the hardware to convert for. The choice of system determines which video "
+		 "modes, resolutions and palette types are available. The screen mode controls both "
+		 "the horizontal resolution and the maximum number of colours the hardware can "
+		 "display at once.\n\n"
+		 "`Resolution presets:`\n\n"
+		 "  `Normal`    Standard screen area for the selected mode.\n"
+		 "  `Overscan`  Extended hardware area beyond the standard boundary.\n"
+		 "  `Custom`    Arbitrary target dimensions.\n"
+		 "  `Original`  Uses the source image dimensions, no rescaling.\n\n"
+		 "`Palette type` selects which hardware palette the converted image will target. "
+		 "The available types depend on the selected system — a system may expose more "
+		 "than one when its hardware provides distinct colour sets for different purposes. "
+		 "Changing the palette type invalidates the current palette configuration."},
 
 		{SEC_PROJECTITEMS, "Conversion Parameters",
 		 "Quantization settings:\n\n"
-		 "  Smoothness          Blend each pixel with its four neighbours before matching "
+		 "  `Smoothness`          Blend each pixel with its four neighbours before matching "
 		 "(reduces high-frequency noise, softens hard edges).\n"
-		 "  Sort palette        Reorder pen slots for consistent palette ordering.\n"
-		 "  Reduction method    Higher Frequencies: fills pens by most-common colour. "
-		 "Higher Distances: spreads pens across colour space.\n"
-		 "  Reduction before dithering  When on, colour reduction runs before dithering.\n"
-		 "  Use source palette  Copy palette entries from a paletised PNG as-is.\n\n"
+		 "  `Sort palette`        Reorder pen slots for consistent palette ordering.\n"
+		 "  `Reduction method`    `Higher Frequencies`: fills pens by most-common colour. "
+		 "`Higher Distances`: spreads pens across colour space.\n"
+		 "  `Reduction before dithering`  When on, colour reduction runs before dithering.\n"
+		 "  `Use source palette`  Copy palette entries from a paletised PNG as-is.\n\n"
 		 "Dithering methods (selection):\n\n"
-		 "  None                No dithering — sharpest result, most obvious banding.\n"
-		 "  Floyd-Steinberg     Classic error diffusion, best for photographic sources.\n"
-		 "  Bayer 2 (4x4)       Regular dot pattern, good general-purpose ordered dither.\n"
-		 "  ZigZag 2 (4x3)      Non-square diagonal matrix, suits wide-pixel modes.\n"
-		 "  Checkerboard Heavy  Strong alternating pattern, coarse texture.\n"
+		 "  `None`                No dithering — sharpest result, most obvious banding.\n"
+		 "  `Floyd-Steinberg`     Classic error diffusion, best for photographic sources.\n"
+		 "  `Bayer 2 (4x4)`       Regular dot pattern, good general-purpose ordered dither.\n"
+		 "  `ZigZag 2 (4x3)`      Non-square diagonal matrix, suits wide-pixel modes.\n"
+		 "  `Checkerboard Heavy`  Strong alternating pattern, coarse texture.\n"
 		 "  (+ 20 further methods — see the full documentation)\n\n"
-		 "Dithering strength: 0% to 400%. Error diffusion can be layered on top of any "
-		 "matrix method. Pattern mode alternates scanline pairs for hardware-style "
+		 "Dithering strength: 0% to 400%%. Error diffusion can be layered on top of any "
+		 "matrix method. `Pattern mode` alternates scanline pairs for hardware-style "
 		 "interlaced palette mixing."},
 
 		{SEC_PROJECTITEMS, "Palette Controls",
 		 "The Palette panel (bottom of the left area) shows one slot per hardware pen.\n\n"
-		 "Lock\n"
+		 "`Lock`\n"
 		 "  A locked pen keeps its assigned hardware colour. The quantizer may still use "
 		 "it but will not reassign it. Use this to guarantee a fixed pen — e.g. the "
 		 "background colour.\n\n"
-		 "Enable / Disable\n"
+		 "`Enable / Disable`\n"
 		 "  A disabled pen is completely excluded from quantization. Use this to reserve "
 		 "pens for colours loaded at runtime by your program.\n\n"
-		 "Colour assignment\n"
+		 "`Colour assignment`\n"
 		 "  Click a pen to assign a specific hardware colour manually. A pen with a "
 		 "manually assigned colour behaves as locked.\n\n"
-		 "Transparent colour\n"
+		 "`Transparent colour`\n"
 		 "  When enabled, pixels matching a chosen RGB colour (within a configurable "
 		 "tolerance) are marked transparent before conversion. Useful for source images "
 		 "that use 'magic pink' or a similar chroma-key colour. For RGBA images with "
-		 "a real alpha channel, pixels with alpha=0 are automatically skipped — no "
+		 "a real alpha channel, pixels with `alpha=0` are automatically skipped — no "
 		 "manual transparent colour setting is needed."},
 
 		{SEC_PROJECTITEMS, "Resize & Colour Correction",
 		 "Resize scale modes:\n\n"
-		 "  Fit          Stretch to exactly fill target (does not preserve aspect ratio).\n"
-		 "  Smallest     Scale uniformly to fit inside the target rectangle (letterbox).\n"
-		 "  Largest      Scale uniformly to fill the target rectangle, crop the overflow.\n"
-		 "  Custom       Sample a user-defined rectangle from the source.\n"
-		 "  Original     Copy at 1:1 pixel scale with no resampling.\n\n"
-		 "Interpolation modes: Nearest Neighbor, Low, Bilinear, High Bilinear, Bicubic, "
-		 "High Bicubic, High. Nearest Neighbor is best for indexed-colour pixel art.\n\n"
+		 "  `Fit`          Stretch to exactly fill target (does not preserve aspect ratio).\n"
+		 "  `Smallest`     Scale uniformly to fit inside the target rectangle (letterbox).\n"
+		 "  `Largest`      Scale uniformly to fill the target rectangle, crop the overflow.\n"
+		 "  `Custom`       Sample a user-defined rectangle from the source.\n"
+		 "  `Original`     Copy at 1:1 pixel scale with no resampling.\n\n"
+		 "Interpolation modes: `Nearest Neighbor`, `Low`, `Bilinear`, `High Bilinear`, `Bicubic`, "
+		 "`High Bicubic`, `High`. Nearest Neighbor is best for indexed-colour pixel art.\n\n"
 		 "Colour correction (applied in order after resize):\n\n"
-		 "  Red / Green / Blue    Per-channel multipliers (100 = unchanged).\n"
-		 "  Contrast              Scales luminance around the midpoint.\n"
-		 "  Brightness            Scales overall luminosity.\n"
-		 "  Saturation            0% = greyscale, 100% = unchanged, >100% = vivid.\n"
-		 "  Colour bits           Reduces bit depth per channel (24/12/9/6 bits total).\n"
-		 "  Palette reduction lower limit  OR mask raising the minimum per-channel value.\n"
-		 "  Palette reduction upper limit  AND mask clipping the maximum per-channel value."},
+		 "  `Red / Green / Blue`    Per-channel multipliers (100 = unchanged).\n"
+		 "  `Contrast`              Scales luminance around the midpoint.\n"
+		 "  `Brightness`            Scales overall luminosity.\n"
+		 "  `Saturation`            0% = greyscale, 100% = unchanged, >100% = vivid.\n"
+		 "  `Colour bits`           Reduces bit depth per channel (24/12/9/6 bits total).\n"
+		 "  `Palette reduction lower limit`  OR mask raising the minimum per-channel value.\n"
+		 "  `Palette reduction upper limit`  AND mask clipping the maximum per-channel value."},
 
 		{SEC_PROJECTITEMS, "Quantization & Dithering",
 		 "Quantization maps each pixel to the closest hardware colour and builds a frequency "
 		 "histogram for the colour reduction step.\n\n"
 		 "Reduction methods:\n\n"
-		 "  Higher Frequencies   Fills each pen with the most-common colour in the image "
+		 "  `Higher Frequencies`   Fills each pen with the most-common colour in the image "
 		 "histogram, in descending order of frequency.\n"
-		 "  Higher Distances     Assigns first by frequency, then alternates frequency and "
+		 "  `Higher Distances`     Assigns first by frequency, then alternates frequency and "
 		 "maximum colour distance. Spreads pens across the colour space.\n\n"
 		 "Dithering distributes quantization error to neighbouring pixels. Methods:\n\n"
-		 "  None                 No dithering.\n"
-		 "  Floyd-Steinberg      Error diffusion (7/16, 3/16, 5/16, 1/16 weights).\n"
-		 "  Bayer 1/2/3          Ordered Bayer matrices (2x2, 4x4 and variant 4x4).\n"
-		 "  Ordered 1–4          Sequential ordered matrices (2x2, 3x3, 4x4, 8x8).\n"
-		 "  ZigZag 1/2/3         Diagonal scatter matrices (3x3, 4x3, 5x4).\n"
-		 "  Checkerboard Heavy / Light / Alternate\n"
-		 "  Diagonal Wave        Horizontal stripe with diagonal offset.\n"
-		 "  Sparse Vertical / Horizontal\n"
-		 "  Cross Pattern / Cluster Dots\n"
-		 "  Gradient Horizontal / Diagonal\n\n"
+		 "  `None`                 No dithering.\n"
+		 "  `Floyd-Steinberg`      Error diffusion (7/16, 3/16, 5/16, 1/16 weights).\n"
+		 "  `Bayer 1/2/3`          Ordered Bayer matrices (2x2, 4x4 and variant 4x4).\n"
+		 "  `Ordered 1-4`          Sequential ordered matrices (2x2, 3x3, 4x4, 8x8).\n"
+		 "  `ZigZag 1/2/3`         Diagonal scatter matrices (3x3, 4x3, 5x4).\n"
+		 "  `Checkerboard Heavy / Light / Alternate`\n"
+		 "  `Diagonal Wave`        Horizontal stripe with diagonal offset.\n"
+		 "  `Sparse Vertical / Horizontal`\n"
+		 "  `Cross Pattern / Cluster Dots`\n"
+		 "  `Gradient Horizontal / Diagonal`\n\n"
 		 "Strength: 0% to 400%. Error diffusion can be layered on any matrix method."},
 
 		{SEC_PROJECTITEMS, "Bitmap Export",
 		 "To write converted data to disk, attach an AngelScript export script via the "
 		 "Export section of the build item. The script receives:\n\n"
-		 "  Image@                  The converted image (pixel access via GetPixelColor).\n"
-		 "  outputPath              The configured output file path.\n"
-		 "  BitmapExportContext@    Native width/height, palette, target system/mode, and all declared @param values.\n\n"
+		 "  `Image@`                  The converted image (pixel access via `GetPixelColor`).\n"
+		 "  `outputPath`              The configured output file path.\n"
+		 "  `BitmapExportContext@`    Native width/height, palette, target system/mode, and all declared `@param` values.\n\n"
 		 "The script has full control over binary layout, headers and compression."},
 
 		//
@@ -299,28 +299,27 @@ namespace RetrodevGui {
 		 "A Tiles build item converts a source image and then slices the converted result "
 		 "into a regular grid of tiles. Each tile can be individually previewed and "
 		 "selectively excluded from export.\n\n"
-		 "To create: right-click an image in the Files panel and select Add tileset "
-		 "conversion.\n\n"
-		 "Document tabs:\n\n"
-		 "  Conversion        Identical to the Bitmap editor — same parameters and preview.\n"
-		 "  Tile Extraction   Define the grid and manage individual tiles.\n\n"
-		 "Tile Extraction tab layout:\n\n"
-		 "  Left top     Dual viewer — full converted image (left), selected tile (right).\n"
-		 "  Left bottom  Tile list — 64x64 px thumbnails in a scrollable grid.\n"
-		 "  Right        Grid parameters and export widget."},
+		 "To create: right-click an image in the Files panel and select `Add tileset conversion`.\n\n"
+		 "`Document tabs:`\n\n"
+		 "  `Conversion`        Identical to the Bitmap editor — same parameters and preview.\n"
+		 "  `Tile Extraction`   Define the grid and manage individual tiles.\n\n"
+		 "`Tile Extraction tab layout:`\n\n"
+		 "  `Left top`     Dual viewer — full converted image (left), selected tile (right).\n"
+		 "  `Left bottom`  Tile list — 64x64 px thumbnails in a scrollable grid.\n"
+		 "  `Right`        Grid parameters and export widget."},
 
 		{SEC_PROJECTITEMS, "Tile Extraction Parameters",
 		 "All parameters are in the Tile Extraction collapsible section:\n\n"
-		 "  Tile Width / Height    Size of each tile in pixels (minimum 1).\n"
-		 "  Offset X / Y           Pixel offset from the image edge before the grid starts.\n"
-		 "  Padding X / Y          Gap in pixels between adjacent tiles.\n\n"
-		 "Below the parameters the panel shows:\n\n"
-		 "  Tiles Extracted   Current tile count.\n"
-		 "  Grid Size         Computed grid dimensions (columns x rows).\n\n"
-		 "Click Extract Tiles to re-run conversion and re-slice the image. Extraction "
+		 "  `Tile Width / Height`    Size of each tile in pixels (minimum 1).\n"
+		 "  `Offset X / Y`           Pixel offset from the image edge before the grid starts.\n"
+		 "  `Padding X / Y`          Gap in pixels between adjacent tiles.\n\n"
+		 "`Below the parameters the panel shows:`\n\n"
+		 "  `Tiles Extracted`   Current tile count.\n"
+		 "  `Grid Size`         Computed grid dimensions (columns x rows).\n\n"
+		 "Click `Extract Tiles` to re-run conversion and re-slice the image. Extraction "
 		 "must be triggered manually after changing parameters.\n\n"
-		 "Deleting and restoring tiles:\n\n"
-		 "Right-click a tile thumbnail to toggle Delete / Undelete. Deleted tiles appear "
+		 "`Deleting and restoring tiles:`\n\n"
+		 "Right-click a tile thumbnail to toggle `Delete` / `Undelete`. Deleted tiles appear "
 		 "as a dark red placeholder with a red cross. They remain in the list but are "
 		 "excluded from export. Changing any grid parameter clears the deleted-tiles list.\n\n"
 		 "Tile extraction always operates on the native-resolution converted image."},
@@ -328,11 +327,11 @@ namespace RetrodevGui {
 		{SEC_PROJECTITEMS, "Tile Export",
 		 "Extracted tiles and the deleted-tiles list are available to export scripts "
 		 "via the TilesetExportContext API:\n\n"
-		 "  GetTileCount()          Number of extracted (non-deleted) tiles.\n"
-		 "  GetTileWidth() / GetTileHeight()  Tile dimensions in pixels.\n"
-		 "  GetTile(tileIdx)        Returns an Image@ for the tile.\n"
-		 "  GetPalette()            Returns the Palette@ for per-pixel pen lookup.\n"
-		 "  GetParam(key)           Value of a declared @param.\n\n"
+		 "  `GetTileCount()`          Number of extracted (non-deleted) tiles.\n"
+		 "  `GetTileWidth()` / `GetTileHeight()`  Tile dimensions in pixels.\n"
+		 "  `GetTile(tileIdx)`        Returns an `Image@` for the tile.\n"
+		 "  `GetPalette()`            Returns the `Palette@` for per-pixel pen lookup.\n"
+		 "  `GetParam(key)`           Value of a declared `@param`.\n\n"
 		 "Once extracted, the tileset is also available as a source in the Map editor."},
 
 		//
@@ -340,43 +339,42 @@ namespace RetrodevGui {
 		//
 		{SEC_PROJECTITEMS, "Sprite Extraction",
 		 "A Sprites build item combines a full bitmap conversion with a sprite region "
-		 "definition step. The editor has two tabs:\n\n"
-		 "  Conversion         Identical to the Bitmap editor.\n"
-		 "  Sprite Extraction  Define, preview and manage individual sprite regions.\n\n"
-		 "To create: right-click an image in the Files panel and select Add sprites "
-		 "conversion.\n\n"
-		 "Sprite Extraction tab layout:\n\n"
-		 "  Left top     Dual viewer — full converted image (left), selected sprite (right). Each panel has independent Aspect and Scanlines controls.\n"
-		 "  Left bottom  Sprite list — thumbnail grid of all defined sprites.\n"
-		 "  Right        Sprite Extraction section and Export section."},
+		 "definition step. `The editor has two tabs:`\n\n"
+		 "  `Conversion`         Identical to the Bitmap editor.\n"
+		 "  `Sprite Extraction`  Define, preview and manage individual sprite regions.\n\n"
+		 "To create: right-click an image in the Files panel and select `Add sprites conversion`.\n\n"
+		 "`Sprite Extraction tab layout:`\n\n"
+		 "  `Left top`     Dual viewer — full converted image (left), selected sprite (right). Each panel has independent `Aspect` and `Scanlines` controls.\n"
+		 "  `Left bottom`  Sprite list — thumbnail grid of all defined sprites.\n"
+		 "  `Right`        Sprite Extraction section and Export section."},
 
 		{SEC_PROJECTITEMS, "Defining & Editing Sprites",
-		 "Adding a sprite:\n\n"
-		 "  1. Click Add Sprite in the tooling panel to enter selection mode.\n"
+		 "`Adding a sprite:`\n\n"
+		 "  1. Click `Add Sprite` in the tooling panel to enter selection mode.\n"
 		 "  2. Click and drag on the converted image to draw a rectangular region.\n"
-		 "  3. Enter a name in the Sprite Name field (auto-generated by default).\n"
-		 "  4. Click Done to confirm. Click Cancel to discard.\n\n"
+		 "  3. Enter a name in the `Sprite Name` field (auto-generated by default).\n"
+		 "  4. Click `Done` to confirm. Click `Cancel` to discard.\n\n"
 		 "All sprite regions are cut from the native-resolution converted image, not from "
 		 "the original source or the aspect-corrected preview.\n\n"
-		 "Editing a selected sprite:\n\n"
-		 "  X / Y Position   Top-left corner of the region (minimum 0).\n"
-		 "  Width / Height   Region size in pixels (minimum 1).\n"
-		 "  Name             Label used to identify the sprite in export scripts.\n\n"
-		 "Any change immediately re-runs extraction. Click Delete Sprite to remove the "
+		 "`Editing a selected sprite:`\n\n"
+		 "  `X / Y Position`   Top-left corner of the region (minimum 0).\n"
+		 "  `Width / Height`   Region size in pixels (minimum 1).\n"
+		 "  `Name`             Label used to identify the sprite in export scripts.\n\n"
+		 "Any change immediately re-runs extraction. Click `Delete Sprite` to remove the "
 		 "selected sprite.\n\n"
-		 "Pixel painting:\n\n"
+		 "`Pixel painting:`\n\n"
 		 "Select a colour from the palette list in the painting widget, then click a pixel "
 		 "in the sprite preview to paint it. Changes persist with the project."},
 
 		{SEC_PROJECTITEMS, "Sprite Export",
 		 "Sprites are available to export scripts via the SpriteExportContext API:\n\n"
-		 "  GetSpriteCount()          Number of extracted sprites.\n"
-		 "  GetSpriteWidth(idx)       Width in pixels.\n"
-		 "  GetSpriteHeight(idx)      Height in pixels.\n"
-		 "  GetSpriteName(idx)        Name label.\n"
-		 "  GetSprite(idx)            Returns an Image@ for the sprite.\n"
-		 "  GetPalette()              Returns the Palette@ for pen lookup.\n"
-		 "  GetParam(key)             Value of a declared @param."},
+		 "  `GetSpriteCount()`          Number of extracted sprites.\n"
+		 "  `GetSpriteWidth(idx)`       Width in pixels.\n"
+		 "  `GetSpriteHeight(idx)`      Height in pixels.\n"
+		 "  `GetSpriteName(idx)`        Name label.\n"
+		 "  `GetSprite(idx)`            Returns an `Image@` for the sprite.\n"
+		 "  `GetPalette()`              Returns the `Palette@` for pen lookup.\n"
+		 "  `GetParam(key)`             Value of a declared `@param`."},
 
 		//
 		// ── Project Items / Maps ─────────────────────────────────────────────────
@@ -386,68 +384,68 @@ namespace RetrodevGui {
 		 "independent parallax scroll speeds. Maps store only tile slot and index "
 		 "references — they have no dependency on any particular hardware or colour mode. "
 		 "Aspect ratio preview is a display aid only.\n\n"
-		 "To create: right-click inside the Project section and select New Map…\n\n"
-		 "Document layout:\n\n"
-		 "  Left — canvas area    Toolbar strip, tile canvas, X/Y scroll controls.\n"
-		 "  Right — tooling panel Name field, export widget, and collapsible sections: Layers, Dimensions, Viewport, Tilesets, Groups, Tiles.\n\n"
-		 "Toolbar controls:\n\n"
-		 "  Show viewable area   Toggle viewport overlay (blue shading outside viewport).\n"
-		 "  Show grid            Toggle tile cell border lines.\n"
-		 "  System / Mode        Select target for aspect-ratio-correct canvas preview.\n\n"
+		 "To create: right-click inside the Project section and select `New Map…`\n\n"
+		 "`Document layout:`\n\n"
+		 "  `Left — canvas area`    Toolbar strip, tile canvas, X/Y scroll controls.\n"
+		 "  `Right — tooling panel` Name field, export widget, and collapsible sections: Layers, Dimensions, Viewport, Tilesets, Groups, Tiles.\n\n"
+		 "`Toolbar controls:`\n\n"
+		 "  `Show viewable area`   Toggle viewport overlay (blue shading outside viewport).\n"
+		 "  `Show grid`            Toggle tile cell border lines.\n"
+		 "  `System / Mode`        Select target for aspect-ratio-correct canvas preview.\n\n"
 		 "Painting: left-click / drag to paint, right-click to erase. All operations "
 		 "target the editing layer only."},
 
 		{SEC_PROJECTITEMS, "Map Concepts",
-		 "Layers\n\n"
+		 "`Layers`\n\n"
 		 "A map can have any number of layers rendered bottom-to-top. Each layer has its "
 		 "own tile matrix and dimensions — layers do not need to share the same size.\n\n"
-		 "  Name           Label shown in the Layers panel.\n"
-		 "  Width / Height Dimensions in tiles.\n"
-		 "  Speed          Scroll speed in tiles per camera step. 1.0 = foreground, <1.0 = "
+		 "  `Name`           Label shown in the Layers panel.\n"
+		 "  `Width / Height` Dimensions in tiles.\n"
+		 "  `Speed`          Scroll speed in tiles per camera step. 1.0 = foreground, <1.0 = "
 		 "parallax background, >= viewport width = fixed/room layer.\n"
-		 "  Offset X / Y   Positional offset in tiles (fractional values allowed).\n"
-		 "  Visible        Toggle visibility without deleting the layer data.\n\n"
-		 "Tileset slots\n\n"
-		 "A slot index (1–15) is what gets encoded in map cells. Each slot holds one or "
+		 "  `Offset X / Y`   Positional offset in tiles (fractional values allowed).\n"
+		 "  `Visible`        Toggle visibility without deleting the layer data.\n\n"
+		 "`Tileset slots`\n\n"
+		 "A slot index (1-15) is what gets encoded in map cells. Each slot holds one or "
 		 "more variants (different tileset build items) that can be swapped without "
 		 "changing any tile index in the map. The active variant is used on the canvas "
 		 "and in export.\n\n"
-		 "Groups\n\n"
+		 "`Groups`\n\n"
 		 "A group is a rectangular multi-tile stamp captured from the editing layer for "
-		 "quick reuse. Click Add Group, drag a rectangle on the canvas, release to save.\n\n"
-		 "Viewport\n\n"
+		 "quick reuse. Click `Add Group`, drag a rectangle on the canvas, release to save.\n\n"
+		 "`Viewport`\n\n"
 		 "Defines the visible tile area (width x height). Used for the viewable-area "
 		 "overlay and for scroll range calculations.\n\n"
-		 "Cell encoding: each cell is a 16-bit word. Bits 15–12 = slot index+1 (0=empty),"
-		 " bits 11–0 = tile index within the slot (0–4095)."},
+		 "Cell encoding: each cell is a 16-bit word. Bits 15-12 = slot index+1 (0=empty),"
+		 " bits 11-0 = tile index within the slot (0-4095)."},
 
 		{SEC_PROJECTITEMS, "Map Painting & Scrollbars",
 		 "Painting tools:\n\n"
-		 "  Single tile    Select a tile in the Tiles panel; left-click places it.\n"
-		 "  Group stamp    Select a group in the Groups panel; left-click stamps it.\n"
+		 "  `Single tile`    Select a tile in the Tiles panel; left-click places it.\n"
+		 "  `Group stamp`    Select a group in the Groups panel; left-click stamps it.\n"
 		 "                 A semi-transparent preview follows the cursor before clicking.\n"
-		 "  Erase          Right-click with any tool selected.\n\n"
-		 "Scrollbars:\n\n"
+		 "  `Erase`          Right-click with any tool selected.\n\n"
+		 "`Scrollbars:`\n\n"
 		 "Each axis has arrow buttons and a slider. Each step moves the camera by one "
 		 "unit. The actual tile offset per layer is step x layerSpeed, clamped so no "
 		 "layer scrolls past its own edge. The slider range is computed from the widest "
 		 "and tallest layer.\n\n"
 		 "Arrow keys scroll the canvas when it is focused or hovered.\n\n"
-		 "Dimensions panel (editing layer only):\n\n"
-		 "  Width / Height + Apply   Resize the layer, preserving data in the overlap.\n"
-		 "  Row / Col buttons        Add or remove rows/columns at any edge."},
+		 "`Dimensions panel (editing layer only):`\n\n"
+		 "  `Width / Height` + `Apply`   Resize the layer, preserving data in the overlap.\n"
+		 "  `Row / Col` buttons        Add or remove rows/columns at any edge."},
 
 		{SEC_PROJECTITEMS, "Map Export",
 		 "Map data is available to export scripts via the MapExportContext API:\n\n"
-		 "  GetLayerCount()                Number of layers.\n"
-		 "  GetLayerWidth(layerIdx)        Width in tiles.\n"
-		 "  GetLayerHeight(layerIdx)       Height in tiles.\n"
-		 "  GetLayerName(layerIdx)         Layer name.\n"
-		 "  GetCell(layerIdx, col, row)    Encoded 16-bit cell word.\n"
-		 "  GetParam(key)                  Value of a declared @param.\n\n"
-		 "Cell word format:\n\n"
-		 "  Bits 15–12   tilesetSlotIndex + 1  (0 = empty, 1–15 = slot)\n"
-		 "  Bits 11–0    tile index within that slot (0–4095)"},
+		 "  `GetLayerCount()`                Number of layers.\n"
+		 "  `GetLayerWidth(layerIdx)`        Width in tiles.\n"
+		 "  `GetLayerHeight(layerIdx)`       Height in tiles.\n"
+		 "  `GetLayerName(layerIdx)`         Layer name.\n"
+		 "  `GetCell(layerIdx, col, row)`    Encoded 16-bit cell word.\n"
+		 "  `GetParam(key)`                  Value of a declared `@param`.\n\n"
+		 "`Cell word format:`\n\n"
+		 "  `Bits 15-12`   tilesetSlotIndex + 1  (0 = empty, 1-15 = slot)\n"
+		 "  `Bits 11-0`    tile index within that slot (0-4095)"},
 
 		//
 		// ── Project Items / Palette ──────────────────────────────────────────────
@@ -457,20 +455,37 @@ namespace RetrodevGui {
 		 "graphics that share screen space. It computes a shared palette and writes the "
 		 "result back into participating build items (bitmaps, tilesets, sprites) so "
 		 "their subsequent conversions use the solved palette automatically.\n\n"
-		 "To create: right-click inside the Project section and select New Palette…\n\n"
-		 "Document layout:\n\n"
-		 "  Left panel         Target system and palette type, zone list, thumbnails.\n"
-		 "  Right top panel    Zone properties and participant list.\n"
-		 "  Right bottom panel Solve / Validate controls, result list, solved palette.\n\n"
-		 "Participants:\n\n"
-		 "  Always       Present every frame — colours must be reserved at all times.\n"
-		 "  Level        Present only during a named level (tagged).\n"
-		 "  Screen Zone  Present only within a sub-region across multiple levels (tagged).\n\n"
+		 "To create: right-click inside the Project section and select `New Palette…`\n\n"
+		 "`Document layout:`\n\n"
+		 "  `Left panel`         Target system and palette type, zone list, thumbnails.\n"
+		 "  `Right top panel`    Zone properties and participant list.\n"
+		 "  `Right bottom panel` Solve / Validate controls, result list, solved palette.\n\n"
+		 "`Participants:`\n\n"
+		 "  `Always`       Present in every zone and every level. Colors pooled globally.\n"
+		 "  `Zone Always`  Always present in this zone across all levels, not shared across zones.\n"
+		 "  `Level`        Present only in this zone when a named level is active (tagged).\n\n"
+		 "Level participants also require a `Tag` — a free-text string (e.g. `Level1`) grouping "
+		 "graphics that appear together. Only participants sharing the same tag are solved together.\n\n"
 		 "Only build items configured for the same target system and palette type are "
-		 "available as participants."},
+		 "available as participants.\n\n"
+		 "`Original palette panel:`\n\n"
+		 "When a participant is selected in the list, the right sub-panel shows its original "
+		 "palette — the palette that item's own conversion produced before the solver overrides it. "
+		 "This is read-only and provided as a reference.\n\n"
+		 "`Thumbnails:`\n\n"
+		 "Below the zone list, participant thumbnails are shown for the selected zone. After a "
+		 "successful solve each thumbnail displays the image as converted with the solved palette. "
+		 "A `Level tag` combo above the area filters which Level participants are shown. "
+		 "Clicking a thumbnail selects it and shows its solved preview in the right bottom panel.\n\n"
+		 "`Overflow method:`\n\n"
+		 "Controls how the solver handles colour counts that exceed the pen budget:\n"
+		 "  `Hard Cap`       Truncate the union list at the pen limit.\n"
+		 "  `Soft Cap`       Replace the nearest accepted entry with the RGB midpoint.\n"
+		 "  `Weighted Blend` Like Soft Cap but blends 67%% accepted + 33%% overflow.\n"
+		 "  `Median`         Replace accepted entry with the RGB centroid of the cluster."},
 
 		{SEC_PROJECTITEMS, "Zones & Solving",
-		 "Screen zones\n\n"
+		 "`Screen zones`\n\n"
 		 "A screen zone is a horizontal scanline band with its own hardware palette. "
 		 "Raster interrupts fire at a specific scanline and swap palette registers "
 		 "mid-frame — this lets the top and bottom halves of the screen use completely "
@@ -478,16 +493,37 @@ namespace RetrodevGui {
 		 "Each zone has a Name, first/last scanline (Lines) and a screen Mode. Different "
 		 "zones may use different modes. A new palette item starts with one default zone "
 		 "named \"Main\".\n\n"
-		 "Three-pass solve:\n\n"
-		 "  Pass 1  Global Always base — all Always participants from every zone quantized "
+		 "`Three-pass solve:`\n\n"
+		 "  `Pass 1`  Global Always base — all Always participants from every zone quantized "
 		 "together. These receive priority in the pen budget.\n"
-		 "  Pass 2  Zone base — Screen Zone participants fitted on top of the global base.\n"
-		 "  Pass 3  Level tags — Level participants for each (zone x tag) combination "
+		 "  `Pass 2`  Zone base — Zone Always participants fitted on top of the global base.\n"
+		 "  `Pass 3`  Level tags — Level participants for each (zone x tag) combination "
 		 "fitted on top of the zone base.\n\n"
-		 "The result list shows each (zone x tag) entry colour-coded green (fits) or "
-		 "red (overflow), with pen usage (e.g. 4/16).\n\n"
-		 "Validate writes solved palette assignments back into each participant's stored "
-		 "configuration. Save the project to persist the changes."},
+		 "The solve does not modify the project; it produces a result in memory only.\n\n"
+		 "`Solution result list:`\n\n"
+		 "After solving, each (zone x tag) entry is colour-coded green (fits) or red (overflow), "
+		 "with pen usage shown (e.g. `4/16`). Per-participant result icons:\n\n"
+		 "  `OK`       All colours fit.\n"
+		 "  `Overflow` More unique colours than free pens available.\n"
+		 "  `Missing`  Build item not found or source image could not be loaded.\n"
+		 "  `Skipped`  Participant does not apply to this context.\n\n"
+		 "For level solutions, inherited base participants (Always and Zone Always) are listed "
+		 "first, then the participants specific to that level tag.\n\n"
+		 "`Overflow remap strip:`\n\n"
+		 "When colours exceed the pen budget, coloured swatches appear below the participant "
+		 "results — one per overflow colour. Hover a swatch to see the remap details: which "
+		 "accepted slot it was nearest to, and whether that slot was updated, absorbed unchanged, "
+		 "or dropped.\n\n"
+		 "`Solved palette strip:`\n\n"
+		 "A compact row of pen swatches shows the full solved palette. Occupied slots show "
+		 "their hardware colour; free slots appear dark grey. Hover a swatch to see the "
+		 "pen number, system colour index and RGB values.\n\n"
+		 "`Solution preview:`\n\n"
+		 "Click a thumbnail in the left panel to preview it in the right bottom panel, "
+		 "rendered with the solved palette exactly as the solver produced it.\n\n"
+		 "`Validate` writes solved palette assignments back into each participant's stored "
+		 "configuration. All open documents for affected items refresh their previews immediately. "
+		 "Save the project to persist the changes."},
 
 		//
 		// ── Project Items / Build ────────────────────────────────────────────────
@@ -495,61 +531,61 @@ namespace RetrodevGui {
 		{SEC_PROJECTITEMS, "Build Pipeline",
 		 "A Build item ties assembler sources, project dependencies and an emulator "
 		 "launch configuration into a single reproducible pipeline.\n\n"
-		 "To create: click Add -> Build in the Project panel.\n\n"
-		 "Triggering a build:\n\n"
-		 "  Toolbar combo box   Selects the active Build item.\n"
-		 "  Build button        Runs the active Build item.\n"
-		 "  Debug button (F5)   Builds and launches the configured emulator on success.\n"
-		 "  Amber floppy icon   Appears on unsaved changes — click to save immediately.\n\n"
+		 "To create: click `Add -> Build` in the Project panel.\n\n"
+		 "`Triggering a build:`\n\n"
+		 "  `Toolbar combo box`   Selects the active Build item.\n"
+		 "  `Build button`        Runs the active Build item.\n"
+		 "  `Debug button (F5)`   Builds and launches the configured emulator on success.\n"
+		 "  `Amber floppy icon`   Appears on unsaved changes — click to save immediately.\n\n"
 		 "Before invoking the assembler, Retrodev saves open documents and processes "
 		 "all declared dependencies in order. Build output appears in the Console panel."},
 
 		{SEC_PROJECTITEMS, "Build — Source & Includes",
-		 "Source tab layout (two columns):\n\n"
-		 "Left — Dependencies\n\n"
+		 "`Source tab layout (two columns):`\n\n"
+		 "`Left — Dependencies`\n\n"
 		 "  An ordered list of other project items (Bitmap conversions, Tilesets, "
-		 "Sprites, Maps, Palettes) processed before the assembler runs. Use + to add, "
-		 "- to remove, arrows to reorder. Each entry is shown as name [Type].\n\n"
-		 "Right — Sources\n\n"
-		 "  List of .asm / .z80 source files passed to RASM. Each is assembled "
-		 "independently. Use + to pick from files tracked in the project.\n\n"
-		 "Right — Include Directories\n\n"
-		 "  Include search path passed to the assembler. Use + to pick from folders "
+		 "Sprites, Maps, Palettes) processed before the assembler runs. Use `+` to add, "
+		 "`-` to remove, arrows to reorder. Each entry is shown as name [Type].\n\n"
+		 "`Right — Sources`\n\n"
+		 "  List of `.asm` / `.z80` source files passed to RASM. Each is assembled "
+		 "independently. Use `+` to pick from files tracked in the project.\n\n"
+		 "`Right — Include Directories`\n\n"
+		 "  Include search path passed to the assembler. Use `+` to pick from folders "
 		 "already tracked in the project. Retrodev formats the list into the appropriate "
 		 "flags automatically.\n\n"
-		 "Right — Defines\n\n"
-		 "  Preprocessor symbols injected before assembly. Type KEY=value or a bare flag "
-		 "name and press Add."},
+		 "`Right — Defines`\n\n"
+		 "  Preprocessor symbols injected before assembly. Type `KEY=value` or a bare flag "
+		 "name and press `Add`."},
 
 		{SEC_PROJECTITEMS, "Build — Output & RASM Options",
-		 "Build tab — selects the assembler (currently RASM) and its flags:\n\n"
-		 "  -w    Suppress all warnings.\n"
-		 "  -twe  Treat warnings as errors.\n"
-		 "  -wu   Warn on unused symbols.\n"
-		 "  -me N Stop after N errors.\n"
-		 "  Various compatibility flags: -ass, -uz, -pasmo, -dams, -m, -amper, -fq, -utf8\n"
-		 "  Macro flags: -void, -mml\n"
-		 "  Diagnostic flags: -v, -map, -cprquiet\n\n"
-		 "A read-only Generated options field shows the exact flags passed to RASM.\n\n"
-		 "Output tab — configures output file paths:\n\n"
+		 "`Build tab` — selects the assembler (currently RASM) and its flags:\n\n"
+		 "  `-w`    Suppress all warnings.\n"
+		 "  `-twe`  Treat warnings as errors.\n"
+		 "  `-wu`   Warn on unused symbols.\n"
+		 "  `-me N` Stop after N errors.\n"
+		 "  Various compatibility flags: `-ass`, `-uz`, `-pasmo`, `-dams`, `-m`, `-amper`, `-fq`, `-utf8`\n"
+		 "  Macro flags: `-void`, `-mml`\n"
+		 "  Diagnostic flags: `-v`, `-map`, `-cprquiet`\n\n"
+		 "A read-only `Generated options` field shows the exact flags passed to RASM.\n\n"
+		 "`Output tab` — configures output file paths:\n\n"
 		 "  Binary, ROM, Cartridge, Snapshot, Tape, Symbol, Breakpoint files.\n"
-		 "  Output radix: automatic from source filename (-oa) or explicit (-o).\n"
-		 "  Symbol export formats: Default, Pasmo, WinAPE, Custom."},
+		 "  Output radix: automatic from source filename (`-oa`) or explicit (`-o`).\n"
+		 "  Symbol export formats: `Default`, `Pasmo`, `WinAPE`, `Custom`."},
 
 		{SEC_PROJECTITEMS, "Build — Debug & Emulator",
-		 "Debug tab:\n\n"
-		 "  RASM snapshot options: -ss (embed symbols), -sb (embed breakpoints), -v2 "
+		 "`Debug tab`:\n\n"
+		 "  RASM snapshot options: `-ss` (embed symbols), `-sb` (embed breakpoints), `-v2` "
 		 "(version 2 snapshot).\n\n"
-		 "Emulator Launch:\n\n"
-		 "  Select emulator: None, WinAPE, RVM or ACE-DL.\n\n"
+		 "`Emulator Launch:`\n\n"
+		 "  Select emulator: `None`, `WinAPE`, `RVM` or `ACE-DL`.\n\n"
 		 "The executable path is stored in application settings on your machine (shared "
 		 "across all projects). All other settings are stored in the project file.\n\n"
-		 "Media: disc / tape / cartridge image (.dsk, .hfe, .cdt, .xpr, .cpr, .sna) "
+		 "Media: disc / tape / cartridge image (`.dsk`, `.hfe`, `.cdt`, `.xpr`, `.cpr`, `.sna`) "
 		 "and snapshot file.\n\n"
 		 "Startup command varies by emulator:\n\n"
-		 "  WinAPE    Program to run (/A:).\n"
-		 "  RVM       BASIC command (-command=). Use \\n for Enter key.\n"
-		 "  ACE-DL    Auto-run file (-autoRunFile).\n\n"
+		 "  `WinAPE`    Program to run (`/A:`).\n"
+		 "  `RVM`       BASIC command (`-command=`). Use `\\n` for Enter key.\n"
+		 "  `ACE-DL`    Auto-run file (`-autoRunFile`).\n\n"
 		 "Emulator-specific options — RVM: machine type. ACE-DL: CRTC type, RAM, "
 		 "firmware, speed, and additional launch flags."},
 
@@ -560,72 +596,72 @@ namespace RetrodevGui {
 		 "The integrated code editor supports Z80 assembly (RASM dialect) and AngelScript. "
 		 "It is used for both assembler sources and export scripts without leaving Retrodev.\n\n"
 		 "Supported languages:\n\n"
-		 "  Z80 Assembly (.asm, .z80)\n"
+		 "  `Z80 Assembly` (`.asm`, `.z80`)\n"
 		 "    Syntax highlighting, directive completion, label/symbol autocomplete,\n"
 		 "    codelens timing annotations, hover documentation.\n\n"
-		 "  AngelScript (.as)\n"
+		 "  `AngelScript` (`.as`)\n"
 		 "    Syntax highlighting, Retrodev export API autocomplete, hover documentation.\n\n"
-		 "Toolbar status line (left side):\n\n"
+		 "`Toolbar status line (left side):`\n\n"
 		 "  line/column  total lines  Ins  *  language  filename\n\n"
-		 "  * appears when the document has unsaved changes.\n\n"
-		 "Font scale slider (right side): 0.5x – 3.0x, affects only editor text."},
+		 "  `*` appears when the document has unsaved changes.\n\n"
+		 "`Font scale slider (right side):` 0.5x - 3.0x, affects only editor text."},
 
 		{SEC_EDITOR, "Z80 Assembly Features",
-		 "Syntax highlighting\n\n"
+		 "`Syntax highlighting`\n\n"
 		 "Keywords, directives, registers, opcodes, labels, strings, comments and numeric "
 		 "literals are all coloured independently.\n\n"
-		 "Codelens — instruction timing annotations\n\n"
+		 "`Codelens — instruction timing annotations`\n\n"
 		 "Every Z80 instruction line is annotated with its timing inline in the margin. "
 		 "On the Amstrad CPC the relevant unit is NOPs: 1 NOP = 4 T-states (1 us at "
 		 "4 MHz). Three display modes:\n\n"
-		 "  Cycles       T-state count per instruction.\n"
-		 "  Cycles+M1    T-states with M1 opcode-fetch cycle counted separately.\n"
-		 "  Instructions NOPs equivalent per instruction.\n\n"
-		 "Auto-complete\n\n"
+		 "  `Cycles`       T-state count per instruction.\n"
+		 "  `Cycles+M1`    T-states with M1 opcode-fetch cycle counted separately.\n"
+		 "  `Instructions` NOPs equivalent per instruction.\n\n"
+		 "`Auto-complete`\n\n"
 		 "Completions come from: RASM directives, labels and symbols from all open source "
 		 "files in the project, and Z80 register names and opcodes. Suppressed inside "
 		 "comments.\n\n"
-		 "Hover documentation\n\n"
+		 "`Hover documentation`\n\n"
 		 "Hover over a label or directive to see its definition or documentation. "
 		 "Suppressed over comment tokens.\n\n"
-		 "Find and Replace\n\n"
-		 "Ctrl+F opens Find. Ctrl+H opens Replace. Find All logs all matches to the Find "
-		 "channel in the Console. Replace All snapshots occurrences before replacing to "
+		 "`Find and Replace`\n\n"
+		 "`Ctrl+F` opens Find. `Ctrl+H` opens Replace. `Find All` logs all matches to the Find "
+		 "channel in the Console. `Replace All` snapshots occurrences before replacing to "
 		 "prevent newly introduced matches from being caught.\n\n"
-		 "Context menu\n\n"
+		 "`Context menu`\n\n"
 		 "Right-click a word to open a context menu. If the word resolves to a known "
-		 "symbol, Go to Definition jumps to the file and line where it is defined."},
+		 "symbol, `Go to Definition` jumps to the file and line where it is defined."},
 
 		{SEC_EDITOR, "AngelScript Features",
 		 "The AngelScript editor provides full auto-complete and hover documentation for "
 		 "the Retrodev export API:\n\n"
-		 "  IBitmapContext    Bitmap conversion data and palette.\n"
-		 "  ITilesetContext   Extracted tiles and palette.\n"
-		 "  ISpriteContext    Extracted sprites and palette.\n"
-		 "  IMapContext       Map layers and cell data.\n"
-		 "  IPaletteContext   Solved palette result.\n\n"
-		 "All their methods — GetPixelColor, GetTile, GetCell, GetPalette, PenGetIndex, "
-		 "GetParam, GetTargetSystem, GetTargetMode, etc. — appear in the autocomplete "
+		 "  `IBitmapContext`    Bitmap conversion data and palette.\n"
+		 "  `ITilesetContext`   Extracted tiles and palette.\n"
+		 "  `ISpriteContext`    Extracted sprites and palette.\n"
+		 "  `IMapContext`       Map layers and cell data.\n"
+		 "  `IPaletteContext`   Solved palette result.\n\n"
+		 "All their methods — `GetPixelColor`, `GetTile`, `GetCell`, `GetPalette`, `PenGetIndex`, "
+		 "`GetParam`, `GetTargetSystem`, `GetTargetMode`, etc. — appear in the autocomplete "
 		 "popup as you type and show signatures on hover.\n\n"
 		 "Format menu:\n\n"
-		 "  Tabbify    Convert leading spaces to tabs (4 spaces = 1 tab).\n"
-		 "  Untabify   Convert leading tabs to spaces. Trailing whitespace is stripped.\n\n"
+		 "  `Tabbify`    Convert leading spaces to tabs (4 spaces = 1 tab).\n"
+		 "  `Untabify`   Convert leading tabs to spaces. Trailing whitespace is stripped.\n\n"
 		 "Options menu:\n\n"
-		 "  Line Numbers, Timing, Timing Type, Bytecode, Palette (colour theme).\n"
-		 "  Available themes: Dark, Light, Mariana, RetroBlue (default)."},
+		 "  `Line Numbers`, `Timing`, `Timing Type`, `Bytecode`, `Palette` (colour theme).\n"
+		 "  Available themes: `Dark`, `Light`, `Mariana`, `RetroBlue` (default)."},
 
 		{SEC_EDITOR, "Keyboard Shortcuts",
-		 "  Ctrl+S         Save\n"
-		 "  Ctrl+Z         Undo\n"
-		 "  Ctrl+Y         Redo\n"
-		 "  Ctrl+A         Select all\n"
-		 "  Ctrl+C         Copy\n"
-		 "  Ctrl+X         Cut\n"
-		 "  Ctrl+V         Paste\n"
-		 "  Ctrl+F         Find\n"
-		 "  Ctrl+H         Replace\n"
-		 "  Tab            Indent selection\n"
-		 "  Shift+Tab      Unindent selection"},
+		 "  `Ctrl+S`         Save\n"
+		 "  `Ctrl+Z`         Undo\n"
+		 "  `Ctrl+Y`         Redo\n"
+		 "  `Ctrl+A`         Select all\n"
+		 "  `Ctrl+C`         Copy\n"
+		 "  `Ctrl+X`         Cut\n"
+		 "  `Ctrl+V`         Paste\n"
+		 "  `Ctrl+F`         Find\n"
+		 "  `Ctrl+H`         Replace\n"
+		 "  `Tab`            Indent selection\n"
+		 "  `Shift+Tab`      Unindent selection"},
 
 		//
 		// ── Export Scripts ───────────────────────────────────────────────────────
@@ -635,72 +671,68 @@ namespace RetrodevGui {
 		 "it in any binary format. They have full control over layout, headers and "
 		 "compression.\n\n"
 		 "Scripts are attached to a build item via the Export section of the item's editor. "
-		 "Click Select… to open the script picker, which shows only scripts whose @exporter "
-		 "and @target tags match the current build item type and target system.\n\n"
-		 "Scripts tagged @exporter util are helper includes — they contain shared functions "
-		 "and are never shown in the picker. Use a standard #include directive to pull them "
+		 "Click `Select…` to open the script picker, which shows only scripts whose `@exporter` "
+		 "and `@target` tags match the current build item type and target system.\n\n"
+		 "Scripts tagged `@exporter util` are helper includes — they contain shared functions "
+		 "and are never shown in the picker. Use a standard `#include` directive to pull them "
 		 "in from another script.\n\n"
-		 "The SDK ships ready-to-use export scripts under sdk/amstrad.cpc/exporters/."},
+		 "The SDK ships ready-to-use export scripts under `sdk/amstrad.cpc/exporters/`."},
 
 		{SEC_EXPORTSCRIPTS, "Script Anatomy & Tags",
 		 "Every script begins with a metadata block of // @tag value comment lines:\n\n"
-		 "  // @description  One-line description shown in the picker.\n"
-		 "  // @exporter     bitmap | tiles | sprites | map | util\n"
-		 "  // @target       amstrad.cpc  (omit for system-agnostic scripts)\n"
-		 "  // @param        key  type  default  label\n\n"
-		 "@param types and their UI controls:\n\n"
-		 "  bool    Checkbox      true or false\n"
-		 "  int     Spinner       Any decimal integer\n"
-		 "  string  Text field    Single word\n"
-		 "  combo   Drop-down     default|opt2|opt3  (options are pipe-separated)\n\n"
+		 "  `// @description`  One-line description shown in the picker.\n"
+		 "  `// @exporter`     `bitmap` | `tiles` | `sprites` | `map` | `util`\n"
+		 "  `// @target`       `amstrad.cpc`  (omit for system-agnostic scripts)\n"
+		 "  `// @param`        key  type  default  label\n\n"
+		 "`@param` types and their UI controls:\n\n"
+		 "  `bool`    Checkbox      true or false\n"
+		 "  `int`     Spinner       Any decimal integer\n"
+		 "  `string`  Text field    Single word\n"
+		 "  `combo`   Drop-down     default|opt2|opt3  (options are pipe-separated)\n\n"
 		 "Retrodev builds the parameter UI from these tags automatically. Scripts read "
-		 "values at run time via ctx.GetParam(\"key\").\n\n"
-		 "Entry point — the function is always named Export:\n\n"
-		 "  // Bitmap\n"
-		 "  void Export(Image@ image, const string& in outputPath, BitmapExportContext@ ctx)\n\n"
-		 "  // Tileset\n"
-		 "  void Export(const string& in outputPath, TilesetExportContext@ ctx)\n\n"
-		 "  // Sprites\n"
-		 "  void Export(const string& in outputPath, SpriteExportContext@ ctx)\n\n"
-		 "  // Map\n"
-		 "  void Export(const string& in outputPath, MapExportContext@ ctx)"},
+		 "values at run time via `ctx.GetParam(\"key\")`.\n\n"
+		 "Entry point — the function is always named `Export`:\n\n"
+		 "  `void Export(Image@ image, const string& in outputPath, BitmapExportContext@ ctx)`\n\n"
+		 "  `void Export(const string& in outputPath, TilesetExportContext@ ctx)`\n\n"
+		 "  `void Export(const string& in outputPath, SpriteExportContext@ ctx)`\n\n"
+		 "  `void Export(const string& in outputPath, MapExportContext@ ctx)`"},
 
 		{SEC_EXPORTSCRIPTS, "Export API Reference",
 		 "Common methods on all context types:\n\n"
-		 "  GetParam(key)         Value chosen by the user in the Export panel.\n"
-		 "  GetTargetSystem()     e.g. \"amstrad.cpc\"\n"
-		 "  GetTargetMode()       e.g. \"Mode 0\", \"Mode 1\"\n\n"
+		 "  `GetParam(key)`         Value chosen by the user in the Export panel.\n"
+		 "  `GetTargetSystem()`     e.g. \"amstrad.cpc\"\n"
+		 "  `GetTargetMode()`       e.g. \"Mode 0\", \"Mode 1\"\n\n"
 		 "Palette API (bitmap, tileset, sprite contexts):\n\n"
-		 "  ctx.GetPalette()              Returns a Palette@ handle.\n"
-		 "  palette.PaletteMaxColors()    Number of active pens.\n"
-		 "  palette.PenGetIndex(rgb)      Pen index for a pixel colour (-1 if not found).\n"
-		 "  palette.PenGetColorIndex(pen) Firmware colour index for the pen.\n\n"
-		 "Image@ (bitmap / per-tile / per-sprite):\n\n"
-		 "  image.GetPixelColor(x, y)     Returns RgbColor for a pixel.\n\n"
-		 "BitmapExportContext:\n"
-		 "  GetNativeWidth(), GetNativeHeight(), GetPalette()\n\n"
-		 "TilesetExportContext:\n"
-		 "  GetTileCount(), GetTileWidth(), GetTileHeight(), GetTile(idx), GetPalette()\n\n"
-		 "SpriteExportContext:\n"
-		 "  GetSpriteCount(), GetSpriteWidth(idx), GetSpriteHeight(idx),\n"
-		 "  GetSpriteName(idx), GetSprite(idx), GetPalette()\n\n"
-		 "MapExportContext:\n"
-		 "  GetLayerCount(), GetLayerWidth(i), GetLayerHeight(i), GetLayerName(i),\n"
-		 "  GetCell(layer, col, row)"},
+		 "  `ctx.GetPalette()`              Returns a `Palette@` handle.\n"
+		 "  `palette.PaletteMaxColors()`    Number of active pens.\n"
+		 "  `palette.PenGetIndex(rgb)`      Pen index for a pixel colour (-1 if not found).\n"
+		 "  `palette.PenGetColorIndex(pen)` Firmware colour index for the pen.\n\n"
+		 "`Image@` (bitmap / per-tile / per-sprite):\n\n"
+		 "  `image.GetPixelColor(x, y)`     Returns `RgbColor` for a pixel.\n\n"
+		 "`BitmapExportContext`:\n"
+		 "  `GetNativeWidth()`, `GetNativeHeight()`, `GetPalette()`\n\n"
+		 "`TilesetExportContext`:\n"
+		 "  `GetTileCount()`, `GetTileWidth()`, `GetTileHeight()`, `GetTile(idx)`, `GetPalette()`\n\n"
+		 "`SpriteExportContext`:\n"
+		 "  `GetSpriteCount()`, `GetSpriteWidth(idx)`, `GetSpriteHeight(idx)`,\n"
+		 "  `GetSpriteName(idx)`, `GetSprite(idx)`, `GetPalette()`\n\n"
+		 "`MapExportContext`:\n"
+		 "  `GetLayerCount()`, `GetLayerWidth(i)`, `GetLayerHeight(i)`, `GetLayerName(i)`,\n"
+		 "  `GetCell(layer, col, row)`"},
 
 		{SEC_EXPORTSCRIPTS, "Logging & Includes",
 		 "Scripts report progress via built-in log functions that write to the Script "
 		 "channel in the Console panel:\n\n"
-		 "  Log_Info(\"Export started — \" + tileCount + \" tiles\");\n"
-		 "  Log_Warning(\"No matching pen — using pen 0.\");\n"
-		 "  Log_Error(\"Could not open: \" + outputPath);\n\n"
+		 "  `Log_Info(\"Export started - \" + tileCount + \" tiles\");`\n"
+		 "  `Log_Warning(\"No matching pen - using pen 0.\");`\n"
+		 "  `Log_Error(\"Could not open: \" + outputPath);`\n\n"
 		 "Including shared scripts:\n\n"
-		 "  #include \"cpc.utils.as\"\n\n"
+		 "  `#include \"cpc.utils.as\"`\n\n"
 		 "The path is resolved relative to the including script. For SDK scripts no "
-		 "additional setup is needed — just add the #include and the functions it "
+		 "additional setup is needed — just add the `#include` and the functions it "
 		 "provides become available immediately.\n\n"
-		 "SDK utility: cpc.utils.as provides EncodePixels which appends encoded bytes for "
-		 "a horizontal run of pen indices directly to an output buffer, and EncodeByte for "
+		 "SDK utility: `cpc.utils.as` provides `EncodePixels` which appends encoded bytes for "
+		 "a horizontal run of pen indices directly to an output buffer, and `EncodeByte` for "
 		 "arbitrary byte layouts."},
 
 		//
@@ -710,12 +742,12 @@ namespace RetrodevGui {
 		 "Retrodev can launch external emulators directly after a successful build. "
 		 "Configure the emulator in the Debug tab of the Build item.\n\n"
 		 "Supported emulators:\n\n"
-		 "  WinAPE    Amstrad CPC emulator.\n"
-		 "  RVM       Cross-platform CPC emulator.\n"
-		 "  ACE-DL    Advanced CPC emulator with integrated debugger.\n\n"
+		 "  `WinAPE`    Amstrad CPC emulator.\n"
+		 "  `RVM`       Cross-platform CPC emulator.\n"
+		 "  `ACE-DL`    Advanced CPC emulator with integrated debugger.\n\n"
 		 "The executable path is stored in application settings and shared across all "
 		 "projects. All other options (media, command, flags) are stored per project.\n\n"
-		 "Press F5 or click Debug to build and launch in one step."},
+		 "Press `F5` or click `Debug` to build and launch in one step."},
 	};
 	static_assert(sizeof(s_topics) / sizeof(s_topics[0]) == TOPIC_COUNT, "s_topics array size does not match TOPIC_COUNT — update the array or the enum");
 
@@ -860,11 +892,93 @@ namespace RetrodevGui {
 	}
 
 	//
-	// Render topic body text with proper wrapping and hanging-indent for two-column lines.
-	// Non-indented lines wrap at the available width. Indented lines (leading spaces) are
-	// rendered without wrapping — they are intentionally short label+value entries where
-	// each physical source line is already its own row; the leading spaces become a real
-	// ImGui indent so the text is left-aligned under the correct column.
+	// Render a single logical line of text with inline backtick emphasis support.
+	// The line is rendered word-wrapped at the available panel width. Backtick-wrapped
+	// spans are drawn in bright white; plain text is drawn in a dimmed colour.
+	// Uses ImDrawList directly so the full line wraps as a unit rather than as
+	// disconnected SameLine fragments that cannot wrap past the first segment.
+	//
+	static void RenderLineSpans(const char* lineStart, const char* lineEnd, float indentPx) {
+		static const ImU32 kDim    = IM_COL32(140, 140, 140, 255);
+		static const ImU32 kBright = IM_COL32(255, 255, 255, 255);
+		ImFont* font   = ImGui::GetFont();
+		float fontSize = ImGui::GetFontSize();
+		float wrapWidth = ImGui::GetContentRegionAvail().x - indentPx;
+		if (wrapWidth < 1.0f)
+			wrapWidth = 1.0f;
+		//
+		// Walk spans, building a flat token list: {text ptr, len, color}
+		//
+		struct Span { const char* text; int len; ImU32 col; };
+		ImVector<Span> spans;
+		const char* p = lineStart;
+		while (p < lineEnd) {
+			const char* tick = p;
+			while (tick < lineEnd && *tick != '`')
+				tick++;
+			if (tick > p)
+				spans.push_back({p, (int)(tick - p), kDim});
+			if (tick >= lineEnd)
+				break;
+			const char* sStart = tick + 1;
+			const char* sEnd = sStart;
+			while (sEnd < lineEnd && *sEnd != '`')
+				sEnd++;
+			if (sEnd > sStart)
+				spans.push_back({sStart, (int)(sEnd - sStart), kBright});
+			p = (sEnd < lineEnd) ? sEnd + 1 : lineEnd;
+		}
+		if (spans.empty())
+			return;
+		//
+		// Lay out spans word-wrapped across lines, drawing each glyph run
+		// directly onto the window draw list at the correct screen position.
+		//
+		ImDrawList* dl = ImGui::GetWindowDrawList();
+		ImVec2 cursor  = ImGui::GetCursorScreenPos();
+		float lineH    = ImGui::GetTextLineHeightWithSpacing();
+		float startX   = cursor.x;
+		float x        = startX;
+		float y        = cursor.y;
+		float maxX     = startX + wrapWidth;
+		for (int si = 0; si < spans.Size; si++) {
+			const Span& sp = spans[si];
+			const char* wp = sp.text;
+			const char* wend = sp.text + sp.len;
+			while (wp < wend) {
+				//
+				// Find end of next word (break at spaces)
+				//
+				const char* wordEnd = wp;
+				while (wordEnd < wend && *wordEnd != ' ')
+					wordEnd++;
+				if (wordEnd < wend)
+					wordEnd++;
+				float wordW = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, wp, wordEnd).x;
+				//
+				// Wrap to next line if word doesn't fit (unless at line start)
+				//
+				if (x + wordW > maxX && x > startX) {
+					x = startX;
+					y += lineH;
+				}
+				dl->AddText(font, fontSize, ImVec2(x, y), sp.col, wp, wordEnd);
+				x += wordW;
+				wp = wordEnd;
+			}
+		}
+		//
+		// Advance ImGui cursor past the rendered block so layout continues correctly
+		//
+		float totalH = (y - cursor.y) + lineH;
+		ImGui::Dummy(ImVec2(wrapWidth, totalH));
+	}
+
+	//
+	// Render topic body text with proper wrapping, hanging-indent and inline keyword emphasis.
+	// Non-indented lines wrap at the available width. Indented lines get a real ImGui indent
+	// and also wrap. Backtick-wrapped spans inside any line are rendered in bright white while
+	// surrounding text is slightly dimmed.
 	//
 	void HelpDialog::RenderContent(const char* text) {
 		const float charW = ImGui::CalcTextSize(" ").x;
@@ -893,24 +1007,42 @@ namespace RetrodevGui {
 				leadSpaces++;
 				contentStart++;
 			}
+			//
+			// Check whether this line contains any backtick emphasis spans.
+			// Lines with no backticks use the simpler TextUnformatted path.
+			//
+			bool hasEmphasis = false;
+			for (const char* s = contentStart; s < lineEnd; s++) {
+				if (*s == '`') { hasEmphasis = true; break; }
+			}
 			if (leadSpaces == 0) {
 				//
 				// Non-indented line: wrap normally at the available width
 				//
-				ImGui::PushTextWrapPos(0.0f);
-				ImGui::TextUnformatted(p, lineEnd);
-				ImGui::PopTextWrapPos();
+				if (hasEmphasis) {
+					RenderLineSpans(contentStart, lineEnd, 0.0f);
+				} else {
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(140, 140, 140, 255));
+					ImGui::PushTextWrapPos(0.0f);
+					ImGui::TextUnformatted(p, lineEnd);
+					ImGui::PopTextWrapPos();
+					ImGui::PopStyleColor();
+				}
 			} else {
 				//
-				// Indented line: push a real indent and render without wrapping.
-				// Each indented source line is a single self-contained entry so
-				// wrapping is not needed and would break the column alignment.
+				// Indented line: push a real indent and wrap at the available width
 				//
 				float indentPx = leadSpaces * charW;
 				ImGui::Indent(indentPx);
-				ImGui::PushTextWrapPos(-1.0f);
-				ImGui::TextUnformatted(contentStart, lineEnd);
-				ImGui::PopTextWrapPos();
+				if (hasEmphasis)
+					RenderLineSpans(contentStart, lineEnd, indentPx);
+				else {
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(140, 140, 140, 255));
+					ImGui::PushTextWrapPos(0.0f);
+					ImGui::TextUnformatted(contentStart, lineEnd);
+					ImGui::PopTextWrapPos();
+					ImGui::PopStyleColor();
+				}
 				ImGui::Unindent(indentPx);
 			}
 			p = (*lineEnd == '\n') ? lineEnd + 1 : lineEnd;
@@ -974,7 +1106,7 @@ namespace RetrodevGui {
 		//
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-		ImGui::SetNextWindowSize(ImVec2(1140.0f, 660.0f), ImGuiCond_Appearing);
+		ImGui::SetNextWindowSize(ImVec2(1440.0f, 860.0f), ImGuiCond_Appearing);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
 		bool modalOpen = ImGui::BeginPopupModal("Retrodev Documentation", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 		ImGui::PopStyleVar();

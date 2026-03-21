@@ -119,6 +119,11 @@ namespace ImGui {
 		//
 		ImVec2 logicalSize = ImVec2(0.0f, 0.0f);
 		//
+		// When true, mouse position and selection corners are snapped to logical pixel boundaries
+		// Ensures selections align exactly to the pixel grid of the target system
+		//
+		bool snapToLogicalPixels = false;
+		//
 		// Outputs
 		//
 		float zoomLevel = 1.0f;

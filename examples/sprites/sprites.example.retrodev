@@ -86,14 +86,14 @@
             "RParams": {
                "ResMode": "Fit",
                "InterpMode": "NearestNeighbor",
-               "TargetResolution": "Custom",
-               "TargetWidth": 368,
-               "TargetHeight": 128,
+               "TargetResolution": "Normal",
+               "TargetWidth": 160,
+               "TargetHeight": 200,
                "SourceRect": {
                   "X": 0,
                   "Y": 0,
-                  "Width": 736,
-                  "Height": 128
+                  "Width": 2560,
+                  "Height": 1600
                },
                "UseTransparentColor": false,
                "TransparentColorR": 255,
@@ -131,39 +131,95 @@
          "spriteParams": {
             "Sprites": [
                {
-                  "X": 178,
-                  "Y": 10,
-                  "Width": 10,
-                  "Height": 24,
-                  "Name": "Sprite0"
+                  "X": 10,
+                  "Y": 48,
+                  "Width": 8,
+                  "Height": 16,
+                  "Name": "Walk1"
                },
                {
-                  "X": 146,
-                  "Y": 40,
-                  "Width": 10,
-                  "Height": 24,
-                  "Name": "Sprite1"
+                  "X": 28,
+                  "Y": 49,
+                  "Width": 8,
+                  "Height": 15,
+                  "Name": "Walk2"
                },
                {
-                  "X": 162,
-                  "Y": 39,
+                  "X": 45,
+                  "Y": 48,
                   "Width": 10,
-                  "Height": 26,
-                  "Name": "Sprite2"
+                  "Height": 16,
+                  "Name": "Walk3"
                },
                {
-                  "X": 177,
-                  "Y": 38,
+                  "X": 89,
+                  "Y": 48,
+                  "Width": 10,
+                  "Height": 13,
+                  "Name": "Jump"
+               },
+               {
+                  "X": 89,
+                  "Y": 116,
+                  "Width": 10,
+                  "Height": 12,
+                  "Name": "Pickup"
+               },
+               {
+                  "X": 106,
+                  "Y": 116,
                   "Width": 12,
-                  "Height": 28,
-                  "Name": "Sprite3"
+                  "Height": 13,
+                  "Name": "Bend Down"
                },
                {
-                  "X": 225,
-                  "Y": 69,
+                  "X": 8,
+                  "Y": 113,
+                  "Width": 10,
+                  "Height": 16,
+                  "Name": "Death1"
+               },
+               {
+                  "X": 25,
+                  "Y": 112,
                   "Width": 12,
-                  "Height": 28,
-                  "Name": "Sprite4"
+                  "Height": 16,
+                  "Name": "Death2"
+               },
+               {
+                  "X": 44,
+                  "Y": 116,
+                  "Width": 12,
+                  "Height": 13,
+                  "Name": "Death3"
+               },
+               {
+                  "X": 7,
+                  "Y": 174,
+                  "Width": 12,
+                  "Height": 19,
+                  "Name": "Climb1"
+               },
+               {
+                  "X": 26,
+                  "Y": 174,
+                  "Width": 10,
+                  "Height": 20,
+                  "Name": "Climb2"
+               },
+               {
+                  "X": 90,
+                  "Y": 182,
+                  "Width": 8,
+                  "Height": 5,
+                  "Name": "Acid1"
+               },
+               {
+                  "X": 107,
+                  "Y": 182,
+                  "Width": 10,
+                  "Height": 5,
+                  "Name": "Acid2"
                }
             ]
          },

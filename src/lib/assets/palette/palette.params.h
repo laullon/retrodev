@@ -25,11 +25,13 @@ namespace RetrodevLib {
 		//
 		// Present only during a specific game level (swapped in when that level loads)
 		//
-		Level,
+			Level,
 		//
-		// Present only while the raster beam is inside the zone's scanline range
+		// Always present within this zone across all levels (zone-scoped permanent participant).
+		// Unlike Always, colors are not shared across zones — they are added on top of the
+		// global Always base for this zone only.
 		//
-		ScreenZone
+			ZoneAlways
 	};
 	//
 	// One graphics item that participates in a palette zone.
@@ -50,8 +52,9 @@ namespace RetrodevLib {
 		//
 		PaletteParticipantRole role = PaletteParticipantRole::Always;
 		//
-		// Optional free-text tag (e.g. a level name, a zone nickname).
-		// Ignored when role is Always.
+		// Level tag — only used when role is Level.
+		// Groups Level participants that appear together (e.g. "Level1", "World2").
+		// Ignored for Always and ZoneAlways roles.
 		//
 		std::string tag;
 	};
@@ -84,17 +87,37 @@ namespace RetrodevLib {
 		std::vector<PaletteParticipant> participants;
 	};
 	//
-	// Method used to cap the union palette when the number of unique colors across all
+	// Method used to handle the palette when the number of unique colors across all
 	// participants exceeds the hardware pen budget.
 	//
-	enum class PaletteCapMethod {
+	enum class PaletteOverflowMethod {
 		//
 		// Truncate the union list at pensAvailable.
 		// Priority order (Always > Zone > Level) ensures the most important colors survive.
 		// Colors beyond the cap are dropped; participants using them are remapped to the
 		// nearest surviving color during the final forced conversion pass.
 		//
-		HardCap
+		HardCap,
+		//
+		// For each overflow color, find the accepted entry it is closest to (by RGB distance),
+		// then replace that accepted entry with the system color nearest to the 50/50 RGB
+		// midpoint of the two. Accepted colors are pulled toward their overflow neighbors,
+		// packing more perceptual variety into the available pens at the cost of accuracy.
+		//
+		SoftCap,
+		//
+		// Like SoftCap but the blend is 67% accepted + 33% overflow. The accepted palette
+		// shifts only slightly toward overflow colors, preserving dominant color fidelity
+		// better while still gaining some perceptual coverage from overflow entries.
+		//
+		WeightedBlend,
+		//
+		// Cluster each overflow color with the accepted entry it is nearest to, then replace
+		// that accepted entry with the RGB centroid (equal-weight average) of the full cluster.
+		// When multiple overflow colors compete for the same accepted entry the centroid absorbs
+		// all of them, spreading the compromise evenly across the whole group.
+		//
+		Median
 	};
 	//
 	// Top-level parameters for a palette build item.
@@ -110,9 +133,9 @@ namespace RetrodevLib {
 		//
 		std::string targetPaletteType;
 		//
-		// Method used to reduce the union palette when it overflows the pen budget
+		// Method used to handle the palette when it overflows the pen budget
 		//
-		PaletteCapMethod capMethod = PaletteCapMethod::HardCap;
+		PaletteOverflowMethod overflowMethod = PaletteOverflowMethod::HardCap;
 		//
 		// Screen zones (at least one is always present)
 		//

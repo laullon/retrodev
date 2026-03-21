@@ -19,6 +19,7 @@ namespace RetrodevGui {
 		bool extractionTriggered = false;
 		bool addSpriteRequested = false;
 		bool selectionModeActive = false;
+		bool cancelRequested = false;
 	};
 
 	class SpriteExtractionWidget {
@@ -28,11 +29,20 @@ namespace RetrodevGui {
 		// Returns result indicating if parameters changed or actions were triggered
 		//
 		static SpriteExtractionWidgetResult Render(RetrodevLib::SpriteExtractionParams* spriteParams, std::shared_ptr<RetrodevLib::ISpriteExtractor> spriteExtractor,
-												   int selectedSpriteIndex);
+											   int selectedSpriteIndex, int constraintW = 1, int constraintH = 1);
 		//
 		// Check if selection mode is active
 		//
 		static bool IsSelectionModeActive();
+		//
+		// Returns true when the pixel-grid constraint checkbox is checked
+		//
+		static bool IsConstrainActive();
+		//
+		// Returns the active horizontal and vertical size constraint multiples
+		//
+		static int GetConstraintW();
+		static int GetConstraintH();
 		//
 		// Set selection mode state
 		//
@@ -61,5 +71,18 @@ namespace RetrodevGui {
 		static int m_selectionWidth;
 		static int m_selectionHeight;
 		static std::string m_pendingSpriteName;
+		static bool m_constrainToGrid;
+		static int m_constraintW;
+		static int m_constraintH;
+		//
+		// Previous constraint values — used to detect mode changes and reset the checkbox
+		//
+		static int m_prevConstraintW;
+		static int m_prevConstraintH;
+		//
+		// Previous values for direction-aware snapping
+		//
+		static int m_prevSpriteWidth;
+		static int m_prevSpriteHeight;
 	};
 } // namespace RetrodevGui

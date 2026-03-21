@@ -23,6 +23,7 @@
     <None Include="$(MSBuildThisFileDirectory)bld\ext\clang.csx" />
     <None Include="$(MSBuildThisFileDirectory)bld\ext\clang.doc.csx" />
     <None Include="$(MSBuildThisFileDirectory)bld\ext\git.csx" />
+    <None Include="$(MSBuildThisFileDirectory)doc\changelog.md" />
     <None Include="$(MSBuildThisFileDirectory)doc\tech\adding-systems.md" />
     <None Include="$(MSBuildThisFileDirectory)doc\tech\building.md" />
     <None Include="$(MSBuildThisFileDirectory)doc\tech\contributing.md" />
@@ -58,6 +59,7 @@
     <None Include="$(MSBuildThisFileDirectory)readme.md" />
     <None Include="$(MSBuildThisFileDirectory)src\retro.dev.gui.csx" />
     <None Include="$(MSBuildThisFileDirectory)src\retro.dev.lib.csx" />
+    <None Include="$(MSBuildThisFileDirectory)tmp\rasm.bug.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ext\imgui.cfg\retrodev.imconfig.h" />

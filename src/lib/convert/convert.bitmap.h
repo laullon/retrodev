@@ -57,9 +57,12 @@ namespace RetrodevLib {
 		virtual Image::Size GetDefaultResolution(int targetMode) = 0;
 
 		//
-		// Returns the pixel size for the given parameters
+		// Returns the minimum width/height multiple (in pixels) required by the platform's
+		// pixel encoding to fit whole bytes. Width is typically > 1 (e.g. 2 for CPC Mode 0
+		// where one byte encodes 2 pixels); height is usually 1 unless the platform packs
+		// rows differently. Use this to constrain extracted sprite/tile dimensions.
 		//
-		virtual Image::Size GetPixelSize(const GFXParams* params) = 0;
+		virtual Image::Size GetEncodingAlignment(const GFXParams* params) = 0;
 
 		//
 		// Get the original image to be converted
