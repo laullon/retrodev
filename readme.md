@@ -5,6 +5,8 @@
 
 > **A development environment for retro 8-bit and 16-bit home computer software.**
 
+<div align="center"><a href="https://github.com/tlotb/retrodev/releases/latest"><img src="https://img.shields.io/badge/⬇_Download_Latest_Release-2ea44f?style=for-the-badge" alt="Download Latest Release" /></a></div>
+
 ---
 
 ## Table of Contents
@@ -102,8 +104,6 @@ For the complete documentation on scripted export, click [here](doc/usage/export
 ### Download
 
 The latest release is available on the [GitHub Releases page](https://github.com/tlotb/retrodev/releases/latest).
-
-> ⚠️ **Placeholder** — the GitHub release link above will be active once the first public release is published.
 
 Download the `.zip` archive for your platform and follow the installation instructions below.
 
@@ -405,9 +405,10 @@ The following ImGui widgets were adapted from community sources and in several c
 
 ### Images
 
-Graphical content generated with DALL-E (Retrodev Logo & co)
-Example Graphics:
-Alien sprites and platform tiles: Mr.Capa: https://capasoft.eu
+| Image | Author | Notes |
+|---|---|---|
+| Retrodev Logo & co | DALL-E (AI generated) | |
+| Alien sprites and platform tiles | [Mr.Capa](https://capasoft.eu) | Example graphics |
 
 ---
 

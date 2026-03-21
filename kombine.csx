@@ -454,6 +454,13 @@ int publish(string[] args) {
 		Folders.CopyOptions.IncludeSubFolders |
 		Folders.CopyOptions.OnlyModifiedFiles);
 	//
+	// Strip debug and local-settings files that must not ship in the release package
+	//
+	foreach (string pdb in System.IO.Directory.GetFiles(stagingDir, "*.pdb", System.IO.SearchOption.AllDirectories))
+		System.IO.File.Delete(pdb);
+	foreach (string ini in System.IO.Directory.GetFiles(stagingDir, "*.ini", System.IO.SearchOption.AllDirectories))
+		System.IO.File.Delete(ini);
+	//
 	// Copy sdk/ only if it is not already present in the binary output (the build action
 	// syncs it there, but we include the canonical root copy for the package)
 	//
