@@ -1,3 +1,5 @@
+## Version 0.9.24114562
+
 ### Features
 - Update palette solver
 	- Now it allows different solving methods
