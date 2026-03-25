@@ -65,6 +65,9 @@ namespace RetrodevGui {
 		}
 		bool ok = RetrodevLib::SourceBuild::Build(params);
 		std::filesystem::current_path(prevCwd);
+		// Clear any modified flags that the build process may have set on project data.
+		RetrodevLib::Project::ClearModified();
+		RetrodevGui::DocumentsView::ClearAllModifiedFlags();
 		return ok;
 	}
 	//
