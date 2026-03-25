@@ -1,17 +1,18 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Tile list widget -- thumbnail grid of extracted tiles.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
 #include <retrodev.lib.h>
 #include <memory>
+#include <vector>
 
 namespace RetrodevGui {
 	//
@@ -24,10 +25,17 @@ namespace RetrodevGui {
 		// Render result structure
 		//
 		struct RenderResult {
-			bool tileSelected = false;
-			int selectedTileIndex = -1;
-			bool tileDeleted = false;
-			int deletedTileIndex = -1;
+			//
+			// Selection change: newSelection holds the full set; primaryIndex is the last clicked tile
+			//
+			bool selectionChanged = false;
+			std::vector<int> newSelection;
+			int primaryIndex = -1;
+			//
+			// Tile toggle (delete/undelete): all indices in toggleIndices are toggled
+			//
+			bool tileToggled = false;
+			std::vector<int> toggleIndices;
 		};
 		//
 		// Render the tile list widget
@@ -36,7 +44,14 @@ namespace RetrodevGui {
 		// tileParams: Parameters used for extraction (needed to show deleted tiles)
 		// imageWidth, imageHeight: Dimensions of the source image (to calculate total grid)
 		//
-		static RenderResult Render(std::shared_ptr<RetrodevLib::ITileExtractor> tileExtractor, const RetrodevLib::TileExtractionParams* tileParams = nullptr, int imageWidth = 0,
-								   int imageHeight = 0);
+		static RenderResult Render(std::shared_ptr<RetrodevLib::ITileExtractor> tileExtractor, const RetrodevLib::TileExtractionParams* tileParams,
+								   const std::vector<int>& selectedIndices, int primaryIndex, int imageWidth = 0, int imageHeight = 0);
+
+	private:
+		//
+		// Persistent selection state
+		//
+		static std::vector<int> m_selectedIndices;
+		static int m_lastClickedIndex;
 	};
-} // namespace RetrodevGui
+}

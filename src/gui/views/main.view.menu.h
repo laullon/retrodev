@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Main view -- menu bar.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -23,6 +26,12 @@ namespace RetrodevGui {
 		// Returns true when the application should exit the run loop.
 		//
 		static bool ShouldQuit();
+
+		//
+		// Must be called during initialization (before the first frame) to register
+		// the INI settings handler that persists the last used project folder.
+		//
+		static void RegisterSettingsHandler();
 
 	private:
 		//

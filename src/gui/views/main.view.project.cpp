@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Main view -- project panel (SDK, Project, Files trees).
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -61,19 +64,22 @@ namespace RetrodevGui {
 		ImGui::TextEditor::ClearCodeLensData();
 		if (projectRootPath.empty())
 			return;
-		std::error_code ec;
-		for (std::filesystem::recursive_directory_iterator it(projectRootPath, ec), end; it != end && !ec; it.increment(ec)) {
-			const auto& entry = *it;
-			if (entry.is_directory())
-				continue;
-			const std::filesystem::path filePath = entry.path();
-			if (!RetrodevLib::Project::IsFileInProject(filePath.string()))
-				continue;
-			ImGui::TextEditor::LanguageDefinitionId language = GetCodeLensLanguageForPath(filePath);
-			if (language == ImGui::TextEditor::LanguageDefinitionId::None)
-				continue;
-			ImGui::TextEditor::EnqueueCodeLensFile(filePath.string(), language);
-		}
+		// Iterate the registered file lists directly instead of scanning the filesystem.
+		// A filesystem scan starting at projectRootPath would miss SDK files whose stored
+		// paths begin with $(sdk) and resolve to a directory outside the project root.
+		// Project::ExpandPath() resolves both $(sdk)/... and regular relative paths to
+		// absolute paths that can be directly passed to EnqueueCodeLensFile.
+		auto enqueueStoredPaths = [](const std::vector<std::string>& storedPaths) {
+			for (const auto& storedPath : storedPaths) {
+				std::string absPath = RetrodevLib::Project::ExpandPath(storedPath);
+				ImGui::TextEditor::LanguageDefinitionId language = GetCodeLensLanguageForPath(std::filesystem::path(absPath));
+				if (language == ImGui::TextEditor::LanguageDefinitionId::None)
+					continue;
+				ImGui::TextEditor::EnqueueCodeLensFile(absPath, language);
+			}
+		};
+		enqueueStoredPaths(RetrodevLib::Project::GetSourceFiles());
+		enqueueStoredPaths(RetrodevLib::Project::GetScriptFiles());
 	}
 	//
 	// New Map dialog state
@@ -1591,4 +1597,4 @@ namespace RetrodevGui {
 		}
 		ImGui::PopStyleVar();
 	}
-} // namespace RetrodevGui
+}

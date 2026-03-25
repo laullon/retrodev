@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Tileset export engine -- runs AngelScript export scripts for tileset items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -22,7 +25,7 @@ namespace RetrodevLib {
 	namespace ExportImpl {
 
 		// ---------------------------------------------------------------- //
-		// TilesetExportContext — wraps converter, extractor and params      //
+		// TilesetExportContext -- wraps converter, extractor and params      //
 		// for script access during tileset export                           //
 		// ---------------------------------------------------------------- //
 
@@ -79,6 +82,12 @@ namespace RetrodevLib {
 			// Returns the value string if the key is found, or an empty string if absent.
 			//
 			std::string GetParam(const std::string& key) const;
+			//
+			// Transparency settings -- forwarded from ResizeParams so export scripts can
+			// handle transparent pixels without falling back to a per-pixel warning.
+			//
+			bool GetUseTransparentColor() const;
+			int GetTransparentPen() const;
 		};
 
 		//
@@ -90,12 +99,12 @@ namespace RetrodevLib {
 		//
 		// Load, compile, execute and discard a tileset export script.
 		// The script must define: void Export(const string &in, TilesetExportContext@)
-		//   outputPath — destination file path the script should write to
-		//   context    — extractor and params for iterating tiles and querying details
+		//   outputPath -- destination file path the script should write to
+		//   context    -- extractor and params for iterating tiles and querying details
 		// Returns false if any step fails; errors are logged via Log::Error.
 		//
 		bool RunTilesetExport(const std::string& scriptPath, const std::string& outputPath, const std::string& scriptParams, IBitmapConverter* converter, const GFXParams* params,
 							  ITileExtractor* tileExtractor, const TileExtractionParams* tileParams);
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

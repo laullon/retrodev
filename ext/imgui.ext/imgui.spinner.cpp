@@ -119,16 +119,11 @@ namespace ImGui {
 		const float sinA = ImSin(angle);
 		// Fade in over 1 second from the moment the indicator became visible
 		const double elapsed = g.Time - started_showing_at;
-		const float fadeIn = (float)ImMin(elapsed, 1.0) ;
+		const float fadeIn = (float)ImMin(elapsed, 1.0);
 		const ImU32 color = IM_COL32(0, 220, 180, (int)(fadeIn * 255.0f));
 		// Draw the rotated filled quad
-		ImGui::GetWindowDrawList()->AddQuadFilled(
-			cursor + ImRotate(ImVec2(-size, -size), cosA, sinA),
-			cursor + ImRotate(ImVec2(+size, -size), cosA, sinA),
-			cursor + ImRotate(ImVec2(+size, +size), cosA, sinA),
-			cursor + ImRotate(ImVec2(-size, +size), cosA, sinA),
-			color
-		);
+		ImGui::GetWindowDrawList()->AddQuadFilled(cursor + ImRotate(ImVec2(-size, -size), cosA, sinA), cursor + ImRotate(ImVec2(+size, -size), cosA, sinA),
+												  cursor + ImRotate(ImVec2(+size, +size), cosA, sinA), cursor + ImRotate(ImVec2(-size, +size), cosA, sinA), color);
 		// Advance the cursor so subsequent widgets lay out correctly
 		const ImGuiID id = ImGui::GetCurrentWindow()->GetID(label);
 		const ImRect bb(cursor - ImVec2(size, size), cursor + ImVec2(size, size));
@@ -174,11 +169,7 @@ namespace ImGui {
 			color.y = main_color.y * growth + backdrop_color.y * (1.0f - growth);
 			color.z = main_color.z * growth + backdrop_color.z * (1.0f - growth);
 			color.w = 1.0f;
-			window->DrawList->AddCircleFilled(
-				ImVec2(pos.x + indicator_radius + x, pos.y + indicator_radius - y),
-				circle_radius + growth * circle_radius,
-				GetColorU32(color)
-			);
+			window->DrawList->AddCircleFilled(ImVec2(pos.x + indicator_radius + x, pos.y + indicator_radius - y), circle_radius + growth * circle_radius, GetColorU32(color));
 		}
 	}
 

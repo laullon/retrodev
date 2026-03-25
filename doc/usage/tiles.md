@@ -76,17 +76,64 @@ Tile extraction always operates on the native-resolution converted image, not on
 
 Clicking **Extract Tiles** re-runs the full conversion and then slices the converted image into tiles according to the current parameters. The tile list updates immediately to show the new results. Extraction must be triggered manually after adjusting parameters.
 
+Two further buttons appear below **Extract Tiles**:
+
+- **Remove Duplicates** — compares the raw pixel data of every non-deleted tile against all tiles that precede it in the grid. Any tile whose pixels are identical to an earlier tile is marked as deleted. The number of tiles removed is logged to the Console. The button is disabled until at least one tile has been extracted.
+- **Undelete All** — clears the entire deleted-tiles list, restoring all previously deleted tiles to active. The number of tiles restored is logged to the Console. The button is disabled when there are no deleted tiles.
+
+### Pack to Grid
+
+**Pack to Grid** is a pre-processing step for source images where the tile graphics are scattered irregularly across the image, separated by a solid background colour, rather than already being arranged in a regular grid.
+
+Pressing **Pack to Grid** detects every content region in the converted image and computes the bounding box of each region. It then finds the **smallest detected region** and uses its dimensions as the base tile unit. Any region whose bounding box is larger than that unit is subdivided into a grid of cells matching the smallest size — this handles source images where a background graphic is composed of several tiles placed side by side, which would otherwise be merged into one oversized bounding box. All resulting cells are rearranged into a new uniform grid image. The tile extractor then works on that packed image using the automatically detected cell dimensions. No manual offset or padding adjustments are needed after packing.
+
+The following options control the detection:
+
+| Option | Description |
+|---|---|
+| Background (colour picker) | The solid background / separator colour surrounding the tile chunks. Set this to the fill colour of the source image (e.g. magenta). |
+| Sample | Reads the colour of pixel (0, 0) from the converted image and sets it as the background colour. Useful when the background is a uniform flood fill. |
+| Merge gap | Pixel gap between adjacent detected regions that will be merged into a single bounding box before packing. Use 0 to keep all regions as separate bounding boxes. Increase this value when a single logical tile is made up of closely spaced sub-regions. Large merged bounding boxes are subsequently subdivided by the smallest detected tile unit. |
+| Cell padding | Pixel gap inserted between cells in the packed output image. |
+| Columns | Number of columns in the packed grid. 0 selects automatic layout (nearest square root of the region count). |
+
+After packing:
+
+- The tile width and height parameters are updated automatically to match the detected cell dimensions.
+- All offset and padding parameters are reset to 0.
+- The deleted-tiles list is cleared.
+- Tiles are extracted immediately from the packed image.
+- The left panel of the dual viewer shows the packed image instead of the full converted preview.
+
+To revert to the original converter output, adjust the parameters and press **Extract Tiles**. This clears the packed image and re-extracts from the converter result.
+
 ### Tile list
 
 The tile list shows all tile positions in the grid as 64×64 pixel thumbnails arranged in rows. The number of columns adjusts automatically to the available panel width.
 
-Clicking a tile selects it. The selected tile appears in the right panel of the dual viewer, and a selection rectangle is drawn over its position in the left (full preview) panel.
+**Selection**
 
-A tooltip appears on hover showing the tile index and its pixel dimensions. For deleted tiles the tooltip shows **DELETED** instead of the dimensions.
+The tile list supports multiselection:
+
+- **Plain click** — selects the clicked tile and clears any previous selection.
+- **Ctrl+click** — toggles the clicked tile in or out of the current selection without clearing it.
+- **Shift+click** — range-selects all tiles from the last clicked tile to the current one, adding them to the current selection.
+
+The primary tile (last clicked) is highlighted with a gold border. Other selected tiles are highlighted with a white border. The right panel of the dual viewer shows the primary tile in isolation, and a selection rectangle is drawn over its position in the left (full preview) panel.
+
+A tooltip appears on hover showing the tile index and its pixel dimensions. For deleted tiles the tooltip shows **DELETED** instead of the dimensions. When more than one tile is selected the tooltip also shows the total selection count.
 
 **Deleting and restoring tiles**
 
-Right-clicking a tile opens a context menu with a single action: **Delete** or **Undelete**, depending on the current state of that tile. Deleted tiles remain visible in the list but are rendered as a dark red placeholder with a red cross drawn over them. Their index label is shown in red. Deleted tiles are excluded from export.
+Right-clicking a tile opens a context menu that operates on the entire current selection. If the right-clicked tile is not already selected it first becomes the sole selection. The menu adapts to the state of the selection:
+
+- **All active** — shows **Delete** (single tile) or **Delete All** (multiple tiles).
+- **All deleted** — shows **Undelete** (single tile) or **Undelete All** (multiple tiles).
+- **Mixed** — shows **Delete Active** and **Undelete Deleted** as separate entries, each acting only on the relevant subset.
+
+Deleted tiles remain visible in the list but are rendered as a dark red placeholder with a red cross drawn over them. Their index label is shown in red. Deleted tiles are excluded from export.
+
+To restore all deleted tiles at once, click **Undelete All** in the tooling panel. To mark all pixel-identical tiles as deleted in one step, click **Remove Duplicates**. Both buttons are described in the [Extract Tiles button](#extract-tiles-button) section above.
 
 ## Using tiles in a map
 

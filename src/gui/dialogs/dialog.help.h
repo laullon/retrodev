@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Help dialog -- built-in documentation viewer with topic navigator.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -54,4 +57,4 @@ namespace RetrodevGui {
 		static inline bool m_logoLoaded = false;
 	};
 
-} // namespace RetrodevGui
+}

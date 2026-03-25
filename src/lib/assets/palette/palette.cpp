@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Palette asset -- hardware pen assignment and colour lookup.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -93,7 +95,7 @@ namespace RetrodevLib {
 		}
 		//
 		// Build GFXParams from the item's own stored settings; override the palette type.
-		// Do NOT seed any occupied slots — quantizer runs freely to find this image's best colors.
+		// Do NOT seed any occupied slots -- quantizer runs freely to find this image's best colors.
 		// UseSourcePalette is suppressed: the solver does its own free quantization.
 		// Clear all lock/enable/color arrays now, before GetBitmapConverter reads them,
 		// so a previous Validate() pass cannot leave pens locked and block re-collection.
@@ -117,6 +119,14 @@ namespace RetrodevLib {
 		gfx.SParams.PaletteLocked.assign(maxPens, false);
 		gfx.SParams.PaletteEnabled.assign(maxPens, true);
 		gfx.SParams.PaletteColors.assign(maxPens, -1);
+		//
+		// If this asset has a raw-data transparent pen, disable that pen slot so the
+		// quantizer never assigns any color to it. The slot is reserved exclusively
+		// for the export-time transparency key; no image color should ever land there.
+		//
+		int transparentPenSlot = gfx.RParams.TransparentPen;
+		if (transparentPenSlot >= 0 && transparentPenSlot < maxPens)
+			gfx.SParams.PaletteEnabled[transparentPenSlot] = false;
 		if (gfx.RParams.TargetWidth == 0 || gfx.RParams.TargetHeight == 0) {
 			gfx.RParams.TargetWidth = 1;
 			gfx.RParams.TargetHeight = 1;
@@ -124,11 +134,16 @@ namespace RetrodevLib {
 		converter->SetOriginal(image);
 		converter->Convert(&gfx);
 		//
-		// Collect unique assigned color indices in pen order
+		// Collect unique assigned color indices in pen order.
+		// The transparent pen slot was disabled above so the quantizer will never have
+		// assigned a color to it; the explicit skip here is a safety guard only.
 		//
 		auto palette = converter->GetPalette();
+		int transparentPen = gfx.RParams.TransparentPen;
 		std::vector<int> colors;
 		for (int i = 0; i < maxPens; i++) {
+			if (i == transparentPen)
+				continue;
 			if (palette->PenGetUsed(i))
 				colors.push_back(palette->PenGetColorIndex(i));
 		}
@@ -190,6 +205,17 @@ namespace RetrodevLib {
 			gfx.SParams.PaletteLocked[i] = true;
 			gfx.SParams.PaletteEnabled[i] = true;
 		}
+		//
+		// If this asset has a raw-data transparent pen, disable that slot so the
+		// remapping pass never maps any pixel to it. The fixed palette color that
+		// other assets placed in that slot is irrelevant for this asset.
+		//
+		int transparentPenSlot = gfx.RParams.TransparentPen;
+		if (transparentPenSlot >= 0 && transparentPenSlot < maxPens) {
+			gfx.SParams.PaletteEnabled[transparentPenSlot] = false;
+			gfx.SParams.PaletteLocked[transparentPenSlot] = false;
+			gfx.SParams.PaletteColors[transparentPenSlot] = -1;
+		}
 		if (gfx.RParams.TargetWidth == 0 || gfx.RParams.TargetHeight == 0) {
 			gfx.RParams.TargetWidth = 1;
 			gfx.RParams.TargetHeight = 1;
@@ -229,12 +255,14 @@ namespace RetrodevLib {
 				usedPens++;
 			}
 			//
-			// Build the message: method name + pen count
+			// Build the message: method name + pen count, plus transparent pen note when applicable
 			//
-			static const char* kMethodNames[] = {"Hard Cap", "Soft Cap", "Weighted Blend", "Median"};
-			const char* methodName = kMethodNames[(int)overflowMethod];
-			result.message = std::string(methodName) + "  \xc2\xb7  " + std::to_string(usedPens) + " pen(s) assigned";
-		}
+				static const char* kMethodNames[] = {"Hard Cap", "Soft Cap", "Weighted Blend", "Median"};
+				const char* methodName = kMethodNames[(int)overflowMethod];
+				result.message = std::string(methodName) + "  \xc2\xb7  " + std::to_string(usedPens) + " pen(s) assigned";
+				if (gfx.RParams.UseTransparentColor && transparentPenSlot >= 0)
+					result.message += "  \xc2\xb7  +1 transparent (pen " + std::to_string(transparentPenSlot) + ")";
+			}
 		result.status = PaletteParticipantStatus::OK;
 		return result;
 	}
@@ -267,8 +295,66 @@ namespace RetrodevLib {
 		return unionPalette;
 	}
 	//
+	// After CapPalette assigns colors to pen slots, remap the fixed palette so that each
+	// transparent pen slot holds a color that is NOT needed by any transparency-using
+	// participant.  This prevents those participants from losing access to a color just
+	// because it happens to sit in a pen slot they cannot use.
+	//
+	// fixedPalette   : in/out pen-slot-indexed color list (fixedPalette[penSlot] = colorIdx)
+	// transparentSlots : set of pen slots used as transparent by at least one participant
+	// neededByTransparents : set of color indices that transparency-using participants need
+	//
+	// For every transparent slot whose current color IS needed by transparency-using
+	// participants the function looks for a non-transparent slot whose color is NOT needed
+	// by them and swaps the two.  If no such swap candidate exists the slot is left as-is
+	// (the situation is unresolvable without adding more pens).
+	//
+	static void RemapTransparentPenSlots(std::vector<int>& fixedPalette,
+										 const std::vector<int>& transparentSlots,
+										 const std::vector<bool>& neededByTransparents) {
+		if (transparentSlots.empty())
+			return;
+		//
+		// Build a quick lookup for which slots are transparent
+		//
+		std::vector<bool> isTransparentSlot(fixedPalette.size(), false);
+		for (int t : transparentSlots)
+			if (t >= 0 && t < (int)fixedPalette.size())
+				isTransparentSlot[t] = true;
+		//
+		// For each transparent slot: if its color is needed by transparency-using participants,
+		// swap it with the first non-transparent slot whose color is not needed by them.
+		//
+		for (int t : transparentSlots) {
+			if (t < 0 || t >= (int)fixedPalette.size())
+				continue;
+			int colorAtSlot = fixedPalette[t];
+			bool needed = (colorAtSlot >= 0 && colorAtSlot < (int)neededByTransparents.size() && neededByTransparents[colorAtSlot]);
+			if (!needed)
+				continue;
+			//
+			// Find a non-transparent slot whose color is not needed by transparency-using participants
+			//
+			for (int s = 0; s < (int)fixedPalette.size(); s++) {
+				if (isTransparentSlot[s])
+					continue;
+				int colorAtS = fixedPalette[s];
+				bool sNeeded = (colorAtS >= 0 && colorAtS < (int)neededByTransparents.size() && neededByTransparents[colorAtS]);
+				if (!sNeeded) {
+					//
+					// Swap: the transparent slot now holds a disposable color; the needed
+					// color moves to a slot that transparency-using participants can access.
+					//
+					fixedPalette[t] = colorAtS;
+					fixedPalette[s] = colorAtSlot;
+					break;
+				}
+			}
+		}
+	}
+	//
 	// Apply the cap method to reduce unionPalette to at most pensAvailable entries.
-	// palette: system palette converter used for RGB↔index lookups (required for all methods
+	// palette: system palette converter used for RGB<->index lookups (required for all methods
 	//          except HardCap; may be nullptr, which forces a fallback to HardCap).
 	// outRemaps: optional; receives one OverflowRemap entry per color that exceeded the budget.
 	// Returns the capped palette and sets overflow to the number of dropped colors.
@@ -345,21 +431,24 @@ namespace RetrodevLib {
 					}
 				}
 				RgbColor accRgb = palette->GetSystemColorByIndex(accepted[bestSlot]);
-				RgbColor mid(
-					(uint8_t)((accRgb.r + ovRgb.r) / 2),
-					(uint8_t)((accRgb.g + ovRgb.g) / 2),
-					(uint8_t)((accRgb.b + ovRgb.b) / 2));
+				RgbColor mid((uint8_t)((accRgb.r + ovRgb.r) / 2), (uint8_t)((accRgb.g + ovRgb.g) / 2), (uint8_t)((accRgb.b + ovRgb.b) / 2));
 				int resultIdx = palette->GetSystemIndexByColor(mid, "");
 				if (outRemaps) {
 					PaletteTagSolution::OverflowRemap rm;
 					rm.overflowColorIndex = unionPalette[i];
-					rm.overflowR = ovRgb.r; rm.overflowG = ovRgb.g; rm.overflowB = ovRgb.b;
+					rm.overflowR = ovRgb.r;
+					rm.overflowG = ovRgb.g;
+					rm.overflowB = ovRgb.b;
 					rm.slot = bestSlot;
 					rm.nearestColorIndex = accepted[bestSlot];
-					rm.nearestR = accRgb.r; rm.nearestG = accRgb.g; rm.nearestB = accRgb.b;
+					rm.nearestR = accRgb.r;
+					rm.nearestG = accRgb.g;
+					rm.nearestB = accRgb.b;
 					RgbColor resultRgb = palette->GetSystemColorByIndex(resultIdx);
 					rm.resultColorIndex = resultIdx;
-					rm.resultR = resultRgb.r; rm.resultG = resultRgb.g; rm.resultB = resultRgb.b;
+					rm.resultR = resultRgb.r;
+					rm.resultG = resultRgb.g;
+					rm.resultB = resultRgb.b;
 					rm.dropped = false;
 					outRemaps->push_back(rm);
 				}
@@ -368,7 +457,7 @@ namespace RetrodevLib {
 			return accepted;
 		}
 		//
-		// WeightedBlend: like SoftCap but 67% accepted + 33% overflow — preserves dominant
+		// WeightedBlend: like SoftCap but 67% accepted + 33% overflow -- preserves dominant
 		// colors better while still pulling toward overflow neighbors.
 		//
 		if (method == PaletteOverflowMethod::WeightedBlend) {
@@ -384,21 +473,24 @@ namespace RetrodevLib {
 					}
 				}
 				RgbColor accRgb = palette->GetSystemColorByIndex(accepted[bestSlot]);
-				RgbColor blended(
-					(uint8_t)((accRgb.r * 2 + ovRgb.r) / 3),
-					(uint8_t)((accRgb.g * 2 + ovRgb.g) / 3),
-					(uint8_t)((accRgb.b * 2 + ovRgb.b) / 3));
+				RgbColor blended((uint8_t)((accRgb.r * 2 + ovRgb.r) / 3), (uint8_t)((accRgb.g * 2 + ovRgb.g) / 3), (uint8_t)((accRgb.b * 2 + ovRgb.b) / 3));
 				int resultIdx = palette->GetSystemIndexByColor(blended, "");
 				if (outRemaps) {
 					PaletteTagSolution::OverflowRemap rm;
 					rm.overflowColorIndex = unionPalette[i];
-					rm.overflowR = ovRgb.r; rm.overflowG = ovRgb.g; rm.overflowB = ovRgb.b;
+					rm.overflowR = ovRgb.r;
+					rm.overflowG = ovRgb.g;
+					rm.overflowB = ovRgb.b;
 					rm.slot = bestSlot;
 					rm.nearestColorIndex = accepted[bestSlot];
-					rm.nearestR = accRgb.r; rm.nearestG = accRgb.g; rm.nearestB = accRgb.b;
+					rm.nearestR = accRgb.r;
+					rm.nearestG = accRgb.g;
+					rm.nearestB = accRgb.b;
 					RgbColor resultRgb = palette->GetSystemColorByIndex(resultIdx);
 					rm.resultColorIndex = resultIdx;
-					rm.resultR = resultRgb.r; rm.resultG = resultRgb.g; rm.resultB = resultRgb.b;
+					rm.resultR = resultRgb.r;
+					rm.resultG = resultRgb.g;
+					rm.resultB = resultRgb.b;
 					rm.dropped = false;
 					outRemaps->push_back(rm);
 				}
@@ -456,10 +548,8 @@ namespace RetrodevLib {
 					// original priority position.
 					//
 					RgbColor accRgb = palette->GetSystemColorByIndex(accepted[s]);
-					RgbColor centroid(
-						(uint8_t)((sumR[s] / count[s] + accRgb.r) / 2),
-						(uint8_t)((sumG[s] / count[s] + accRgb.g) / 2),
-						(uint8_t)((sumB[s] / count[s] + accRgb.b) / 2));
+					RgbColor centroid((uint8_t)((sumR[s] / count[s] + accRgb.r) / 2), (uint8_t)((sumG[s] / count[s] + accRgb.g) / 2),
+									  (uint8_t)((sumB[s] / count[s] + accRgb.b) / 2));
 					accepted[s] = palette->GetSystemIndexByColor(centroid, "");
 				}
 			}
@@ -472,12 +562,18 @@ namespace RetrodevLib {
 					RgbColor resultRgb = palette->GetSystemColorByIndex(accepted[slot]);
 					PaletteTagSolution::OverflowRemap rm;
 					rm.overflowColorIndex = unionPalette[ovIdx];
-					rm.overflowR = ovRgb.r; rm.overflowG = ovRgb.g; rm.overflowB = ovRgb.b;
+					rm.overflowR = ovRgb.r;
+					rm.overflowG = ovRgb.g;
+					rm.overflowB = ovRgb.b;
 					rm.slot = slot;
 					rm.nearestColorIndex = acceptedBefore[slot];
-					rm.nearestR = nearRgb.r; rm.nearestG = nearRgb.g; rm.nearestB = nearRgb.b;
+					rm.nearestR = nearRgb.r;
+					rm.nearestG = nearRgb.g;
+					rm.nearestB = nearRgb.b;
 					rm.resultColorIndex = accepted[slot];
-					rm.resultR = resultRgb.r; rm.resultG = resultRgb.g; rm.resultB = resultRgb.b;
+					rm.resultR = resultRgb.r;
+					rm.resultG = resultRgb.g;
+					rm.resultB = resultRgb.b;
 					rm.dropped = false;
 					outRemaps->push_back(rm);
 				}
@@ -507,7 +603,7 @@ namespace RetrodevLib {
 		ts.participantResults = results;
 		ts.overflowRemaps = std::move(remaps);
 		//
-		// Convert the fixed palette back into occupiedSlots (pen i → fixedPalette[i], rest -1)
+		// Convert the fixed palette back into occupiedSlots (pen i -> fixedPalette[i], rest -1)
 		//
 		ts.occupiedSlots.assign(pensAvailable, -1);
 		for (int i = 0; i < (int)fixedPalette.size() && i < pensAvailable; i++)
@@ -521,8 +617,8 @@ namespace RetrodevLib {
 	// Pass 3: per level-tag, collect Level participant colors, merge on top of zone base, cap, final-convert.
 	//
 	static PaletteZoneSolution SolveZone(int zoneIndex, const PaletteZone& zone, const std::string& targetSystem, const std::string& targetPaletteType,
-									 const std::string& projectFolder, PaletteOverflowMethod overflowMethod, const std::vector<int>& alwaysColors,
-									 std::vector<PaletteTagSolution::OverflowRemap> alwaysRemaps = {}) {
+										 const std::string& projectFolder, PaletteOverflowMethod overflowMethod, const std::vector<int>& alwaysColors,
+										 std::vector<PaletteTagSolution::OverflowRemap> alwaysRemaps = {}) {
 		const std::string& targetMode = zone.targetMode;
 		PaletteZoneSolution zoneSolution;
 		zoneSolution.zoneIndex = zoneIndex;
@@ -592,6 +688,35 @@ namespace RetrodevLib {
 		std::vector<PaletteTagSolution::OverflowRemap> zoneRemaps;
 		std::vector<int> zoneFixed = CapPalette(zoneUnion, zoneSolution.pensAvailable, overflowMethod, zonePalette, zoneOverflow, &zoneRemaps);
 		//
+		// Remap transparent pen slots: for each participant that has a TransparentPen,
+		// collect its needed colors and ensure the transparent slot holds a color that
+		// those participants do NOT need, so they lose no accessible colors.
+		//
+		{
+			std::vector<int> transSlotsZone;
+			std::vector<bool> neededZone;
+			for (int pi = 0; pi < (int)zone.participants.size(); pi++) {
+				const PaletteParticipant& p = zone.participants[pi];
+				GFXParams pg = GetItemGfxParams(p, targetSystem, targetMode);
+				int ts = pg.RParams.TransparentPen;
+				if (ts < 0)
+					continue;
+				bool alreadyInList = false;
+				for (int v : transSlotsZone)
+					if (v == ts) { alreadyInList = true; break; }
+				if (!alreadyInList)
+					transSlotsZone.push_back(ts);
+				PaletteParticipantResult dummy2;
+				std::vector<int> pc = CollectParticipantColors(pi, p, projectFolder, targetSystem, targetMode, targetPaletteType, nullptr, nullptr, dummy2);
+				for (int c : pc) {
+					if (c >= (int)neededZone.size())
+						neededZone.resize(c + 1, false);
+					neededZone[c] = true;
+				}
+			}
+			RemapTransparentPenSlots(zoneFixed, transSlotsZone, neededZone);
+		}
+		//
 		// Merge always-pass remaps into zone remaps so the base tag solution shows the full picture
 		//
 		for (auto& rm : alwaysRemaps)
@@ -615,7 +740,8 @@ namespace RetrodevLib {
 			}
 			std::shared_ptr<IBitmapConverter> partConverter;
 			GFXParams partGfx;
-			PaletteParticipantResult r = FinalConvertParticipant(pi, p, projectFolder, targetSystem, targetMode, targetPaletteType, zoneFixed, overflowMethod, &partConverter, &partGfx);
+			PaletteParticipantResult r =
+				FinalConvertParticipant(pi, p, projectFolder, targetSystem, targetMode, targetPaletteType, zoneFixed, overflowMethod, &partConverter, &partGfx);
 			zoneSolution.participantResults[pi] = r;
 			zoneBaseResults.push_back(r);
 			if (partConverter)
@@ -623,7 +749,7 @@ namespace RetrodevLib {
 		}
 		{
 			PaletteTagSolution baseTs = SnapshotTagSolution("", zoneFixed, targetSystem, targetMode, zoneSolution.pensAvailable, zoneSolution.baseFit, (int)zoneUnion.size(),
-														zoneOverflow, zoneBaseResults, std::move(zoneRemaps));
+															zoneOverflow, zoneBaseResults, std::move(zoneRemaps));
 			for (auto& ce : zoneBaseConverters) {
 				baseTs.converters[ce.first] = ce.second.conv;
 				baseTs.converterGfx[ce.first] = ce.second.gfx;
@@ -686,6 +812,33 @@ namespace RetrodevLib {
 			std::vector<int> levelFixed = CapPalette(levelUnion, zoneSolution.pensAvailable, overflowMethod, zonePalette, levelOverflow, &levelRemaps);
 			bool levelFit = (levelOverflow == 0);
 			//
+			// Remap transparent pen slots for level participants in this tag group
+			//
+			{
+				std::vector<int> transSlotsLevel;
+				std::vector<bool> neededLevel;
+				for (int pi : ids) {
+					const PaletteParticipant& p = zone.participants[pi];
+					GFXParams pg = GetItemGfxParams(p, targetSystem, targetMode);
+					int ts = pg.RParams.TransparentPen;
+					if (ts < 0)
+						continue;
+					bool alreadyInList = false;
+					for (int v : transSlotsLevel)
+						if (v == ts) { alreadyInList = true; break; }
+					if (!alreadyInList)
+						transSlotsLevel.push_back(ts);
+					PaletteParticipantResult dummy2;
+					std::vector<int> pc = CollectParticipantColors(pi, p, projectFolder, targetSystem, targetMode, targetPaletteType, nullptr, nullptr, dummy2);
+					for (int c : pc) {
+						if (c >= (int)neededLevel.size())
+							neededLevel.resize(c + 1, false);
+						neededLevel[c] = true;
+					}
+				}
+				RemapTransparentPenSlots(levelFixed, transSlotsLevel, neededLevel);
+			}
+			//
 			// Final-convert all Level participants for this tag against levelFixed
 			//
 			std::vector<PaletteParticipantResult> levelResults;
@@ -694,14 +847,15 @@ namespace RetrodevLib {
 				const PaletteParticipant& p = zone.participants[pi];
 				std::shared_ptr<IBitmapConverter> partConverter;
 				GFXParams partGfx;
-				PaletteParticipantResult r = FinalConvertParticipant(pi, p, projectFolder, targetSystem, targetMode, targetPaletteType, levelFixed, overflowMethod, &partConverter, &partGfx);
+				PaletteParticipantResult r =
+					FinalConvertParticipant(pi, p, projectFolder, targetSystem, targetMode, targetPaletteType, levelFixed, overflowMethod, &partConverter, &partGfx);
 				levelResults.push_back(r);
 				zoneSolution.participantResults[pi] = r;
 				if (partConverter)
 					levelConverters[pi] = {partConverter, partGfx};
 			}
-			PaletteTagSolution ts =
-				SnapshotTagSolution(tag, levelFixed, targetSystem, targetMode, zoneSolution.pensAvailable, levelFit, (int)levelUnion.size(), levelOverflow, levelResults, std::move(levelRemaps));
+			PaletteTagSolution ts = SnapshotTagSolution(tag, levelFixed, targetSystem, targetMode, zoneSolution.pensAvailable, levelFit, (int)levelUnion.size(), levelOverflow,
+														levelResults, std::move(levelRemaps));
 			for (auto& ce : levelConverters) {
 				ts.converters[ce.first] = ce.second.conv;
 				ts.converterGfx[ce.first] = ce.second.gfx;
@@ -721,7 +875,7 @@ namespace RetrodevLib {
 		return zoneSolution;
 	}
 	//
-	// PaletteSolver::Solve — public entry point
+	// PaletteSolver::Solve -- public entry point
 	//
 	PaletteSolution PaletteSolver::Solve(const PaletteParams* params, const std::string& projectFolder) {
 		PaletteSolution solution;
@@ -770,7 +924,19 @@ namespace RetrodevLib {
 		// build their union palette, cap it, and run the final conversion for each.
 		// This produces a single fixed alwaysColors list shared by all zones and levels.
 		//
+		// Pre-seed the always union with pre-loaded locked colors so they occupy the
+		// first pen slots in every solved palette, making them immutable across all zones.
+		//
 		std::vector<std::vector<int>> alwaysColorLists;
+		if (!params->preloadedColors.empty()) {
+			std::vector<int> preloadSeeds;
+			for (int i = 0; i < (int)params->preloadedColors.size(); i++) {
+				if (i < (int)params->preloadedLocked.size() && params->preloadedLocked[i] && params->preloadedColors[i] >= 0)
+					preloadSeeds.push_back(params->preloadedColors[i]);
+			}
+			if (!preloadSeeds.empty())
+				alwaysColorLists.push_back(std::move(preloadSeeds));
+		}
 		struct AlwaysEntry {
 			int zi;
 			int pi;
@@ -802,6 +968,62 @@ namespace RetrodevLib {
 		if (alwaysOverflow > 0)
 			totalOverflow++;
 		//
+		// Remap transparent pen slots for Always participants
+		//
+		{
+			std::vector<int> transSlotsAlways;
+			std::vector<bool> neededAlways;
+			for (auto& ae : alwaysEntries) {
+				const PaletteParticipant& p = params->zones[ae.zi].participants[ae.pi];
+				GFXParams pg = GetItemGfxParams(p, params->targetSystem, params->zones[ae.zi].targetMode);
+				int ts = pg.RParams.TransparentPen;
+				if (ts < 0)
+					continue;
+				bool alreadyInList = false;
+				for (int v : transSlotsAlways)
+					if (v == ts) { alreadyInList = true; break; }
+				if (!alreadyInList)
+					transSlotsAlways.push_back(ts);
+				for (int c : ae.colors) {
+					if (c >= (int)neededAlways.size())
+						neededAlways.resize(c + 1, false);
+					neededAlways[c] = true;
+				}
+			}
+			RemapTransparentPenSlots(alwaysFixed, transSlotsAlways, neededAlways);
+		}
+		//
+		// Warn if participants across all zones use different transparent pen indices.
+		// This is a design issue: ideally all transparency-using assets share one pen slot.
+		//
+		{
+			std::vector<int> allTransPens;
+			for (int zi = 0; zi < (int)params->zones.size(); zi++) {
+				const PaletteZone& zone = params->zones[zi];
+				for (int pi = 0; pi < (int)zone.participants.size(); pi++) {
+					const PaletteParticipant& p = zone.participants[pi];
+					GFXParams pg = GetItemGfxParams(p, params->targetSystem, zone.targetMode);
+					int ts = pg.RParams.TransparentPen;
+					if (ts < 0)
+						continue;
+					bool found = false;
+					for (int v : allTransPens)
+						if (v == ts) { found = true; break; }
+					if (!found)
+						allTransPens.push_back(ts);
+				}
+			}
+			if ((int)allTransPens.size() > 1) {
+				std::string penList;
+				for (int i = 0; i < (int)allTransPens.size(); i++) {
+					if (i > 0)
+						penList += ", ";
+					penList += std::to_string(allTransPens[i]);
+				}
+				solution.summary = "Warning: multiple transparent pen slots detected (" + penList + "). Ideally all transparency-using assets share the same pen slot. ";
+			}
+		}
+		//
 		// Final-convert all Always participants against the fixed Always palette.
 		// alwaysConverters[zi][pi] = the resulting converter for UI display.
 		//
@@ -813,17 +1035,19 @@ namespace RetrodevLib {
 			const std::string& zoneMode = params->zones[ae.zi].targetMode;
 			std::shared_ptr<IBitmapConverter> partConverter;
 			GFXParams partGfx;
-			FinalConvertParticipant(ae.pi, p, projectFolder, params->targetSystem, zoneMode, params->targetPaletteType, alwaysFixed, params->overflowMethod, &partConverter, &partGfx);
+			FinalConvertParticipant(ae.pi, p, projectFolder, params->targetSystem, zoneMode, params->targetPaletteType, alwaysFixed, params->overflowMethod, &partConverter,
+									&partGfx);
 			if (partConverter) {
 				alwaysConverters[ae.zi][ae.pi] = {partConverter, partGfx};
 				totalOk++;
 			}
 		}
 		//
-		// Passes 2 and 3 — solve each zone using the fixed Always palette as base
+		// Passes 2 and 3 -- solve each zone using the fixed Always palette as base
 		//
 		for (int zi = 0; zi < (int)params->zones.size(); zi++) {
-			PaletteZoneSolution zoneSolution = SolveZone(zi, params->zones[zi], params->targetSystem, params->targetPaletteType, projectFolder, params->overflowMethod, alwaysFixed, alwaysRemaps);
+			PaletteZoneSolution zoneSolution =
+				SolveZone(zi, params->zones[zi], params->targetSystem, params->targetPaletteType, projectFolder, params->overflowMethod, alwaysFixed, alwaysRemaps);
 			//
 			// Inject the Always-pass converters into the base tag solution (index 0)
 			//
@@ -859,19 +1083,20 @@ namespace RetrodevLib {
 			solution.zones.push_back(std::move(zoneSolution));
 		}
 		//
-		// Build summary string
+		// Build summary string, preserving any warning already set (e.g. multi-transparent-pen)
 		//
+		std::string warnPrefix = solution.summary;
 		if (totalOverflow > 0 || totalMissing > 0) {
 			solution.valid = false;
-			solution.summary =
+			solution.summary = warnPrefix +
 				"Solve completed with issues: " + std::to_string(totalOk) + " OK, " + std::to_string(totalOverflow) + " overflow(s), " + std::to_string(totalMissing) + " missing.";
 		} else {
-			solution.summary = "All " + std::to_string(totalOk) + " participant(s) fit. Palette valid.";
+			solution.summary = warnPrefix + "All " + std::to_string(totalOk) + " participant(s) fit. Palette valid.";
 		}
 		return solution;
 	}
 	//
-	// PaletteSolver::Validate — write solved palette assignments back into each
+	// PaletteSolver::Validate -- write solved palette assignments back into each
 	// participant's stored project GFXParams so subsequent conversions use the solved palette.
 	//
 	void PaletteSolver::Validate(const PaletteSolution& solution, const PaletteParams* params) {
@@ -917,4 +1142,4 @@ namespace RetrodevLib {
 		if (modified)
 			Project::MarkAsModified();
 	}
-} // namespace RetrodevLib
+}

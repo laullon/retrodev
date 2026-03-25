@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Source asset -- emulator launch configuration.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -67,7 +70,7 @@ namespace RetrodevLib {
 			return (std::filesystem::path(projectFolder) / p).make_preferred().string();
 		}
 		//
-		// Tracking record for a running emulator process — kept alive so we can
+		// Tracking record for a running emulator process -- kept alive so we can
 		// drain stdout/stderr each frame and detect exit.
 		// proc is non-null for SDL-managed processes (WinAPE, ACE-DL).
 		// nativeHandle is non-null for processes launched via SourceEmulatorNative (RVM).
@@ -133,22 +136,22 @@ namespace RetrodevLib {
 			//
 			// Set up properties for SDL_CreateProcessWithProperties:
 			//
-			//   ARGS    — null-terminated argv array; argv[0] is the executable path,
+			//   ARGS    -- null-terminated argv array; argv[0] is the executable path,
 			//             followed by the pre-split argument tokens.
 			//
-			//   WORKING_DIRECTORY — always set to a non-empty path so the emulator
+			//   WORKING_DIRECTORY -- always set to a non-empty path so the emulator
 			//             finds its own data files regardless of our CWD.  When the
 			//             caller does not supply an explicit workDir (WinAPE, RVM) we
 			//             default to the directory that contains the executable itself.
 			//
-			//   STDIN   — SDL_PROCESS_STDIO_NULL: the emulator does not read from
+			//   STDIN   -- SDL_PROCESS_STDIO_NULL: the emulator does not read from
 			//             stdin so we close that end of the pipe immediately.
 			//
-			//   STDOUT  — SDL_PROCESS_STDIO_APP: SDL creates a pipe and exposes it
+			//   STDOUT  -- SDL_PROCESS_STDIO_APP: SDL creates a pipe and exposes it
 			//             via SDL_GetProcessOutput().  Poll() drains this pipe each
 			//             frame to forward emulator output to the app log.
 			//
-			//   STDERR_TO_STDOUT — merge stderr into the same pipe as stdout so a
+			//   STDERR_TO_STDOUT -- merge stderr into the same pipe as stdout so a
 			//             single SDL_ReadIO loop captures both streams.
 			//
 			// Note: SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN is intentionally NOT
@@ -161,7 +164,7 @@ namespace RetrodevLib {
 			//
 			// When a raw command line is provided (RVM), pass it verbatim to CreateProcess
 			// via CMDLINE_STRING so SDL does not re-quote embedded quotes in any token.
-			// ARGS_POINTER is still required — SDL uses argv[0] to locate the executable.
+			// ARGS_POINTER is still required -- SDL uses argv[0] to locate the executable.
 			//
 			if (!rawCmdLine.empty())
 				SDL_SetStringProperty(props, SDL_PROP_PROCESS_CREATE_CMDLINE_STRING, rawCmdLine.c_str());
@@ -217,7 +220,7 @@ namespace RetrodevLib {
 			const auto& c = ep.common;
 			std::string args;
 			//
-			// Positional media file — must come first
+			// Positional media file -- must come first
 			//
 			AppendQuoted(args, AbsPath(c.mediaFile, projectFolder));
 			//
@@ -232,7 +235,7 @@ namespace RetrodevLib {
 				Append(args, flag.c_str());
 			} else if (!c.mediaFile.empty()) {
 				//
-				// Disc present but no explicit program — auto-start with bare /A
+				// Disc present but no explicit program -- auto-start with bare /A
 				//
 				Append(args, "/A");
 			}
@@ -273,7 +276,7 @@ namespace RetrodevLib {
 			std::string machineId = c.machine.empty() ? "cpc6128" : c.machine;
 			Append(args, ("-boot=" + machineId).c_str());
 			//
-			// -insert <mediaFile> — always quoted so CreateProcessW cmdline parsing is unambiguous
+			// -insert <mediaFile> -- always quoted so CreateProcessW cmdline parsing is unambiguous
 			//
 			if (!c.mediaFile.empty()) {
 				Append(args, "-insert");
@@ -285,7 +288,7 @@ namespace RetrodevLib {
 				args += '"';
 			}
 			//
-			// -snapshot <file> — always quoted
+			// -snapshot <file> -- always quoted
 			//
 			if (!c.snapshot.empty()) {
 				Append(args, "-snapshot");
@@ -396,7 +399,7 @@ namespace RetrodevLib {
 			return Spawn(ep.acedl.exePath, args, workDir);
 		}
 
-	} // namespace EmulatorImpl
+	}
 
 	//
 	// Public entry point: dispatch to the correct emulator back-end
@@ -469,7 +472,7 @@ namespace RetrodevLib {
 				}
 			}
 			//
-			// Non-blocking exit check — flush pending line, log exit code, release handle
+			// Non-blocking exit check -- flush pending line, log exit code, release handle
 			//
 			int exitcode = 0;
 			if (SDL_WaitProcess(it->proc, false, &exitcode)) {

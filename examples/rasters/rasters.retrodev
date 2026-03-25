@@ -1,0 +1,75 @@
+{
+   "ProjectName": "rasters",
+   "images": [],
+   "audio": [],
+   "sources": [
+      {
+         "filePath": "src/main.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/macros/gatearray/macros.debug.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/macros/gatearray/macros.ga.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/functions/system/cpc.interrupts.disable.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/functions/system/cpc.interrupts.disable.sync.asm"
+      }
+   ],
+   "scripts": [],
+   "data": [],
+   "buildBitmaps": [],
+   "buildTiles": [],
+   "buildSprites": [],
+   "buildMaps": [],
+   "buildBuilds": [
+      {
+         "name": "rasters.build",
+         "sourceParams": {
+            "tool": "RASM",
+            "sources": [
+               "src/main.asm"
+            ],
+            "includeDirs": [
+               "$(sdk)/amstrad.cpc/macros/gatearray",
+               "$(sdk)/amstrad.cpc/functions/system"
+            ],
+            "defines": [],
+            "dependencies": [],
+            "toolOptions": {
+               "RASM": "-eo"
+            },
+            "emulatorParams": {
+               "emulator": "WinAPE",
+               "common": {
+                  "mediaFile": "out/rasters.dsk",
+                  "snapshot": "",
+                  "symbolFile": "",
+                  "command": "rasters.bin",
+                  "sendCPM": false,
+                  "machine": ""
+               },
+               "acedl": {
+                  "crtc": 3,
+                  "ram": 0,
+                  "firmware": "",
+                  "speed": 0,
+                  "alone": false,
+                  "skipConfigFile": false
+               }
+            }
+         },
+         "exportParams": {
+            "scriptPath": "",
+            "outputName": "",
+            "scriptParams": ""
+         }
+      }
+   ],
+   "buildPalettes": [],
+   "buildFolders": [],
+   "selectedBuildItem": "rasters.build"
+}

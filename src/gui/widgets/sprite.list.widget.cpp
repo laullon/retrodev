@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Sprite list widget -- thumbnail grid of extracted sprites.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -11,12 +14,22 @@
 
 namespace RetrodevGui {
 	//
+	// Static member definitions
+	//
+	std::vector<int> SpriteListWidget::m_selectedIndices;
+	int SpriteListWidget::m_lastClickedIndex = -1;
+	//
 	// Render the sprite list UI
 	//
 	SpriteListWidgetResult SpriteListWidget::Render(std::shared_ptr<RetrodevLib::ISpriteExtractor> spriteExtractor, RetrodevLib::SpriteExtractionParams* spriteParams,
-													int currentSelectedIndex) {
+													const std::vector<int>& selectedIndices, int primaryIndex) {
 		SpriteListWidgetResult result;
-		result.selectedSpriteIndex = currentSelectedIndex;
+		result.newSelection = selectedIndices;
+		result.primaryIndex = primaryIndex;
+		//
+		// Sync internal selection state with the caller-supplied selection
+		//
+		m_selectedIndices = selectedIndices;
 		if (!spriteExtractor || !spriteParams) {
 			ImGui::TextDisabled("No sprite extractor available");
 			return result;
@@ -42,6 +55,11 @@ namespace RetrodevGui {
 		int numRows = (spriteCount + spritesPerRow - 1) / spritesPerRow;
 		float itemHeight = itemSize + ImGui::GetStyle().ItemSpacing.y;
 		//
+		// Track whether a context menu is open this frame (suppresses tooltips)
+		//
+		bool anyContextMenuOpen = ImGui::IsPopupOpen("##spritectx");
+		bool openContextMenu = false;
+		//
 		// Render visible rows only using list clipper
 		//
 		ImGuiListClipper clipper;
@@ -66,7 +84,8 @@ namespace RetrodevGui {
 					ImGui::PushID(i);
 					ImVec2 bbMin = ImGui::GetCursorScreenPos();
 					ImVec2 bbMax = ImVec2(bbMin.x + itemSize, bbMin.y + itemSize);
-					bool selected = (i == currentSelectedIndex);
+					bool isSelected = std::find(m_selectedIndices.begin(), m_selectedIndices.end(), i) != m_selectedIndices.end();
+					bool isPrimary = (i == primaryIndex);
 					bool clicked = ImGui::InvisibleButton("##sprite", ImVec2(itemSize, itemSize));
 					ImDrawList* dl = ImGui::GetWindowDrawList();
 					//
@@ -76,7 +95,7 @@ namespace RetrodevGui {
 					//
 					// Draw button background based on interaction state
 					//
-					if (selected)
+					if (isSelected)
 						dl->AddRectFilled(bbMin, bbMax, ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive)));
 					else if (ImGui::IsItemHovered())
 						dl->AddRectFilled(bbMin, bbMax, ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered)));
@@ -102,43 +121,85 @@ namespace RetrodevGui {
 						dl->AddImage((ImTextureID)(intptr_t)texture, imgMin, imgMax);
 					}
 					//
-					// Draw selection or hover border within the allocated border zone
+					// Draw border: gold for primary, white for other selected, faint white on hover
 					//
-					if (selected || ImGui::IsItemHovered()) {
-						ImU32 borderColor = selected ? IM_COL32(255, 255, 255, 200) : IM_COL32(255, 255, 255, 120);
+					if (isPrimary) {
 						float half = borderThickness * 0.5f + 0.5f;
-						dl->AddRect(ImVec2(bbMin.x + half, bbMin.y + half), ImVec2(bbMax.x - half, bbMax.y - half), borderColor, 0.0f, 0, borderThickness);
+						dl->AddRect(ImVec2(bbMin.x + half, bbMin.y + half), ImVec2(bbMax.x - half, bbMax.y - half), IM_COL32(255, 210, 60, 220), 0.0f, 0, borderThickness);
+					} else if (isSelected) {
+						float half = borderThickness * 0.5f + 0.5f;
+						dl->AddRect(ImVec2(bbMin.x + half, bbMin.y + half), ImVec2(bbMax.x - half, bbMax.y - half), IM_COL32(255, 255, 255, 200), 0.0f, 0, borderThickness);
+					} else if (ImGui::IsItemHovered()) {
+						float half = borderThickness * 0.5f + 0.5f;
+						dl->AddRect(ImVec2(bbMin.x + half, bbMin.y + half), ImVec2(bbMax.x - half, bbMax.y - half), IM_COL32(255, 255, 255, 120), 0.0f, 0, borderThickness);
 					}
 					dl->PopClipRect();
+					//
+					// Click handling: Ctrl toggles, Shift range-selects, plain click sets single selection
+					//
 					if (clicked) {
-						result.spriteSelected = true;
-						result.selectedSpriteIndex = i;
-					}
-					//
-					// Context menu on right-click: remove sprite
-					//
-					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
-					if (ImGui::BeginPopupContextItem("##spritectx")) {
-						if (ImGui::MenuItem("Remove")) {
-							result.spriteDeleted      = true;
-							result.deletedSpriteIndex = i;
+						bool ctrlHeld = ImGui::GetIO().KeyCtrl;
+						bool shiftHeld = ImGui::GetIO().KeyShift;
+						if (ctrlHeld) {
+							//
+							// Toggle this item in the selection
+							//
+							auto it = std::find(m_selectedIndices.begin(), m_selectedIndices.end(), i);
+							if (it != m_selectedIndices.end())
+								m_selectedIndices.erase(it);
+							else
+								m_selectedIndices.push_back(i);
+							m_lastClickedIndex = i;
+						} else if (shiftHeld && m_lastClickedIndex >= 0) {
+							//
+							// Range select from last clicked to i (inclusive), preserve existing selection
+							//
+							int lo = std::min(m_lastClickedIndex, i);
+							int hi = std::max(m_lastClickedIndex, i);
+							for (int k = lo; k <= hi; k++) {
+								if (std::find(m_selectedIndices.begin(), m_selectedIndices.end(), k) == m_selectedIndices.end())
+									m_selectedIndices.push_back(k);
+							}
+						} else {
+							//
+							// Plain click: select only this item
+							//
+							m_selectedIndices.clear();
+							m_selectedIndices.push_back(i);
+							m_lastClickedIndex = i;
 						}
-						ImGui::EndPopup();
+						result.selectionChanged = true;
+						result.newSelection = m_selectedIndices;
+						result.primaryIndex = i;
 					}
-					ImGui::PopStyleVar();
 					//
-					// Show tooltip with sprite info
+					// Right-click: if item is not selected, select it first, then request the shared popup
 					//
-					if (ImGui::IsItemHovered()) {
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+						if (std::find(m_selectedIndices.begin(), m_selectedIndices.end(), i) == m_selectedIndices.end()) {
+							m_selectedIndices.clear();
+							m_selectedIndices.push_back(i);
+							m_lastClickedIndex = i;
+							result.selectionChanged = true;
+							result.newSelection = m_selectedIndices;
+							result.primaryIndex = i;
+						}
+						openContextMenu = true;
+					}
+					//
+					// Show tooltip with sprite info (suppressed while context menu is open)
+					//
+					if (ImGui::IsItemHovered() && !anyContextMenuOpen) {
 						ImGui::BeginTooltip();
 						ImGui::Text("Sprite #%d", i);
 						if (spriteDef) {
-							if (!spriteDef->Name.empty()) {
+							if (!spriteDef->Name.empty())
 								ImGui::Text("Name: %s", spriteDef->Name.c_str());
-							}
 							ImGui::Text("Position: (%d, %d)", spriteDef->X, spriteDef->Y);
 							ImGui::Text("Size: %dx%d", spriteDef->Width, spriteDef->Height);
 						}
+						if (m_selectedIndices.size() > 1)
+							ImGui::Text("%d sprites selected", (int)m_selectedIndices.size());
 						ImGui::EndTooltip();
 					}
 					ImGui::PopID();
@@ -146,6 +207,68 @@ namespace RetrodevGui {
 			}
 		}
 		clipper.End();
+		//
+		// Open the context menu here, outside all PushID scopes, so the popup ID resolves correctly
+		//
+		if (openContextMenu)
+			ImGui::OpenPopup("##spritectx");
+		//
+		// Context menu: rendered once outside the per-item loop, operates on the full selection
+		//
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+		if (ImGui::BeginPopup("##spritectx")) {
+			result.operationSourceIndices = m_selectedIndices;
+			int selCount = static_cast<int>(m_selectedIndices.size());
+			//
+			// Show header when multiple sprites are selected
+			//
+			if (selCount > 1) {
+				ImGui::TextDisabled("%d sprites selected", selCount);
+				ImGui::Separator();
+			}
+			if (ImGui::BeginMenu("Duplicate")) {
+				if (ImGui::MenuItem("Duplicate"))
+					result.duplicate = true;
+				ImGui::Separator();
+				if (ImGui::MenuItem("Duplicate + Flip Horizontal"))
+					result.duplicateFlipH = true;
+				if (ImGui::MenuItem("Duplicate + Flip Vertical"))
+					result.duplicateFlipV = true;
+				ImGui::Separator();
+				if (ImGui::MenuItem("Duplicate + Shift Left"))
+					result.duplicateShiftLeft = true;
+				if (ImGui::MenuItem("Duplicate + Shift Right"))
+					result.duplicateShiftRight = true;
+				if (ImGui::MenuItem("Duplicate + Shift Up"))
+					result.duplicateShiftUp = true;
+				if (ImGui::MenuItem("Duplicate + Shift Down"))
+					result.duplicateShiftDown = true;
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Flip")) {
+				if (ImGui::MenuItem("Flip Horizontal"))
+					result.flipH = true;
+				if (ImGui::MenuItem("Flip Vertical"))
+					result.flipV = true;
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Shift")) {
+				if (ImGui::MenuItem("Shift Left"))
+					result.shiftLeft = true;
+				if (ImGui::MenuItem("Shift Right"))
+					result.shiftRight = true;
+				if (ImGui::MenuItem("Shift Up"))
+					result.shiftUp = true;
+				if (ImGui::MenuItem("Shift Down"))
+					result.shiftDown = true;
+				ImGui::EndMenu();
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Remove"))
+				result.removeSprites = true;
+			ImGui::EndPopup();
+		}
+		ImGui::PopStyleVar();
 		return result;
 	}
-} // namespace RetrodevGui
+}

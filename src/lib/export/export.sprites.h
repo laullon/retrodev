@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Sprite export engine -- runs AngelScript export scripts for sprite items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -22,7 +25,7 @@ namespace RetrodevLib {
 	namespace ExportImpl {
 
 		// ---------------------------------------------------------------- //
-		// SpriteExportContext — wraps converter, extractor and params      //
+		// SpriteExportContext -- wraps converter, extractor and params      //
 		// for script access during sprite export                           //
 		// ---------------------------------------------------------------- //
 
@@ -83,6 +86,12 @@ namespace RetrodevLib {
 			// Returns the value string if the key is found, or an empty string if absent.
 			//
 			std::string GetParam(const std::string& key) const;
+			//
+			// Transparency settings -- forwarded from ResizeParams so export scripts can
+			// handle transparent pixels without falling back to a per-pixel warning.
+			//
+			bool GetUseTransparentColor() const;
+			int GetTransparentPen() const;
 		};
 
 		//
@@ -94,12 +103,12 @@ namespace RetrodevLib {
 		//
 		// Load, compile, execute and discard a sprite export script.
 		// The script must define: void Export(const string &in, SpriteExportContext@)
-		//   outputPath — destination file path the script should write to
-		//   context    — extractor and params for iterating sprites and querying details
+		//   outputPath -- destination file path the script should write to
+		//   context    -- extractor and params for iterating sprites and querying details
 		// Returns false if any step fails; errors are logged via Log::Error.
 		//
 		bool RunSpriteExport(const std::string& scriptPath, const std::string& outputPath, const std::string& scriptParams, IBitmapConverter* converter, const GFXParams* params,
 							 ISpriteExtractor* spriteExtractor, const SpriteExtractionParams* spriteParams);
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

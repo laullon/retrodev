@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Export parameter types -- shared across all export context types.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -14,7 +17,7 @@ namespace RetrodevLib {
 	//
 	// Export configuration stored per build item.
 	// Holds the script path and output file name chosen by the user in the Export section.
-	// Both fields are optional — empty means the user has not configured export yet.
+	// Both fields are optional -- empty means the user has not configured export yet.
 	//
 	struct ExportParams {
 		//
@@ -33,4 +36,4 @@ namespace RetrodevLib {
 		std::string scriptParams;
 	};
 
-} // namespace RetrodevLib
+}

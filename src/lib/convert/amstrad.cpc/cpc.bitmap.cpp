@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Amstrad CPC bitmap converter -- pixel encoding for all three video modes.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "cpc.bitmap.h"
 #include "cpc.palette.h"
@@ -295,9 +295,8 @@ namespace RetrodevLib::ConverterAmstradCPC {
 			Log::Warning("CPCBitmap::Convert called with zero target resolution");
 			return;
 		}
-		Log::Info(LogChannel::General, "[CPC] Converting: mode=%s palette=%s target=%dx%d",
-			params->SParams.TargetMode.c_str(), params->SParams.PaletteType.c_str(),
-			params->RParams.TargetWidth, params->RParams.TargetHeight);
+		Log::Info(LogChannel::General, "[CPC] Converting: mode=%s palette=%s target=%dx%d", params->SParams.TargetMode.c_str(), params->SParams.PaletteType.c_str(),
+				  params->RParams.TargetWidth, params->RParams.TargetHeight);
 		//
 		// Set target mode & palette
 		//
@@ -307,6 +306,19 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		// This must be done BEFORE SetPaletteType to preserve locked pen colors
 		//
 		std::shared_ptr<CPCPalette> cpcPalette = std::static_pointer_cast<CPCPalette>(palette);
+		//
+		// Disable the transparent pen slot so the quantizer never assigns a color to it.
+		// Save and restore around the full quantization pass since SetLockEnableArrays
+		// stores a live pointer to params->SParams.PaletteEnabled.
+		//
+		int transPenSlot = params->RParams.TransparentPen;
+		bool savedTransPenEnabled = true;
+		if (transPenSlot >= 0) {
+			if ((int)params->SParams.PaletteEnabled.size() <= transPenSlot)
+				params->SParams.PaletteEnabled.resize(transPenSlot + 1, true);
+			savedTransPenEnabled = params->SParams.PaletteEnabled[transPenSlot];
+			params->SParams.PaletteEnabled[transPenSlot] = false;
+		}
 		if (cpcPalette) {
 			cpcPalette->SetLockEnableArrays(params->SParams.PaletteLocked, params->SParams.PaletteEnabled);
 		}
@@ -334,9 +346,8 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		// This marks pixels matching a specific color (e.g. magenta) as transparent
 		//
 		if (params->RParams.UseTransparentColor) {
-			Log::Info(LogChannel::General, "[CPC] Applying transparent color key (R=%d G=%d B=%d tol=%d)",
-				params->RParams.TransparentColorR, params->RParams.TransparentColorG,
-				params->RParams.TransparentColorB, params->RParams.TransparentColorTolerance);
+			Log::Info(LogChannel::General, "[CPC] Applying transparent color key (R=%d G=%d B=%d tol=%d)", params->RParams.TransparentColorR, params->RParams.TransparentColorG,
+					  params->RParams.TransparentColorB, params->RParams.TransparentColorTolerance);
 			RgbColor keyColor(static_cast<uint8_t>(params->RParams.TransparentColorR), static_cast<uint8_t>(params->RParams.TransparentColorG),
 							  static_cast<uint8_t>(params->RParams.TransparentColorB));
 			GFXResize::MarkColorAsTransparent(resizedImage, keyColor, params->RParams.TransparentColorTolerance);
@@ -378,10 +389,8 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		// Dithering and smoothing applied if any
 		//
 		// prm.RParams.PixelSize = params->RParams.PixelSize;
-		Log::Info(LogChannel::General, "[CPC] Quantizing and dithering (dither=%s pattern=%s smoothness=%s)...",
-			params->DParams.Method.c_str(),
-			params->DParams.Pattern ? "on" : "off",
-			params->QParams.Smoothness ? "on" : "off");
+		Log::Info(LogChannel::General, "[CPC] Quantizing and dithering (dither=%s pattern=%s smoothness=%s)...", params->DParams.Method.c_str(),
+				  params->DParams.Pattern ? "on" : "off", params->QParams.Smoothness ? "on" : "off");
 		GFXQuantization::ApplyQuantizationAndDither(palette, resizedImage, params);
 		//
 		// Calculate the number of colors detected on the image after the first processing
@@ -394,6 +403,11 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		int colSplit = 0;
 		Log::Info(LogChannel::General, "[CPC] Reducing colors to fit mode palette...");
 		GFXQuantization::ApplyColorReduction(palette, resizedImage, params, colSplit);
+		//
+		// Restore the transparent pen enabled state now that quantization is done
+		//
+		if (transPenSlot >= 0 && transPenSlot < (int)params->SParams.PaletteEnabled.size())
+			params->SParams.PaletteEnabled[transPenSlot] = savedTransPenEnabled;
 		Log::Info(LogChannel::General, "[CPC] Conversion complete (%dx%d native).", resizedImage->GetWidth(), resizedImage->GetHeight());
 		//
 		// Store native resolution before aspect correction
@@ -436,4 +450,4 @@ namespace RetrodevLib::ConverterAmstradCPC {
 			previewImage = resizedImage;
 		}
 	}
-} // namespace RetrodevLib::ConverterAmstradCPC
+}

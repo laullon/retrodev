@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Map editor document -- tile map painting with layers and parallax.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -35,7 +37,7 @@ namespace RetrodevGui {
 
 	private:
 		//
-		// Export widget — script-driven export for this map
+		// Export widget -- script-driven export for this map
 		//
 		DataExportWidget m_exportWidget;
 		//
@@ -242,4 +244,4 @@ namespace RetrodevGui {
 		void RenderGroupPreview(ImDrawList* drawList, ImVec2 canvasOrigin, const RetrodevLib::TileGroup& group, int anchorCol, int anchorRow);
 	};
 
-} // namespace RetrodevGui
+}

@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Image palette widget -- displays and edits the hardware pen palette.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -53,4 +56,4 @@ namespace RetrodevGui {
 		static bool RenderColorEditorPopup(std::shared_ptr<RetrodevLib::Image> image);
 	};
 
-} // namespace RetrodevGui
+}

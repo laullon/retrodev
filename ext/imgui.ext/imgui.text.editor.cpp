@@ -72,8 +72,9 @@ namespace ImGui {
 	}
 	//
 	// Returns true when word appears in line as a whole identifier token.
+	// When a match is found, outMatchStart is set to the byte index of the first character of the match.
 	//
-	static bool LineContainsWholeWord(const std::string& lineText, const std::string& word) {
+	static bool LineContainsWholeWord(const std::string& lineText, const std::string& word, int* outMatchStart = nullptr) {
 		if (word.empty() || lineText.empty())
 			return false;
 		const int lineSize = (int)lineText.size();
@@ -89,11 +90,15 @@ namespace ImGui {
 				continue;
 			const bool leftBoundary = (i == 0) || !IsIdentifierWordByte(lineText[i - 1]);
 			const bool rightBoundary = (i + wordSize >= lineSize) || !IsIdentifierWordByte(lineText[i + wordSize]);
-			if (leftBoundary && rightBoundary)
+			if (leftBoundary && rightBoundary) {
+				if (outMatchStart != nullptr)
+					*outMatchStart = i;
 				return true;
+			}
 		}
 		return false;
 	}
+
 	//
 	// Extract first line from a codelens payload for compact rendering.
 	//
@@ -127,6 +132,16 @@ namespace ImGui {
 			}
 		}
 		return expanded;
+	}
+	//
+	// Normalizes path separators to forward slashes for consistent cross-platform comparison.
+	//
+	static std::string NormalizePath(const std::string& path) {
+		std::string result = path;
+		for (size_t i = 0; i < result.size(); i++)
+			if (result[i] == '\\')
+				result[i] = '/';
+		return result;
 	}
 	//
 	// Builds repeat-block synthetic codelens symbol key for a specific file/line.
@@ -362,36 +377,36 @@ namespace ImGui {
 		const int kMaxSuggestions = 8;
 		bool done = false;
 		for (size_t fi = 0; fi < sCodeLensFiles.size() && !done; fi++) {
-				// Only suggest symbols from files parsed under the same language as this editor instance.
-				if (sCodeLensFiles[fi].language != mLanguageDefinitionId)
+			// Only suggest symbols from files parsed under the same language as this editor instance.
+			if (sCodeLensFiles[fi].language != mLanguageDefinitionId)
+				continue;
+			for (const auto& sym : sCodeLensFiles[fi].symbols) {
+				if (sym.symbolName.size() <= currentWord.size())
 					continue;
-				for (const auto& sym : sCodeLensFiles[fi].symbols) {
-					if (sym.symbolName.size() <= currentWord.size())
-						continue;
-					if (seen.count(sym.symbolName))
-						continue;
-					// Pass 1: exact case-sensitive prefix match.
-					bool match = (sym.symbolName.compare(0, currentWord.size(), currentWord) == 0);
-					// Pass 2: if no exact match and language is case-insensitive, try uppercase prefix.
-					if (!match && mLanguageDefinition != nullptr && !mLanguageDefinition->mCaseSensitive) {
-						match = true;
-						for (size_t ci = 0; ci < upperPrefix.size(); ci++) {
-							if ((char)std::toupper((unsigned char)sym.symbolName[ci]) != upperPrefix[ci]) {
-								match = false;
-								break;
-							}
+				if (seen.count(sym.symbolName))
+					continue;
+				// Pass 1: exact case-sensitive prefix match.
+				bool match = (sym.symbolName.compare(0, currentWord.size(), currentWord) == 0);
+				// Pass 2: if no exact match and language is case-insensitive, try uppercase prefix.
+				if (!match && mLanguageDefinition != nullptr && !mLanguageDefinition->mCaseSensitive) {
+					match = true;
+					for (size_t ci = 0; ci < upperPrefix.size(); ci++) {
+						if ((char)std::toupper((unsigned char)sym.symbolName[ci]) != upperPrefix[ci]) {
+							match = false;
+							break;
 						}
 					}
-					if (!match)
-						continue;
-					seen.insert(sym.symbolName);
-					mAutocompleteSuggestions.push_back(sym.symbolName);
-					if ((int)mAutocompleteSuggestions.size() >= kMaxSuggestions) {
-						done = true;
-						break;
-					}
+				}
+				if (!match)
+					continue;
+				seen.insert(sym.symbolName);
+				mAutocompleteSuggestions.push_back(sym.symbolName);
+				if ((int)mAutocompleteSuggestions.size() >= kMaxSuggestions) {
+					done = true;
+					break;
 				}
 			}
+		}
 		if (mAutocompleteSuggestions.empty())
 			return;
 		mAutocompleteActive = true;
@@ -825,6 +840,8 @@ namespace ImGui {
 				ImGui::Begin(autocompleteWindowId.c_str(), nullptr,
 							 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
 								 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav);
+				// Force this window above all sibling editor child windows in the draw order.
+				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
 				ImGui::SetWindowFontScale(0.80f);
 				for (int i = 0; i < (int)mAutocompleteSuggestions.size(); i++) {
 					bool isFirst = (i == 0);
@@ -2031,8 +2048,17 @@ namespace ImGui {
 								continue;
 							const bool leftBoundary = (i == 0) || !IsIdentifierWordByte(lineGlyphs[i - 1].mChar);
 							const bool rightBoundary = (i + wordSize >= lineSize) || !IsIdentifierWordByte(lineGlyphs[i + wordSize].mChar);
-							if (leftBoundary && rightBoundary)
+							if (leftBoundary && rightBoundary) {
+								bool glyphInComment = false;
+								for (int ci = i; ci < i + wordSize && ci < lineSize; ci++)
+									if (lineGlyphs[ci].mComment || lineGlyphs[ci].mMultiLineComment) {
+										glyphInComment = true;
+										break;
+									}
+								if (glyphInComment)
+									continue;
 								return true;
+							}
 						}
 					}
 				}
@@ -2764,7 +2790,7 @@ namespace ImGui {
 			float spaceSize = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, " ", nullptr, nullptr).x;
 			float codeLensStartX = cursorScreenPos.x + mTextStart + mCharAdvance.x * 0.5f;
 			std::unordered_map<int, std::string> errorTextByLine;
-			const std::string currentFilePath = mDocumentPath.empty() ? "<active-document>" : mDocumentPath;
+			const std::string currentFilePath = NormalizePath(mDocumentPath.empty() ? "<active-document>" : mDocumentPath);
 			for (size_t fileIndex = 0; fileIndex < sCodeLensFiles.size(); fileIndex++) {
 				if (sCodeLensFiles[fileIndex].filePath != currentFilePath)
 					continue;
@@ -2820,8 +2846,20 @@ namespace ImGui {
 							const CodeLensSymbolData& symbol = symbols[symbolIndex];
 							if (symbol.codelensText.empty() || symbol.symbolName.empty())
 								continue;
-							if (!LineContainsWholeWord(lineTextForCodeLens, symbol.symbolName))
+							int matchStart = 0;
+							if (!LineContainsWholeWord(lineTextForCodeLens, symbol.symbolName, &matchStart))
 								continue;
+							{
+								bool glyphInComment = false;
+								int matchWordSize = (int)symbol.symbolName.size();
+								for (int ci = matchStart; ci < matchStart + matchWordSize && ci < (int)line.size(); ci++)
+									if (line[ci].mComment || line[ci].mMultiLineComment) {
+										glyphInComment = true;
+										break;
+									}
+								if (glyphInComment)
+									continue;
+							}
 							matchedCodeLensSymbol = &symbol;
 							break;
 						}
@@ -3001,45 +3039,45 @@ namespace ImGui {
 						if (hoveredCharIndex >= 0 && hoveredCharIndex < (int)mLines[hoveredLine].size() && IsIdentifierWordByte(mLines[hoveredLine][hoveredCharIndex].mChar)) {
 							const Glyph& hoveredGlyph = mLines[hoveredLine][hoveredCharIndex];
 							if (!hoveredGlyph.mComment && !hoveredGlyph.mMultiLineComment) {
-							std::string hoveredWord = GetText(FindWordStart(hoveredCoords), FindWordEnd(hoveredCoords));
-							const bool caseInsensitive = (mLanguageDefinition != nullptr && !mLanguageDefinition->mCaseSensitive);
-							std::string hoveredWordUpper;
-							if (caseInsensitive) {
-								hoveredWordUpper.resize(hoveredWord.size());
-								for (size_t c = 0; c < hoveredWord.size(); c++)
-									hoveredWordUpper[c] = (char)std::toupper((unsigned char)hoveredWord[c]);
-							}
-							for (size_t fileIndex = 0; fileIndex < sCodeLensFiles.size(); fileIndex++) {
-								const auto& symbols = sCodeLensFiles[fileIndex].symbols;
-								bool found = false;
-								for (size_t symbolIndex = 0; symbolIndex < symbols.size(); symbolIndex++) {
-									const CodeLensSymbolData& symbol = symbols[symbolIndex];
-									if (symbol.symbolName.empty() || symbol.symbolName.size() != hoveredWord.size())
-										continue;
-									// Pass 1: exact case-sensitive match.
-									if (symbol.symbolName == hoveredWord) {
+								std::string hoveredWord = GetText(FindWordStart(hoveredCoords), FindWordEnd(hoveredCoords));
+								const bool caseInsensitive = (mLanguageDefinition != nullptr && !mLanguageDefinition->mCaseSensitive);
+								std::string hoveredWordUpper;
+								if (caseInsensitive) {
+									hoveredWordUpper.resize(hoveredWord.size());
+									for (size_t c = 0; c < hoveredWord.size(); c++)
+										hoveredWordUpper[c] = (char)std::toupper((unsigned char)hoveredWord[c]);
+								}
+								for (size_t fileIndex = 0; fileIndex < sCodeLensFiles.size(); fileIndex++) {
+									const auto& symbols = sCodeLensFiles[fileIndex].symbols;
+									bool found = false;
+									for (size_t symbolIndex = 0; symbolIndex < symbols.size(); symbolIndex++) {
+										const CodeLensSymbolData& symbol = symbols[symbolIndex];
+										if (symbol.symbolName.empty() || symbol.symbolName.size() != hoveredWord.size())
+											continue;
+										// Pass 1: exact case-sensitive match.
+										if (symbol.symbolName == hoveredWord) {
+											mLastHoveredWord = hoveredWord;
+											found = true;
+											break;
+										}
+										// Pass 2: uppercase fallback for case-insensitive languages.
+										if (!caseInsensitive)
+											continue;
+										bool sameWord = true;
+										for (size_t c = 0; c < hoveredWordUpper.size(); c++)
+											if ((char)std::toupper((unsigned char)symbol.symbolName[c]) != hoveredWordUpper[c]) {
+												sameWord = false;
+												break;
+											}
+										if (!sameWord)
+											continue;
 										mLastHoveredWord = hoveredWord;
 										found = true;
 										break;
 									}
-									// Pass 2: uppercase fallback for case-insensitive languages.
-									if (!caseInsensitive)
-										continue;
-									bool sameWord = true;
-									for (size_t c = 0; c < hoveredWordUpper.size(); c++)
-										if ((char)std::toupper((unsigned char)symbol.symbolName[c]) != hoveredWordUpper[c]) {
-											sameWord = false;
-											break;
-										}
-									if (!sameWord)
-										continue;
-									mLastHoveredWord = hoveredWord;
-									found = true;
-									break;
+									if (found)
+										break;
 								}
-								if (found)
-									break;
-							}
 							}
 						}
 					}
@@ -3066,35 +3104,42 @@ namespace ImGui {
 										hoveredWordUpper[c] = (char)std::toupper((unsigned char)hoveredWord[c]);
 								}
 								const CodeLensSymbolData* hoveredSymbol = nullptr;
-								for (size_t fileIndex = 0; fileIndex < sCodeLensFiles.size() && hoveredSymbol == nullptr; fileIndex++) {
-									const auto& symbols = sCodeLensFiles[fileIndex].symbols;
-									for (size_t symbolIndex = 0; symbolIndex < symbols.size(); symbolIndex++) {
-										const CodeLensSymbolData& symbol = symbols[symbolIndex];
-										if (symbol.externalCode.empty() || symbol.symbolName.empty())
-											continue;
-										if (symbol.symbolName.size() != hoveredWord.size())
-											continue;
-										// Pass 1: exact case-sensitive match.
-										if (symbol.symbolName == hoveredWord) {
-											hoveredSymbol = &symbol;
-											break;
-										}
-										// Pass 2: uppercase fallback for case-insensitive languages.
-										if (!caseInsensitive)
-											continue;
-										bool sameWord = true;
-										for (size_t c = 0; c < hoveredWordUpper.size(); c++)
-											if ((char)std::toupper((unsigned char)symbol.symbolName[c]) != hoveredWordUpper[c]) {
-												sameWord = false;
+									std::string hoveredSymbolFilePath;
+									for (size_t fileIndex = 0; fileIndex < sCodeLensFiles.size() && hoveredSymbol == nullptr; fileIndex++) {
+										const auto& symbols = sCodeLensFiles[fileIndex].symbols;
+										for (size_t symbolIndex = 0; symbolIndex < symbols.size(); symbolIndex++) {
+											const CodeLensSymbolData& symbol = symbols[symbolIndex];
+											if (symbol.externalCode.empty() || symbol.symbolName.empty())
+												continue;
+											if (symbol.symbolName.size() != hoveredWord.size())
+												continue;
+											// Pass 1: exact case-sensitive match.
+											if (symbol.symbolName == hoveredWord) {
+												hoveredSymbol = &symbol;
+												hoveredSymbolFilePath = sCodeLensFiles[fileIndex].filePath;
 												break;
 											}
-										if (!sameWord)
-											continue;
-										hoveredSymbol = &symbol;
-										break;
+											// Pass 2: uppercase fallback for case-insensitive languages.
+											if (!caseInsensitive)
+												continue;
+											bool sameWord = true;
+											for (size_t c = 0; c < hoveredWordUpper.size(); c++)
+												if ((char)std::toupper((unsigned char)symbol.symbolName[c]) != hoveredWordUpper[c]) {
+													sameWord = false;
+													break;
+												}
+											if (!sameWord)
+												continue;
+											hoveredSymbol = &symbol;
+											hoveredSymbolFilePath = sCodeLensFiles[fileIndex].filePath;
+											break;
+										}
 									}
-								}
-								if (hoveredSymbol != nullptr) {
+									// Suppress the tooltip when hovering the exact file and line where the symbol is defined.
+									const bool isOnDefinitionLine = (hoveredSymbol != nullptr) &&
+										(hoveredSymbol->lineNumber == hoveredLine) &&
+										(hoveredSymbolFilePath == currentFilePath);
+									if (hoveredSymbol != nullptr && !isOnDefinitionLine) {
 									ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 8.0f));
 									ImGui::BeginTooltip();
 									std::string tooltipText = ExpandTabsForTooltip(hoveredSymbol->externalCode, mTabSize);
@@ -3303,7 +3348,7 @@ namespace ImGui {
 	void TextEditor::RefreshCodeLensForCurrentDocument() {
 		if (mLanguageDefinitionId == LanguageDefinitionId::None)
 			return;
-		const std::string filePath = mDocumentPath.empty() ? "<active-document>" : mDocumentPath;
+		const std::string filePath = NormalizePath(mDocumentPath.empty() ? "<active-document>" : mDocumentPath);
 		// Snapshot current lines and enqueue with high priority.
 		const int lineCount = (int)mLines.size();
 		std::vector<std::string> snapshot(lineCount);
@@ -3322,7 +3367,7 @@ namespace ImGui {
 		mCodeLensPendingRefresh = true;
 		mCodeLensLastEditTime = ImGui::GetTime();
 		// Cancel any in-progress or queued parse for this file; document state is now stale.
-		const std::string filePath = mDocumentPath.empty() ? "<active-document>" : mDocumentPath;
+		const std::string filePath = NormalizePath(mDocumentPath.empty() ? "<active-document>" : mDocumentPath);
 		if (sCodeLensActiveParseInProgress && sCodeLensActiveFilePath == filePath) {
 			if (sCodeLensActiveLanguageDef != nullptr && sCodeLensActiveLanguageDef->mCodeLensParseEnd != nullptr)
 				sCodeLensActiveLanguageDef->mCodeLensParseEnd(filePath);
@@ -3336,7 +3381,7 @@ namespace ImGui {
 	}
 
 	void TextEditor::CancelCodeLensRefresh() {
-		const std::string filePath = mDocumentPath.empty() ? "<active-document>" : mDocumentPath;
+		const std::string filePath = NormalizePath(mDocumentPath.empty() ? "<active-document>" : mDocumentPath);
 		// Cancel the active global parse if it belongs to this editor's file.
 		bool needsRestore = false;
 		if (sCodeLensActiveParseInProgress && sCodeLensActiveFilePath == filePath) {
@@ -3374,7 +3419,7 @@ namespace ImGui {
 		if (ImGui::GetTime() - mCodeLensLastEditTime < kCodeLensRefreshDelay)
 			return;
 		// Snapshot current document lines and enqueue with high priority.
-		const std::string filePath = mDocumentPath.empty() ? "<active-document>" : mDocumentPath;
+		const std::string filePath = NormalizePath(mDocumentPath.empty() ? "<active-document>" : mDocumentPath);
 		const int lineCount = (int)mLines.size();
 		std::vector<std::string> snapshot(lineCount);
 		for (int i = 0; i < lineCount; i++) {
@@ -3731,18 +3776,20 @@ namespace ImGui {
 	}
 
 	int TextEditor::AddCodeLensFile(const std::string& aFilePath) {
+		const std::string normalizedPath = NormalizePath(aFilePath);
 		for (int i = 0; i < (int)sCodeLensFiles.size(); i++)
-			if (sCodeLensFiles[i].filePath == aFilePath)
+			if (sCodeLensFiles[i].filePath == normalizedPath)
 				return i;
 		CodeLensFileData fileData;
-		fileData.filePath = aFilePath;
+		fileData.filePath = normalizedPath;
 		sCodeLensFiles.push_back(std::move(fileData));
 		return (int)sCodeLensFiles.size() - 1;
 	}
 
 	void TextEditor::SetCodeLensFileLanguage(const std::string& aFilePath, LanguageDefinitionId aLanguage) {
+		const std::string normalizedPath = NormalizePath(aFilePath);
 		for (int i = 0; i < (int)sCodeLensFiles.size(); i++)
-			if (sCodeLensFiles[i].filePath == aFilePath) {
+			if (sCodeLensFiles[i].filePath == normalizedPath) {
 				sCodeLensFiles[i].language = aLanguage;
 				return;
 			}
@@ -3795,9 +3842,10 @@ namespace ImGui {
 	int TextEditor::DeleteCodeLensSymbol(const std::string& aFilePath, const std::string& aSymbolName) {
 		if (aSymbolName.empty())
 			return 0;
+		const std::string normalizedPath = NormalizePath(aFilePath);
 		int removed = 0;
 		for (size_t fileIndex = 0; fileIndex < sCodeLensFiles.size(); fileIndex++) {
-			if (aFilePath != "*" && sCodeLensFiles[fileIndex].filePath != aFilePath)
+			if (aFilePath != "*" && sCodeLensFiles[fileIndex].filePath != normalizedPath)
 				continue;
 			auto& symbols = sCodeLensFiles[fileIndex].symbols;
 			for (int i = (int)symbols.size() - 1; i >= 0; i--)
@@ -3881,8 +3929,9 @@ namespace ImGui {
 	}
 
 	void TextEditor::EnqueueCodeLensFile(const std::string& aFilePath, LanguageDefinitionId aLanguage, const std::vector<std::string>& aLines, bool aHighPriority) {
+		const std::string normalizedPath = NormalizePath(aFilePath);
 		// If this file is currently being parsed, abort that run; the new snapshot supersedes it.
-		if (sCodeLensActiveParseInProgress && sCodeLensActiveFilePath == aFilePath) {
+		if (sCodeLensActiveParseInProgress && sCodeLensActiveFilePath == normalizedPath) {
 			if (sCodeLensActiveLanguageDef != nullptr && sCodeLensActiveLanguageDef->mCodeLensParseEnd != nullptr)
 				sCodeLensActiveLanguageDef->mCodeLensParseEnd(aFilePath);
 			sCodeLensActiveParseInProgress = false;
@@ -3891,11 +3940,11 @@ namespace ImGui {
 		}
 		// Remove any existing queued entry for this file to avoid duplicate work.
 		for (int i = (int)sCodeLensParseQueue.size() - 1; i >= 0; i--)
-			if (sCodeLensParseQueue[i].filePath == aFilePath)
+			if (sCodeLensParseQueue[i].filePath == normalizedPath)
 				sCodeLensParseQueue.erase(sCodeLensParseQueue.begin() + i);
 		// Build the task; empty lines means "load from disk when the task is dequeued".
 		CodeLensParseTask task;
-		task.filePath = aFilePath;
+		task.filePath = normalizedPath;
 		task.language = aLanguage;
 		task.lines = aLines;
 		if (aHighPriority)

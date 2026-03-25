@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Source asset -- Windows emulator process launch implementation.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -21,7 +24,7 @@ namespace RetrodevLib {
 		std::string absWorkDir = workDir.empty() ? std::filesystem::path(exePath).parent_path().string() : workDir;
 		std::wstring wWorkDir(absWorkDir.begin(), absWorkDir.end());
 		//
-		// Launch with a clean STARTUPINFOW — no STARTF_USESTDHANDLES — so the
+		// Launch with a clean STARTUPINFOW -- no STARTF_USESTDHANDLES -- so the
 		// child process inherits a normal GUI stdio context, not our redirected pipes
 		//
 		STARTUPINFOW si = {};
@@ -34,11 +37,11 @@ namespace RetrodevLib {
 			return nullptr;
 		}
 		//
-		// Thread handle is not needed — close it immediately
+		// Thread handle is not needed -- close it immediately
 		//
 		CloseHandle(pi.hThread);
 		//
-		// HANDLE is a void* on Windows — return it directly as the opaque handle
+		// HANDLE is a void* on Windows -- return it directly as the opaque handle
 		//
 		return pi.hProcess;
 	}
@@ -57,4 +60,4 @@ namespace RetrodevLib {
 		CloseHandle(static_cast<HANDLE>(handle));
 	}
 
-} // namespace RetrodevLib
+}

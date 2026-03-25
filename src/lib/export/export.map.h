@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Map export engine -- runs AngelScript export scripts for map items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -18,7 +21,7 @@ namespace RetrodevLib {
 	namespace ExportImpl {
 
 		// ---------------------------------------------------------------- //
-		// MapExportContext — wraps MapParams for script access              //
+		// MapExportContext -- wraps MapParams for script access              //
 		// during map export                                                 //
 		// ---------------------------------------------------------------- //
 
@@ -88,11 +91,11 @@ namespace RetrodevLib {
 		//
 		// Load, compile, execute and discard a map export script.
 		// The script must define: void Export(const string &in, MapExportContext@)
-		//   outputPath — destination file path the script should write to
-		//   context    — map params for iterating layers and cells
+		//   outputPath -- destination file path the script should write to
+		//   context    -- map params for iterating layers and cells
 		// Returns false if any step fails; errors are logged via Log::Error.
 		//
 		bool RunMapExport(const std::string& scriptPath, const std::string& outputPath, const std::string& scriptParams, const MapParams* mapParams);
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

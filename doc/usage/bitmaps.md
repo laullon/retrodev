@@ -102,13 +102,20 @@ Before the image reaches the quantizer it is scaled to the target resolution. Tw
 - **High Bicubic** — a higher-quality bicubic variant that reduces ringing and edge artifacts compared to standard bicubic.
 - **High** — the highest-quality filtering mode, prioritising sharpness and fine detail retention. Best for sources with high-frequency content such as linework.
 
-**Transparent colour** — if enabled, pixels in the source that match the given RGB colour within an adjustable tolerance are marked as transparent before resizing. This chroma-key approach is useful for source images that use a background colour such as "magic pink" instead of a real alpha channel.
+**Transparent colour** — if enabled, pixels in the source that match the given RGB colour within an adjustable tolerance are excluded from quantization entirely. The colour does not occupy any palette pen and is invisible to the converted output — it simply disappears from the result. This chroma-key approach is useful for source images that use a background colour such as "magic pink" instead of a real alpha channel.
 
-When enabled, the following controls appear in the palette panel to configure the colour and how it is selected:
+When enabled, the following controls appear to configure the colour and how it is selected:
 
 - **Colour swatch** — shows the currently assigned transparent colour. Click it to open a colour picker where you can set the RGB values manually. The picker also provides quick-preset buttons for common chroma-key colours: magenta, green, cyan and black.
 - **Pick** — enters picking mode. Click any pixel in the source image to use that pixel's colour as the transparent colour. The transparent colour option is automatically enabled when a colour is picked.
 - **Tolerance** — sets how closely a pixel must match the target colour to be considered transparent. A value of 0 requires an exact match; higher values (around 10–30) include pixels whose colour is similar but not identical, which is useful when the source has been saved with lossy compression.
+- **Transparent pen** — selects a specific hardware pen slot that will be used as the transparency marker in raw-data exports. When set, the quantizer never assigns any colour to that pen slot — it is reserved exclusively for transparent pixels. Your export script can then treat that pen index as the "no pixel" sentinel at runtime. Set to **None** to disable (no pen is dedicated to transparency). See the note below for guidance on when to use this option.
+
+> **Choosing the right transparency path:**
+>
+> - **Chroma-key only (Transparent colour, no Transparent pen):** pixels matching the transparent colour are excluded from quantization and produce no output colour. Use this for exports where transparency is implied by the format — for example, a raw pixel stream, a font, or a compressed tile format where the consumer already knows which pen means "skip". No pen slot is wasted.
+>
+> - **Transparent pen (with or without Transparent colour):** reserves a specific pen slot so your export script can use its index as an explicit "no pixel" marker at runtime. The quantizer never assigns any colour to that slot, so no image colour is displaced by the transparency key. Use this for sprites or tiles where the runtime checks the pen index directly — for example, a blitter loop that skips pixels equal to pen 0. The colour placed in that slot by the palette solver is arbitrary and should be ignored by your export script. In the palette solver result display the participant's result line notes how many pens were assigned plus "+1 transparent (pen N)" to show the reserved slot.
 
 If the source image is RGBA and already contains an alpha channel, transparency is handled automatically without enabling this option: pixels with alpha equal to 0 are treated as transparent and skipped during quantization. Transparency is ON/OFF only — a pixel is either fully transparent (alpha = 0) or fully opaque (any other alpha value); partial transparency is not supported.
 

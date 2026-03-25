@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Data export widget -- export script selection and parameter UI.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -15,7 +18,7 @@
 namespace RetrodevGui {
 
 	//
-	// Script picker modal — fully self-contained, called unconditionally every frame
+	// Script picker modal -- fully self-contained, called unconditionally every frame
 	// so OpenPopup and BeginPopupModal always share the same ID stack context.
 	//
 	void DataExportWidget::RenderScriptPicker() {
@@ -32,7 +35,7 @@ namespace RetrodevGui {
 			for (const std::string& p : RetrodevLib::Project::GetScriptFiles()) {
 				RetrodevLib::ScriptMetadata meta = RetrodevLib::ExportEngine::GetScriptMetadata(p);
 				//
-				// Skip utility scripts — they are helper includes, not standalone export scripts.
+				// Skip utility scripts -- they are helper includes, not standalone export scripts.
 				//
 				if (meta.exporter == "util")
 					continue;
@@ -60,7 +63,7 @@ namespace RetrodevGui {
 			}
 		}
 		//
-		// Center and size on first appearance — wider to accommodate the table
+		// Center and size on first appearance -- wider to accommodate the table
 		//
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -320,7 +323,7 @@ namespace RetrodevGui {
 		}
 		ImGui::Separator();
 		//
-		// Export button — canExport conditions vary by type
+		// Export button -- canExport conditions vary by type
 		//
 		bool canExport = !m_exportParams->scriptPath.empty() && !m_exportParams->outputName.empty() && converter != nullptr && params != nullptr;
 		if (tileExtractor != nullptr)
@@ -358,11 +361,11 @@ namespace RetrodevGui {
 															spriteParams);
 		}
 		//
-		// Bitmap / sprite / map path — needs the converted image
+		// Bitmap / sprite / map path -- needs the converted image
 		//
 		auto img = converter->GetConverted(params);
 		if (!img) {
-			AppConsole::AddLog(AppConsole::LogLevel::Error, "No converted image — run conversion before exporting.");
+			AppConsole::AddLog(AppConsole::LogLevel::Error, "No converted image -- run conversion before exporting.");
 			return false;
 		}
 		return RetrodevLib::ExportEngine::ExportBitmap(absoluteScript, absoluteOutput, m_exportParams->scriptParams, img.get(), converter.get(), params);
@@ -437,7 +440,7 @@ namespace RetrodevGui {
 			pos = semi + 1;
 		}
 		//
-		// Key not found — append it
+		// Key not found -- append it
 		//
 		if (!scriptParams.empty())
 			scriptParams += ';';
@@ -491,7 +494,7 @@ namespace RetrodevGui {
 			} else if (def.type == "int") {
 				int v = 0;
 				//
-				// Parse int without exceptions — iterate digits manually
+				// Parse int without exceptions -- iterate digits manually
 				//
 				const char* p = value.c_str();
 				bool neg = (*p == '-');
@@ -512,7 +515,7 @@ namespace RetrodevGui {
 				}
 			} else {
 				//
-				// string or unknown type — show a single-line text field
+				// string or unknown type -- show a single-line text field
 				//
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text("%s:", (def.label.empty() ? def.key : def.label).c_str());
@@ -538,7 +541,7 @@ namespace RetrodevGui {
 		m_exportParams = nullptr;
 		RetrodevLib::Project::MapGetExportParams(buildName, &m_exportParams);
 		//
-		// Maps have no hardware target — clear system filter; set type tag for script picker
+		// Maps have no hardware target -- clear system filter; set type tag for script picker
 		//
 		m_activeSystemId.clear();
 		m_activeBuildTypeTag = "map";
@@ -617,7 +620,7 @@ namespace RetrodevGui {
 		}
 		ImGui::Separator();
 		//
-		// Export button — enabled when a script, output name and map params are present
+		// Export button -- enabled when a script, output name and map params are present
 		//
 		bool canExport = !m_exportParams->scriptPath.empty() && !m_exportParams->outputName.empty() && mapParams != nullptr && !mapParams->layers.empty();
 		if (!canExport)
@@ -639,4 +642,4 @@ namespace RetrodevGui {
 		ImGui::PopID();
 	}
 
-} // namespace RetrodevGui
+}

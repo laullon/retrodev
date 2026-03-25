@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Sprite conversion interface and result type.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -49,4 +52,4 @@ namespace RetrodevLib {
 		//
 		virtual const SpriteDefinition* GetSpriteDefinition(int index) const = 0;
 	};
-} // namespace RetrodevLib
+}

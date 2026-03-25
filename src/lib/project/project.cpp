@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Project -- load, save and manage the .retrodev project file.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -13,6 +16,7 @@
 #include <filesystem>
 #include <export/export.h>
 #include <assets/palette/palette.h>
+#include <process/image/tile.pack.h>
 
 namespace RetrodevLib {
 	//
@@ -48,7 +52,7 @@ namespace RetrodevLib {
 				std::string relStr = rel.generic_string();
 				//
 				// relative() returns "." when the paths are equal, and starts with ".." when
-				// the file is outside the SDK folder — only collapse when it is truly inside.
+				// the file is outside the SDK folder -- only collapse when it is truly inside.
 				//
 				if (relStr != "." && relStr.rfind("..", 0) != 0)
 					return std::string(k_sdkPrefix) + relStr;
@@ -121,10 +125,10 @@ namespace RetrodevLib {
 	// It receives the absolute path to the project file (.retrodev),
 	// reads and parses the JSON content, and initializes the project state.
 	//
-	bool Project::Open(const std::string& path) {
+	Project::OpenResult Project::Open(const std::string& path) {
 		if (!std::filesystem::exists(path)) {
 			Log::Error("Project::Open file not found: '%s'", path.c_str());
-			return false;
+			return OpenResult::NotFound;
 		}
 		currentProject = {};
 		std::string buffer;
@@ -132,13 +136,23 @@ namespace RetrodevLib {
 		if (ec) {
 			Log::Error("Project::Open failed to parse JSON: '%s'", path.c_str());
 			currentProject = {};
-			return false;
+			return OpenResult::ParseFailed;
+		}
+		//
+		// Version 0 means the field was absent in the file (pre-versioning project).
+		// Any version other than the current supported version (1) is rejected.
+		//
+		constexpr int kCurrentVersion = 1;
+		if (currentProject.version != kCurrentVersion) {
+			Log::Error("Project::Open unsupported version %d (expected %d): '%s'", currentProject.version, kCurrentVersion, path.c_str());
+			currentProject = {};
+			return OpenResult::UnsupportedVersion;
 		}
 		currentProjectPath = path;
 		currentProjectName = currentProject.ProjectName;
 		isProjectOpen = true;
 		isProjectModified = false; // Just opened, no changes yet
-		return true;
+		return OpenResult::Ok;
 	}
 
 	//
@@ -1380,7 +1394,31 @@ namespace RetrodevLib {
 						}
 						if (tileParams) {
 							Log::Info(LogChannel::Build, "[Dep] Tileset '%s': extracting tiles.", depName.c_str());
-							tileExtractor->Extract(converted, tileParams);
+							//
+							// If Pack-to-Grid is enabled, run it on the converted image first
+							//
+							auto sourceForExtraction = converted;
+							if (tileParams->PackEnabled) {
+								Log::Info(LogChannel::Build, "[Dep] Tileset '%s': running Pack-to-Grid.", depName.c_str());
+								RgbColor bg(static_cast<uint8_t>(tileParams->PackBgR * 255.0f), static_cast<uint8_t>(tileParams->PackBgG * 255.0f),
+											static_cast<uint8_t>(tileParams->PackBgB * 255.0f));
+								auto packResult =
+									PackToGrid(converted, bg, tileParams->PackBgTolerance, tileParams->PackMergeGap, tileParams->PackCellPadding, tileParams->PackColumns);
+								if (packResult.packedImage) {
+									sourceForExtraction = packResult.packedImage;
+									tileParams->TileWidth = packResult.cellWidth;
+									tileParams->TileHeight = packResult.cellHeight;
+									tileParams->OffsetX = 0;
+									tileParams->OffsetY = 0;
+									tileParams->PaddingX = packResult.cellPadding;
+									tileParams->PaddingY = packResult.cellPadding;
+									Log::Info(LogChannel::Build, "[Dep] Tileset '%s': Pack-to-Grid produced %d region(s), cell %dx%d.", depName.c_str(), packResult.regionCount,
+											  packResult.cellWidth, packResult.cellHeight);
+								} else {
+									Log::Warning(LogChannel::Build, "[Dep] Tileset '%s': Pack-to-Grid found no regions -- using converter output.", depName.c_str());
+								}
+							}
+							tileExtractor->Extract(sourceForExtraction, tileParams);
 						}
 						ExportParams* exportParams = nullptr;
 						TilesetGetExportParams(depName, &exportParams);
@@ -1396,7 +1434,7 @@ namespace RetrodevLib {
 						continue;
 					}
 					//
-					// Map dependency: grab params and call the exporter directly — no image loading needed
+					// Map dependency: grab params and call the exporter directly -- no image loading needed
 					//
 					{
 						MapParams* mapParams = nullptr;
@@ -1416,24 +1454,32 @@ namespace RetrodevLib {
 						}
 					}
 					//
-					// Palette dependency: solve and validate palette assignments — no export needed
+					// Palette dependency: solve and validate palette assignments -- no export needed
 					//
 					{
 						PaletteParams* paletteParams = nullptr;
 						if (PaletteGetParams(depName, &paletteParams) && paletteParams != nullptr) {
 							Log::Info(LogChannel::Build, "[Dep] Palette '%s': solving.", depName.c_str());
-								std::string projectFolder = std::filesystem::path(currentProjectPath).parent_path().string();
-								PaletteSolution solution = PaletteSolver::Solve(paletteParams, projectFolder);
-								if (!solution.valid) {
-									Log::Error(LogChannel::Build, "[Dep] Palette '%s': no valid solution found.", depName.c_str());
-									continue;
-								}
-								Log::Info(LogChannel::Build, "[Dep] Palette '%s': solution found, validating.", depName.c_str());
-								PaletteSolver::Validate(solution, paletteParams);
+							std::string projectFolder = std::filesystem::path(currentProjectPath).parent_path().string();
+							PaletteSolution solution = PaletteSolver::Solve(paletteParams, projectFolder);
+							if (!solution.valid && !paletteParams->userValidated) {
+								//
+								// No perfect fit and the user has not accepted an imperfect solution -- skip.
+								//
+								Log::Error(LogChannel::Build,
+										   "[Dep] Palette '%s': no valid solution found and palette has not been user-validated. Run Solve + Validate in the palette editor.",
+										   depName.c_str());
 								continue;
+							}
+							if (!solution.valid && paletteParams->userValidated)
+								Log::Warning(LogChannel::Build, "[Dep] Palette '%s': imperfect solution (overflow remaps applied) -- using user-validated assignments.",
+											 depName.c_str());
+							else
+								Log::Info(LogChannel::Build, "[Dep] Palette '%s': solution found, validating.", depName.c_str());
+							PaletteSolver::Validate(solution, paletteParams);
+							continue;
 						}
 					}
-
 				}
 				return true;
 			}
@@ -1622,4 +1668,4 @@ namespace RetrodevLib {
 		return false;
 	}
 
-} 
+}

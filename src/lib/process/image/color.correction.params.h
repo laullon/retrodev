@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image processing -- colour correction parameter types.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
@@ -31,7 +31,7 @@ namespace RetrodevLib {
 		const std::string Upper_0xEE = "0xEE";
 		const std::string Upper_0xDD = "0xDD";
 		const std::string Upper_0xCC = "0xCC (both)";
-	} // namespace PaletteReductionLimits
+	}
 
 	struct ColorCorrectionParams {
 		//
@@ -79,4 +79,4 @@ namespace RetrodevLib {
 		//
 		ColorCorrectionParams();
 	};
-} // namespace RetrodevLib
+}

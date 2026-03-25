@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image processing -- colour quantization and palette reduction.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include <utils/utils.h>
 #include <algorithm>
@@ -311,7 +311,7 @@ namespace RetrodevLib {
 					}
 				}
 				//
-				// No image colors remain — stop assigning pens to avoid wasting slots on black
+				// No image colors remain -- stop assigning pens to avoid wasting slots on black
 				//
 				if (maxCount == 0)
 					break;
@@ -351,7 +351,7 @@ namespace RetrodevLib {
 						}
 					}
 					//
-					// No image colors remain — stop assigning pens to avoid wasting slots on black
+					// No image colors remain -- stop assigning pens to avoid wasting slots on black
 					//
 					if (maxCount == 0)
 						break;
@@ -401,7 +401,7 @@ namespace RetrodevLib {
 								}
 							}
 							//
-							// Histogram exhausted — no colors left to assign; stop
+							// Histogram exhausted -- no colors left to assign; stop
 							//
 							if (maxCount == 0)
 								break;
@@ -428,7 +428,7 @@ namespace RetrodevLib {
 							}
 						}
 						//
-						// Histogram exhausted — no colors left to assign; stop
+						// Histogram exhausted -- no colors left to assign; stop
 						//
 						if (maxCount == 0)
 							break;
@@ -554,6 +554,8 @@ namespace RetrodevLib {
 			Log::Warning("GFXQuantization::ApplySourcePalette: source uses %d palette entries but target mode supports only %d -- clamping", usedCount, maxPens);
 		//
 		// Map each used source palette entry (in index order) to a pen slot
+		// No skipping of disabled pens here: the artist designed this palette already
+		// accounting for the transparent pen slot, so the 1:1 index mapping must be preserved.
 		//
 		int pen = 0;
 		for (int idx = 0; idx < 256 && pen < maxPens; idx++) {
@@ -565,4 +567,4 @@ namespace RetrodevLib {
 			pen++;
 		}
 	}
-} // namespace RetrodevLib
+}

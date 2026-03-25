@@ -33,7 +33,53 @@ The right tooling panel contains the **Sprite Extraction** section for adding, e
 
 ### Sprite list
 
-The sprite list shows all defined sprites as a grid of thumbnails. Each thumbnail is drawn at up to 64 × 64 pixels, aspect-ratio-fitted within its cell. Hovering a thumbnail shows a tooltip with the sprite's index, name (if set), position and size. Clicking a thumbnail selects that sprite — the selected entry is highlighted with a border and its region is drawn as a selection box on the full image in the left panel above.
+The sprite list shows all defined sprites as a grid of thumbnails. Each thumbnail is drawn at up to 64 × 64 pixels, aspect-ratio-fitted within its cell.
+
+**Selection**
+
+The sprite list supports multiselection:
+
+- **Plain click** — selects the clicked sprite and clears any previous selection.
+- **Ctrl+click** — toggles the clicked sprite in or out of the current selection without clearing it.
+- **Shift+click** — range-selects all sprites from the last clicked sprite to the current one, adding them to the current selection.
+
+The primary sprite (last clicked) is highlighted with a gold border. Other selected sprites are highlighted with a white border. The region of the primary sprite is drawn as a selection box on the full converted image in the left panel above.
+
+Hovering a thumbnail shows a tooltip with the sprite's index, name (if set), position and size. When more than one sprite is selected the tooltip also shows the total selection count.
+
+Right-clicking a thumbnail opens a context menu that operates on the entire current selection. If the right-clicked sprite is not already selected it first becomes the sole selection. When multiple sprites are selected a header line shows the count. The menu has four groups:
+
+**Duplicate submenu** — creates a copy of the sprite and appends it to the end of the list:
+
+| Entry | Description |
+|---|---|
+| Duplicate | Plain copy. Name gets `_copy` suffix. |
+| Duplicate + Flip Horizontal | Copy with pixels mirrored left-to-right. Name gets `_fh` suffix. |
+| Duplicate + Flip Vertical | Copy with pixels mirrored top-to-bottom. Name gets `_fv` suffix. |
+| Duplicate + Shift Left | Copy shifted one pixel left (cyclic wrap). Name gets `_sl` suffix. |
+| Duplicate + Shift Right | Copy shifted one pixel right (cyclic wrap). Name gets `_sr` suffix. |
+| Duplicate + Shift Up | Copy shifted one pixel up (cyclic wrap). Name gets `_su` suffix. |
+| Duplicate + Shift Down | Copy shifted one pixel down (cyclic wrap). Name gets `_sd` suffix. |
+
+**Flip submenu** — transforms the existing sprite in place:
+
+| Entry | Description |
+|---|---|
+| Flip Horizontal | Mirrors the sprite left-to-right. Toggles the flip state — applying again restores the original. |
+| Flip Vertical | Mirrors the sprite top-to-bottom. Same toggle behaviour. |
+
+**Shift submenu** — moves the pixel content of the existing sprite one step in the chosen direction, wrapping cyclically within the bounding box:
+
+| Entry | Description |
+|---|---|
+| Shift Left | Shifts pixel content one step left; the leftmost column wraps to the right edge. |
+| Shift Right | Shifts pixel content one step right; the rightmost column wraps to the left edge. |
+| Shift Up | Shifts pixel content one step up; the top row wraps to the bottom edge. |
+| Shift Down | Shifts pixel content one step down; the bottom row wraps to the top edge. |
+
+**Remove** — removes all selected sprites from the list.
+
+All duplicate operations create one copy per selected sprite, append each copy to the end of the list, run extraction immediately, and select the newly created entries. In-place flip and shift operations re-run extraction immediately on every selected sprite.
 
 ### Adding a sprite
 

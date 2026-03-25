@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Text/code editor document -- Z80 assembly and AngelScript editing.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -294,7 +296,7 @@ namespace RetrodevGui {
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Find all");
 		ImGui::SameLine();
-		// Case sensitivity toggle — highlighted when active
+		// Case sensitivity toggle -- highlighted when active
 		const bool caseActive = m_searchCaseSensitive;
 		if (caseActive)
 			ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
@@ -339,7 +341,7 @@ namespace RetrodevGui {
 						break;
 					m_editor.ReplaceSelection(m_searchReplaceBuffer);
 				}
-				// Log results to the Find channel — one navigable entry per replaced occurrence,
+				// Log results to the Find channel -- one navigable entry per replaced occurrence,
 				// showing the original line content so the user can spot unintended replacements
 				const std::string& logPath = m_projectRelativePath.empty() ? m_filePath : m_projectRelativePath;
 				AppConsole::Clear(AppConsole::Channel::Find);
@@ -359,7 +361,7 @@ namespace RetrodevGui {
 		}
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Close");
-		// Scope label — right-aligned, cosmetic only
+		// Scope label -- right-aligned, cosmetic only
 		const char* scopeLabel = "Scope: Whole document";
 		float scopeLabelWidth = ImGui::CalcTextSize(scopeLabel).x;
 		float rightEdge = ImGui::GetContentRegionAvail().x + ImGui::GetCursorPosX();
@@ -422,7 +424,7 @@ namespace RetrodevGui {
 		if (ImGui::BeginPopup("##EditorContextMenu")) {
 			const bool hasSelection = m_editor.AnyCursorHasSelection();
 			const bool isReadOnly = m_editor.IsReadOnlyEnabled();
-			// Go to Definition — only shown when the right-clicked word resolved to a known codelens symbol
+			// Go to Definition -- only shown when the right-clicked word resolved to a known codelens symbol
 			if (m_contextMenuSymbolLine >= 0) {
 				if (ImGui::MenuItem(ICON_MAGNIFY_SCAN "  Go to Definition"))
 					DocumentText::OpenAtLine(m_contextMenuSymbolFile, m_contextMenuSymbolLine);
@@ -520,7 +522,7 @@ namespace RetrodevGui {
 	//
 	// Scrolls the editor to the given line and places the cursor there.
 	// Queues via s_pendingScrollLines so the scroll is applied at the start of the next
-	// Perform() call, before RenderEditor() — the same path used for newly opened documents.
+	// Perform() call, before RenderEditor() -- the same path used for newly opened documents.
 	//
 	void DocumentText::ScrollToLine(int line) {
 		//
@@ -583,4 +585,4 @@ namespace RetrodevGui {
 		}
 	}
 
-} // namespace RetrodevGui
+}

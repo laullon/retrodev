@@ -1,3 +1,46 @@
+
+On the road to the version 1.0 this is the first bulk and massive update to cover missing topics on the initial preview and add all the usability features encountered during usage among bugfixing.
+
+
+### Features and fixes
+* Fixed: Crash when building outputing to a DSK file. Updated to Rasm last version with the fix.
+* Fixed: When open a project close the currently opened one gracefully
+* Fixed: Sdk files now participate correctly in the codelens
+* Fixed: Autocompletion was not being showed up sometimes
+* Fixed: Build UI item space for includes and defines,usability
+* Fixed: When closing the application ask properly if there are unsaved changes
+* Added: Expose IsTransparent and IsOpaque to the exporters
+* Added: Macros and functions to the SDK (Amstrad CPC)
+* Added: Improved examples and new ones
+* Fixed: Codelens inline appearing on comments
+* Fixed: Codelens tooltip appearing in the symbol definition itself
+* Fixed: Ini file now is stored correctly in app path
+* Added: Pack-to-Grid in tile extraction -- auto-detects content regions in irregular tile sheets (e.g. magenta-background sprite dumps) and rearranges them into a uniform grid so the standard tile extractor can process them directly
+* Added: App now remembers last used directory for file dialogs
+* Fixed: Documents with same name but different type or path can now be opened
+* Added: Add a palette to allow constraints on solve palette
+* Added: Improved transparent color and pen handling so it can be properly defined for palette solving steps
+* Added: That transparency handling also available on the exporter scripts.
+* Fixed: XH/XL/IH and IL does not trigger invalid instruction anymore.
+* Fixed: When some tiles where deleted the tile preview was selecting the wrong one
+* Fixed: The tile preview list was clipping some tiles
+* Added: When a tile is deleted now the tile stills visible but just marked as deleted
+* Added: Added a button to delete duplicated tiles
+* Added: Added a button to undelete all deleted tiles
+* Added: Autohide to the console output
+* Fixed: Wrong save state indicator when building or debugging
+* Added: Improved tile and sprite preview
+* Fixed: Application hungs when adding a color constraint in palette solver.
+* Fixed: Open an error from the console may deliver to duplicate opened document
+* Fixed: After palette validate, participant documents showed converter error instead of refreshing
+* Added: Palette user-validation flag — build pipeline now applies imperfect (overflow-remapped) palette solutions when the user has explicitly validated them
+* Fixed: Build with the latest version of freetype was not working (they changed it recently)
+* Added: Improved the tooltips over all the application
+* Added: Project version number to migrate to newer formats if the project format receives breaking changes
+* Added: Improved sprite operations so you can preshift, duplicate and flip in any way
+* Added: Multiselection on tiles and sprites for bulk operations
+
+
 ## Version 0.9.24114562
 
 ### Features
@@ -18,5 +61,5 @@
 
 ### Know issues
 
-* KnThere are stills a crash when assembling in weird situations
+* There are stills a crash when assembling in weird situations
 

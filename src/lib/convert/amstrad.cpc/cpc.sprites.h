@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Amstrad CPC sprite converter -- region extraction and pixel encoding.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -63,4 +66,4 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		//
 		std::vector<SpriteDefinition> m_definitions;
 	};
-} // namespace RetrodevLib::ConverterAmstradCPC
+}

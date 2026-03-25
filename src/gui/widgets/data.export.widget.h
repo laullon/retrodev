@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Data export widget -- export script selection and parameter UI.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -23,7 +26,7 @@
 namespace RetrodevGui {
 
 	//
-	// DataExportWidget — script-driven export UI, usable by any document type
+	// DataExportWidget -- script-driven export UI, usable by any document type
 	//
 	// Each document that needs export must own one instance so path buffers
 	// and collapsing-header state are not shared across simultaneous documents.
@@ -34,7 +37,7 @@ namespace RetrodevGui {
 		// Render the export section.
 		// buildType + buildName identify the owning build item so ExportParams can be
 		// fetched, mutated in-place and saved back via MarkAsModified().
-		// tileExtractor / tileParams are optional — supply them for tileset documents;
+		// tileExtractor / tileParams are optional -- supply them for tileset documents;
 		// leave them null for bitmap / sprite / map documents (default).
 		//
 		void Render(RetrodevLib::ProjectBuildType buildType, const std::string& buildName, RetrodevLib::GFXParams* params, std::shared_ptr<RetrodevLib::IBitmapConverter> converter,
@@ -42,7 +45,7 @@ namespace RetrodevGui {
 					std::shared_ptr<RetrodevLib::ISpriteExtractor> spriteExtractor = nullptr, RetrodevLib::SpriteExtractionParams* spriteParams = nullptr);
 		//
 		// Render the export section for a map document.
-		// Takes MapParams directly — no converter or GFXParams required.
+		// Takes MapParams directly -- no converter or GFXParams required.
 		//
 		void RenderMap(const std::string& buildName, const RetrodevLib::MapParams* mapParams);
 
@@ -71,7 +74,7 @@ namespace RetrodevGui {
 		//
 		void SyncParamDefs(const std::vector<RetrodevLib::ScriptParamDef>& defs);
 		//
-		// Per-instance state — picker modal flags and metadata cache only.
+		// Per-instance state -- picker modal flags and metadata cache only.
 		// Path data lives in the project's ExportParams, not here.
 		//
 		bool m_outputOpen = true;
@@ -93,7 +96,7 @@ namespace RetrodevGui {
 		//
 		std::vector<RetrodevLib::ScriptParamDef> m_paramDefs;
 		//
-		// Metadata cache — populated once when the picker opens, cleared on close.
+		// Metadata cache -- populated once when the picker opens, cleared on close.
 		// Avoids reading script files every frame inside the render loop.
 		//
 		struct PickerEntry {
@@ -115,4 +118,4 @@ namespace RetrodevGui {
 		std::string m_activeBuildTypeTag;
 	};
 
-} // namespace RetrodevGui
+}

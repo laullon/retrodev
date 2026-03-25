@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Sprite extraction document -- define and preview sprite regions.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -15,6 +18,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 struct SDL_Texture;
 
@@ -60,7 +64,7 @@ namespace RetrodevGui {
 		//
 		std::shared_ptr<RetrodevLib::ISpriteExtractor> m_spriteExtractor;
 		//
-		// Export widget instance — owns its own path buffers and ImGui ID scope
+		// Export widget instance -- owns its own path buffers and ImGui ID scope
 		//
 		DataExportWidget m_exportWidget;
 		//
@@ -106,9 +110,11 @@ namespace RetrodevGui {
 		float m_extractionVSizeTop = 0;
 		float m_extractionVSizeBottom = 0;
 		//
-		// Selected sprite tracking
+		// Selected sprite tracking -- primary index drives the tooling panel; selection holds the full multi-select set
 		//
 		int m_selectedSpriteIndex = -1;
+		std::vector<int> m_spriteSelection;
+		int m_spritePrimaryIndex = -1;
 		std::shared_ptr<RetrodevLib::Image> m_selectedSpriteImage;
 		// Cached generated preview for the selected sprite (keeps texture alive)
 		std::shared_ptr<RetrodevLib::Image> m_selectedSpritePreview;
@@ -116,6 +122,8 @@ namespace RetrodevGui {
 		int m_cachedSpritePreviewIndex = -1;
 		bool m_cachedSpritePreviewAspect = false;
 		bool m_cachedSpritePreviewScanlines = false;
+		// Cached transparency flag -- set when preview is regenerated, drives background overlay
+		bool m_cachedSpriteHasTransparency = false;
 		//
 		// Render methods for different tabs
 		//
@@ -123,4 +131,4 @@ namespace RetrodevGui {
 		void RenderSpriteExtractionTab();
 	};
 
-} // namespace RetrodevGui
+}

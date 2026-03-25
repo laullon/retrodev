@@ -1,15 +1,16 @@
-﻿//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Palette widget -- hardware colour palette display and selection.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "palette.widget.h"
 #include <app/app.console.h>
+#include <app/app.icons.mdi.h>
 
 namespace RetrodevGui {
 
@@ -23,6 +24,7 @@ namespace RetrodevGui {
 	bool PaletteWidget::m_pickingFromImage = false;
 	bool PaletteWidget::m_allLocked = false;
 	bool PaletteWidget::m_allDisabled = false;
+	bool PaletteWidget::m_openColorPickerThisFrame = false;
 
 	//
 	// Main render function for the palette widget, called from within an existing child window
@@ -32,10 +34,19 @@ namespace RetrodevGui {
 			return false;
 		bool changed = false;
 		//
-		// Transparency section (compact, put first) — skipped when caller opts out
+		// Open the color picker popup here, at top-level Render scope, before any child
+		// windows are pushed.  This ensures BeginPopupModal can anchor correctly.
+		// m_openColorPickerThisFrame is a one-shot flag set by the color-box click handler.
+		//
+		if (m_openColorPickerThisFrame) {
+			ImGui::OpenPopup("ColorPicker");
+			m_openColorPickerThisFrame = false;
+		}
+		//
+		// Transparency section (compact, put first) -- skipped when caller opts out
 		//
 		if (showTransparency)
-			changed |= RenderTransparencySection(params);
+			changed |= RenderTransparencySection(params, palette);
 		//
 		// Palette section
 		//
@@ -187,11 +198,12 @@ namespace RetrodevGui {
 				if (ImGui::ColorButton("##colorbox", imColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoBorder, ImVec2(colorBoxSize, colorBoxSize))) {
 					if (isLocked) {
 						//
-						// Open color picker for locked pen
-						// Initialize selected color index to current pen color
+						// Open color picker for locked pen.
+						// Set one-shot flag so OpenPopup is called once at Render scope.
 						//
 						m_selectedPen = i;
 						m_selectedColorIndex = systemIndex;
+						m_openColorPickerThisFrame = true;
 						m_showColorPicker = true;
 					}
 				}
@@ -276,15 +288,11 @@ namespace RetrodevGui {
 	bool PaletteWidget::RenderColorPickerPopup(RetrodevLib::GFXParams* params, std::shared_ptr<RetrodevLib::IPaletteConverter> palette) {
 		bool changed = false;
 		//
-		// Open popup if not already open
-		//
-		if (m_showColorPicker && !ImGui::IsPopupOpen("ColorPicker")) {
-			ImGui::OpenPopup("ColorPicker");
-		}
-		//
 		// Modal popup for color selection
 		//
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+		ImVec2 colorPickCenter = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(colorPickCenter, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 		if (ImGui::BeginPopupModal("ColorPicker", &m_showColorPicker, ImGuiWindowFlags_AlwaysAutoResize)) {
 			if (m_selectedPen >= 0) {
 				ImGui::Text("Select color for Pen %d", m_selectedPen);
@@ -371,14 +379,29 @@ namespace RetrodevGui {
 		return changed;
 	}
 
-	bool PaletteWidget::RenderTransparencySection(RetrodevLib::GFXParams* params) {
+	bool PaletteWidget::RenderTransparencySection(RetrodevLib::GFXParams* params, std::shared_ptr<RetrodevLib::IPaletteConverter> palette) {
 		bool changed = false;
 		//
 		// Ultra-compact transparency section - everything on one line
 		//
-		if (ImGui::CollapsingHeader("Transparency")) {
+		bool transparencyOpen = ImGui::CollapsingHeader("Transparency");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+				ImGui::SetTooltip(
+					"Transparency removes a colour entirely from the conversion process --\n"
+					"no pen is ever assigned to it.\n\n"
+					"Code / skip-pixel exports (images that simply omit the colour):\n"
+					"  Enable transparency here. The colour is stripped before quantization\n"
+					"  and does not consume any pen slot.\n\n"
+					"Raw-data exports (sprites / images that need a dedicated transparent pen):\n"
+					"  Enable transparency here AND set the Transparent pen below to the pen\n"
+					"  index your export script will use as the transparency marker (e.g. pen 0).\n"
+					"  The palette solver reserves that slot, keeps no image colour in it, and\n"
+					"  remaps the palette so colours you need are never placed there.");
+		if (transparencyOpen) {
 			//
-			// Show compact warning when in picking mode
+			// Show compact warning when in picking mode (inside expanded section)
 			//
 			if (m_pickingFromImage) {
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
@@ -409,9 +432,15 @@ namespace RetrodevGui {
 			if (ImGui::Checkbox("##useTransparent", &params->RParams.UseTransparentColor)) {
 				changed = true;
 			}
-			if (ImGui::IsItemHovered()) {
-				ImGui::SetTooltip("Enable/disable transparent color (chroma key)");
-			}
+			if (ImGui::IsItemHovered())
+						ImGui::SetTooltip(
+							"Enable transparency.\n\n"
+							"Pixels matching the selected RGB colour (within tolerance) are\n"
+							"excluded from quantization -- they occupy no pen slot and\n"
+							"disappear from the converted output.\n\n"
+							"For raw-data exports that need a runtime transparency marker\n"
+							"(e.g. sprites drawn with a mask colour), also set the\n"
+							"Transparent pen so the solver reserves the correct pen slot.");
 			//
 			// Show remaining controls if enabled (same line)
 			//
@@ -452,6 +481,65 @@ namespace RetrodevGui {
 				}
 				ImGui::SameLine();
 				ImGui::Text("Tol");
+					//
+					// Raw-data transparent pen: on the same line, shown when a palette is available.
+					// The user selects which pen slot the exporter will use to signal a transparent pixel.
+					// The solver will not count that pen's color toward the zone budget for this asset.
+					//
+					if (palette) {
+						int penCount = palette->PaletteMaxColors();
+						ImGui::SameLine();
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text("Transparent pen");
+					ImGui::SameLine();
+					ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+					if (ImGui::IsItemHovered())
+						ImGui::SetTooltip(
+							"Raw-data transparent pen.\n\n"
+							"For raw-data exports where a transparent pixel must map to a\n"
+							"specific pen index (e.g. pen 0 for sprites drawn with a mask\n"
+							"colour), set this to that pen number. Your export script should\n"
+							"output this pen index wherever a transparent pixel is found.\n\n"
+							"Palette solver behaviour:\n"
+							"  - The quantizer never assigns any colour to this pen slot.\n"
+							"  - After capping, the solver remaps the palette so that colours\n"
+							"    needed by this asset never land in this slot.\n"
+							"  - The participant result line shows \'X pen(s) assigned\' plus\n"
+							"    \'+1 transparent (pen N)\' when this option is active.\n\n"
+							"All assets sharing screen space should ideally use the same\n"
+							"transparent pen index to avoid slot conflicts.\n\n"
+							"Set to None to disable (no pen is dedicated to transparency).");
+					ImGui::SameLine();
+					float penComboW = ImGui::GetFontSize() * 6.0f;
+					ImGui::SetNextItemWidth(penComboW);
+					int transPen = params->RParams.TransparentPen;
+					char penPreview[16];
+					if (transPen < 0)
+						snprintf(penPreview, sizeof(penPreview), "None");
+					else
+						snprintf(penPreview, sizeof(penPreview), "Pen %d", transPen);
+					if (ImGui::BeginCombo("##transPen", penPreview)) {
+						bool selNone = (transPen < 0);
+						if (ImGui::Selectable("None", selNone)) {
+							params->RParams.TransparentPen = -1;
+							changed = true;
+						}
+						if (selNone)
+							ImGui::SetItemDefaultFocus();
+						for (int pi = 0; pi < penCount; pi++) {
+							char penLabel[16];
+							snprintf(penLabel, sizeof(penLabel), "Pen %d", pi);
+							bool selPen = (transPen == pi);
+							if (ImGui::Selectable(penLabel, selPen)) {
+								params->RParams.TransparentPen = pi;
+								changed = true;
+							}
+							if (selPen)
+								ImGui::SetItemDefaultFocus();
+						}
+					ImGui::EndCombo();
+					}
+				}
 			}
 		}
 		//
@@ -459,10 +547,12 @@ namespace RetrodevGui {
 		//
 		if (m_showTransparencyPicker) {
 			ImGui::OpenPopup("Transparency Color Picker");
-			m_showTransparencyPicker = false;
-		}
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
-		if (ImGui::BeginPopupModal("Transparency Color Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+				m_showTransparencyPicker = false;
+			}
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+			ImVec2 transpCenter = ImGui::GetMainViewport()->GetCenter();
+			ImGui::SetNextWindowPos(transpCenter, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+			if (ImGui::BeginPopupModal("Transparency Color Picker", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			ImGui::Text("Select transparent color:");
 			ImGui::Separator();
 			//
@@ -555,4 +645,4 @@ namespace RetrodevGui {
 		AppConsole::AddLogF(AppConsole::LogLevel::Info, "Transparent color set to R:%d G:%d B:%d", r, g, b);
 	}
 
-} // namespace RetrodevGui
+}

@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Project metadata -- map item serialisation.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -50,7 +53,7 @@ namespace RetrodevLib::MapSerial {
 			v.push_back(val);
 		}
 	}
-} // namespace RetrodevLib::MapSerial
+}
 //
 // Glaze metadata for JSON serialization
 //

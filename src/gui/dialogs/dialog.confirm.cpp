@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Generic confirmation dialog.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -19,6 +21,8 @@ namespace RetrodevGui {
 	void ConfirmDialog::Render() {
 		if (!m_message.empty())
 			ImGui::OpenPopup("Confirm");
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 		if (ImGui::BeginPopupModal("Confirm", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
 			ImGui::Dummy(ImVec2(0.0f, 6.0f));
 			ImGui::Text(ICON_ALERT_OUTLINE " %s", m_message.c_str());
@@ -42,4 +46,4 @@ namespace RetrodevGui {
 		}
 	}
 
-} // namespace RetrodevGui
+}

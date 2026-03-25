@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Main view -- project panel (SDK, Project, Files trees).
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -90,4 +93,4 @@ namespace RetrodevGui {
 		static RetrodevLib::ProjectFileType GetFileType(const std::filesystem::path& path);
 	};
 
-} // namespace RetrodevGui
+}

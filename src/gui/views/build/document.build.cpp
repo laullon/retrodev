@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Build document -- editor for build pipeline items (sources, output, debug).
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -91,13 +93,11 @@ namespace RetrodevGui {
 	//
 	// Render the Sources panel: ordered list of source files with add / remove / reorder controls
 	//
-	void DocumentBuild::RenderSources(RetrodevLib::SourceParams* params) {
-		float fontSize = ImGui::GetFontSize();
+	void DocumentBuild::RenderSources(RetrodevLib::SourceParams* params, float listHeight) {
 		ImGui::SeparatorText(ICON_FILE_CODE " Sources");
 		//
 		// Source list
 		//
-		float listHeight = fontSize * 6.0f;
 		if (ImGui::BeginChild("##SourcesList", ImVec2(0.0f, listHeight), true)) {
 			for (int i = 0; i < (int)params->sources.size(); i++) {
 				bool selected = (m_selectedSourceIdx == i);
@@ -175,13 +175,11 @@ namespace RetrodevGui {
 	//
 	// Render the Include Directories panel: search paths passed to the assembler/compiler (-I)
 	//
-	void DocumentBuild::RenderIncludeDirs(RetrodevLib::SourceParams* params) {
-		float fontSize = ImGui::GetFontSize();
+	void DocumentBuild::RenderIncludeDirs(RetrodevLib::SourceParams* params, float listHeight) {
 		ImGui::SeparatorText(ICON_FOLDER_SEARCH " Include Directories");
 		//
 		// Include dirs list
 		//
-		float listHeight = fontSize * 5.0f;
 		if (ImGui::BeginChild("##IncludeDirsList", ImVec2(0.0f, listHeight), true)) {
 			for (int i = 0; i < (int)params->includeDirs.size(); i++) {
 				bool selected = (m_selectedIncludeDirIdx == i);
@@ -241,13 +239,11 @@ namespace RetrodevGui {
 	//
 	// Render the Defines panel: preprocessor macros injected before assembly (e.g. MYFLAG=1)
 	//
-	void DocumentBuild::RenderDefines(RetrodevLib::SourceParams* params) {
-		float fontSize = ImGui::GetFontSize();
+	void DocumentBuild::RenderDefines(RetrodevLib::SourceParams* params, float listHeight) {
 		ImGui::SeparatorText(ICON_CODE_TAGS " Defines");
 		//
 		// Defines list
 		//
-		float listHeight = fontSize * 5.0f;
 		if (ImGui::BeginChild("##DefinesList", ImVec2(0.0f, listHeight), true)) {
 			for (int i = 0; i < (int)params->defines.size(); i++) {
 				bool selected = (m_selectedDefineIdx == i);
@@ -291,7 +287,16 @@ namespace RetrodevGui {
 	// maps, palettes) that must be processed before this build executes.
 	//
 	void DocumentBuild::RenderDependencies(RetrodevLib::SourceParams* params) {
-		ImGui::SeparatorText(ICON_LINK " Dependencies");
+		ImGui::SeparatorText(ICON_LINK " Dependencies  " ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip(
+				"Order matters -- items are processed top-to-bottom before the build runs.\n\n"
+				"If you use a Palette solver, place it at the top of the list.\n"
+				"It must run first to write the solved palette assignments back into\n"
+				"bitmaps, tilesets and sprites before those items are converted.\n"
+				"If a bitmap or tileset is processed before the solver runs, the\n"
+				"solved palette assignments are not yet in place and the conversion\n"
+				"will use whatever palette was last stored in the project file.");
 		//
 		// List fills all remaining vertical space; one button-row is reserved below
 		//
@@ -317,11 +322,8 @@ namespace RetrodevGui {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
 		if (ImGui::BeginPopup("##DepPickerPopup")) {
 			static const RetrodevLib::ProjectBuildType k_depTypes[] = {
-				RetrodevLib::ProjectBuildType::Bitmap,
-				RetrodevLib::ProjectBuildType::Tilemap,
-				RetrodevLib::ProjectBuildType::Sprite,
-				RetrodevLib::ProjectBuildType::Map,
-				RetrodevLib::ProjectBuildType::Palette,
+				RetrodevLib::ProjectBuildType::Bitmap, RetrodevLib::ProjectBuildType::Tilemap, RetrodevLib::ProjectBuildType::Sprite,
+				RetrodevLib::ProjectBuildType::Map,	   RetrodevLib::ProjectBuildType::Palette,
 			};
 			static const char* k_depTypeLabels[] = {"Bitmap", "Tileset", "Sprite", "Map", "Palette"};
 			bool anyAvailable = false;
@@ -417,9 +419,22 @@ namespace RetrodevGui {
 		ImGui::EndChild();
 		ImGui::SameLine();
 		if (ImGui::BeginChild("##SrcTabRight", ImVec2(rightW, 0.0f), false)) {
-			RenderSources(params);
-			RenderIncludeDirs(params);
-			RenderDefines(params);
+			//
+			// Distribute available vertical space proportionally across the three lists.
+			// Each list gets: available / 3, minus its own fixed chrome (SeparatorText + controls row).
+			// The chrome cost per panel is one separator + one button row with spacing.
+			//
+			float fontSize = ImGui::GetFontSize();
+			const float chromePerPanel = ImGui::GetFrameHeightWithSpacing() * 2.0f + ImGui::GetStyle().ItemSpacing.y;
+			const float minListH = fontSize * 2.0f;
+			const float totalAvail = ImGui::GetContentRegionAvail().y;
+			const float slot = (totalAvail - chromePerPanel * 3.0f) / 3.0f;
+			const float srcH = std::max(slot, minListH);
+			const float incH = std::max(slot, minListH);
+			const float defH = std::max(slot, minListH);
+			RenderSources(params, srcH);
+			RenderIncludeDirs(params, incH);
+			RenderDefines(params, defH);
 		}
 		ImGui::EndChild();
 	}
@@ -483,7 +498,7 @@ namespace RetrodevGui {
 	//
 	void DocumentBuild::RenderTabDebugCommon(RetrodevLib::SourceParams* params) {
 		//
-		// Char buffers for path/text InputText widgets — synced from params strings each frame
+		// Char buffers for path/text InputText widgets -- synced from params strings each frame
 		//
 		static char emu_media_buf[512] = {};
 		static char emu_sna_buf[512] = {};
@@ -518,7 +533,7 @@ namespace RetrodevGui {
 		if (ep.emulator.empty())
 			return;
 		//
-		// Executable path — stored in retrodev.ini (machine-local), not in the project file.
+		// Executable path -- stored in retrodev.ini (machine-local), not in the project file.
 		// Sync the current setting into the params struct so the launcher always has a valid path.
 		//
 		ImGui::Spacing();
@@ -564,12 +579,12 @@ namespace RetrodevGui {
 			}
 		} else {
 			ImGui::AlignTextToFramePadding();
-			ImGui::TextDisabled("Symbol file — not supported by RVM");
+			ImGui::TextDisabled("Symbol file -- not supported by RVM");
 		}
 		ImGui::Spacing();
 		ImGui::SeparatorText("Startup");
 		//
-		// sendCPM checkbox — takes priority over command field
+		// sendCPM checkbox -- takes priority over command field
 		//
 		bool sendCPM = c.sendCPM;
 		if (ImGui::Checkbox("Send |CPM on startup", &sendCPM)) {
@@ -599,7 +614,7 @@ namespace RetrodevGui {
 		}
 		ImGui::EndDisabled();
 		//
-		// Machine selector — only relevant for RVM; others read it from config
+		// Machine selector -- only relevant for RVM; others read it from config
 		//
 		if (ep.emulator == "RVM") {
 			ImGui::Spacing();
@@ -625,7 +640,7 @@ namespace RetrodevGui {
 			}
 		}
 		// -----------------------------------------------------------------------
-		// ACE-DL — specific options
+		// ACE-DL -- specific options
 		// -----------------------------------------------------------------------
 		else if (ep.emulator == "ACE-DL") {
 			ImGui::Spacing();
@@ -779,7 +794,7 @@ namespace RetrodevGui {
 			SetModified(true);
 		}
 		//
-		// Build item name — editable for renaming (press Enter to apply)
+		// Build item name -- editable for renaming (press Enter to apply)
 		//
 		static char buildNameBuf[256] = "";
 		if (buildNameBuf[0] == '\0' || m_name != std::string(buildNameBuf)) {
@@ -843,4 +858,4 @@ namespace RetrodevGui {
 			ImGui::EndTabBar();
 		}
 	}
-} // namespace RetrodevGui
+}

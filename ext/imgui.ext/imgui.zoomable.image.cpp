@@ -133,6 +133,15 @@ namespace ImGui {
 			ImGui::SetCursorPos(displayPos);
 		}
 		//
+		// Draw background overlay if requested — darkens the sprite rect so transparent pixels
+		// are visually distinct from the checkerboard background.
+		//
+		if (s->backgroundOverlayColor.w > 0.0f) {
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			drawList->AddRectFilled(screenDisplayPos, ImVec2(screenDisplayPos.x + displaySize.x, screenDisplayPos.y + displaySize.y),
+									ImGui::ColorConvertFloat4ToU32(s->backgroundOverlayColor));
+		}
+		//
 		// Apply view setting with per-axis UV spans
 		//
 		const ImVec2 t1 = ImVec2(s->panOffset.x, s->panOffset.y);
@@ -315,10 +324,10 @@ namespace ImGui {
 					// Compute screen coords from snapped logical corners
 					//
 					ImDrawList* drawList = ImGui::GetWindowDrawList();
-					ImVec2 screenBoxStart = ImVec2(screenDisplayPos.x + (x1 / coordSize.x - t1.x) * displaySize.x / uvSpanX,
-												  screenDisplayPos.y + (y1 / coordSize.y - t1.y) * displaySize.y / uvSpanY);
-					ImVec2 screenBoxEnd = ImVec2(screenDisplayPos.x + (x2 / coordSize.x - t1.x) * displaySize.x / uvSpanX,
-												screenDisplayPos.y + (y2 / coordSize.y - t1.y) * displaySize.y / uvSpanY);
+					ImVec2 screenBoxStart =
+						ImVec2(screenDisplayPos.x + (x1 / coordSize.x - t1.x) * displaySize.x / uvSpanX, screenDisplayPos.y + (y1 / coordSize.y - t1.y) * displaySize.y / uvSpanY);
+					ImVec2 screenBoxEnd =
+						ImVec2(screenDisplayPos.x + (x2 / coordSize.x - t1.x) * displaySize.x / uvSpanX, screenDisplayPos.y + (y2 / coordSize.y - t1.y) * displaySize.y / uvSpanY);
 					//
 					// Thickness = one logical pixel in screen space
 					//

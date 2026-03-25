@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Source asset -- assembler source file reference.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -22,7 +25,7 @@ namespace RetrodevLib {
 			return false;
 		}
 		//
-		// Resolve project folder once — all relative paths are anchored here
+		// Resolve project folder once -- all relative paths are anchored here
 		//
 		const std::string projectDir = Project::GetProjectFolder();
 		//
@@ -60,4 +63,4 @@ namespace RetrodevLib {
 		return false;
 	}
 
-} // namespace RetrodevLib
+}

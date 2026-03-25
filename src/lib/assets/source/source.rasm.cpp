@@ -1,12 +1,15 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Source asset -- RASM assembler invocation.
 //
+// (c) TLOTB 2026
 //
+// --------------------------------------------------------------------------------------------------------------
 //
 // Note: Some of the parameters should be allocated because rasm tries to free them
 //
-// --------------------------------------------------------------------------------------------------------------
 
 #include "source.rasm.h"
 #include <rasm.api.h>
@@ -177,7 +180,7 @@ namespace RetrodevLib {
 			int uz80 = HasFlag(toolOpts, "-uz") ? 1 : 0;
 			//
 			// rasm.h uses as80 for AS80 mode and a separate dams/pasmo for others;
-			// UZ80 mode is not a named field — it is passed via as80=2 internally if
+			// UZ80 mode is not a named field -- it is passed via as80=2 internally if
 			// the assembler supports it, but the public API only exposes as80/dams/pasmo.
 			// Map -uz to dams=0, pasmo=0, as80=2 as best approximation.
 			//
@@ -212,7 +215,7 @@ namespace RetrodevLib {
 			//
 			param.automatic_radix = HasFlag(toolOpts, "-oa") ? 1 : 0;
 			//
-			// Output filenames — values live in local std::strings so pointers stay valid.
+			// Output filenames -- values live in local std::strings so pointers stay valid.
 			// Flag letters match the UI: -o=radix, -ob=binary, -or=ROM, -oc=cartridge,
 			// -oi=snapshot, -ot=tape, -os=symbol, -ok=breakpoint, -ol=CPR-info, -sc=custom export format.
 			//
@@ -281,7 +284,7 @@ namespace RetrodevLib {
 			//
 			// Preprocessor defines: build a char* array for param.symboldef.
 			// RASM expects "KEY=VALUE" or just "KEY" entries, but the processing loop
-			// (rasm.c ~26272) skips any entry that has no '=' — so bare defines must
+			// (rasm.c ~26272) skips any entry that has no '=' -- so bare defines must
 			// get a default value of 1 appended.  The CLI path also uppercases all
 			// define names (rasm.c ~32815); the CharWord table contains only A-Z, so
 			// source identifiers are always tokenised as uppercase.  Mirror that here.
@@ -290,7 +293,7 @@ namespace RetrodevLib {
 			for (auto& d : defsCopy) {
 				size_t eqPos = d.find('=');
 				//
-				// No '=': bare define — RASM's loop would skip it entirely; append =1
+				// No '=': bare define -- RASM's loop would skip it entirely; append =1
 				//
 				if (eqPos == std::string::npos) {
 					d += "=1";
@@ -344,5 +347,5 @@ namespace RetrodevLib {
 			return true;
 		}
 
-	} // namespace RasmImpl
-} // namespace RetrodevLib
+	}
+}

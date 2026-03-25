@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Sprite extraction widget -- region selector and sprite list management.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -29,7 +32,7 @@ namespace RetrodevGui {
 		// Returns result indicating if parameters changed or actions were triggered
 		//
 		static SpriteExtractionWidgetResult Render(RetrodevLib::SpriteExtractionParams* spriteParams, std::shared_ptr<RetrodevLib::ISpriteExtractor> spriteExtractor,
-											   int selectedSpriteIndex, int constraintW = 1, int constraintH = 1);
+												   int selectedSpriteIndex, int constraintW = 1, int constraintH = 1);
 		//
 		// Check if selection mode is active
 		//
@@ -75,7 +78,7 @@ namespace RetrodevGui {
 		static int m_constraintW;
 		static int m_constraintH;
 		//
-		// Previous constraint values — used to detect mode changes and reset the checkbox
+		// Previous constraint values -- used to detect mode changes and reset the checkbox
 		//
 		static int m_prevConstraintW;
 		static int m_prevConstraintH;
@@ -85,4 +88,4 @@ namespace RetrodevGui {
 		static int m_prevSpriteWidth;
 		static int m_prevSpriteHeight;
 	};
-} // namespace RetrodevGui
+}

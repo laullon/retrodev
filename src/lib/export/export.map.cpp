@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Map export engine -- runs AngelScript export scripts for map items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -81,7 +84,7 @@ namespace RetrodevLib {
 		// ---------------------------------------------------------------- //
 
 		//
-		// Generic wrappers — required by AS_MAX_PORTABILITY builds
+		// Generic wrappers -- required by AS_MAX_PORTABILITY builds
 		//
 		static void MapExportContext_GetLayerCount_Generic(asIScriptGeneric* gen) {
 			gen->SetReturnDWord((asDWORD) static_cast<MapExportContext*>(gen->GetObject())->GetLayerCount());
@@ -127,7 +130,7 @@ namespace RetrodevLib {
 			if (g_engine.mapContextRegistered)
 				return;
 			//
-			// MapExportContext — ref type, no script-side reference counting
+			// MapExportContext -- ref type, no script-side reference counting
 			//
 			engine->RegisterObjectType("MapExportContext", 0, asOBJ_REF | asOBJ_NOCOUNT);
 			engine->RegisterObjectMethod("MapExportContext", "int GetLayerCount() const", asFUNCTION(MapExportContext_GetLayerCount_Generic), asCALL_GENERIC);
@@ -150,7 +153,7 @@ namespace RetrodevLib {
 
 		bool RunMapExport(const std::string& scriptPath, const std::string& outputPath, const std::string& scriptParams, const MapParams* mapParams) {
 			if (!g_engine.initialized) {
-				ReportError("[Script] ExportMap: engine not initialized — call ExportEngine::Initialize() first");
+				ReportError("[Script] ExportMap: engine not initialized -- call ExportEngine::Initialize() first");
 				return false;
 			}
 			if (!EnsureOutputDirectory(outputPath))
@@ -214,5 +217,5 @@ namespace RetrodevLib {
 			return true;
 		}
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

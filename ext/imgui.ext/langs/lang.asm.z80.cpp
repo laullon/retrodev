@@ -56,8 +56,7 @@ namespace ImGui {
 			// Assembler directives — data, memory and file output
 			//
 			static const DirectiveDef kZ80AssemblerDirectiveDefs[] = {
-				{"ORG",
-				 "ORG logical[,physical]",
+				{"ORG", "ORG logical[,physical]",
 				 "Set the assembly address.\n"
 				 "  logical  — controls label values\n"
 				 "  physical — controls where bytes are written (optional)\n"
@@ -68,16 +67,14 @@ namespace ImGui {
 				 "  ORG $                  ; re-sync logical = physical\n"
 				 "\n"
 				 "Use ENDORG to return to logical=physical addressing after a physical override."},
-				{"ALIGN",
-				 "ALIGN limit[,fill]",
+				{"ALIGN", "ALIGN limit[,fill]",
 				 "Advance the address counter to the next multiple of limit.\n"
 				 "  fill — optional byte value to fill the gap (default: no bytes emitted)\n"
 				 "\n"
 				 "Examples:\n"
 				 "  ALIGN 256             ; align to next 256-byte page\n"
 				 "  ALIGN 4,0            ; align to 4-byte boundary, fill gap with 0"},
-				{"SAVE",
-				 "SAVE 'file',start,size[,format[,'extra']]",
+				{"SAVE", "SAVE 'file',start,size[,format[,'extra']]",
 				 "Export binary data to a file. Supports multiple output formats.\n"
 				 "\n"
 				 "Formats:\n"
@@ -105,8 +102,7 @@ namespace ImGui {
 				 "\n"
 				 "If the DSK does not exist it is created in DATA format.\n"
 				 "Use -eo command-line option to overwrite existing files on disk."},
-				{"INCBIN",
-				 "INCBIN 'file'[,offset[,length]][,flags...]",
+				{"INCBIN", "INCBIN 'file'[,offset[,length]][,flags...]",
 				 "Import binary data into the assembled output.\n"
 				 "\n"
 				 "Flags (order-independent, combinable):\n"
@@ -129,8 +125,7 @@ namespace ImGui {
 				 "  INCBIN 'data.bin'\n"
 				 "  INCBIN 'data.bin',#10,#100    ; 256 bytes from offset 16\n"
 				 "  INCBIN 'data.bin',0,0,EXISTS  ; only if file exists"},
-				{"INCLUDE",
-				 "INCLUDE 'file.asm'",
+				{"INCLUDE", "INCLUDE 'file.asm'",
 				 "Insert an assembly source file at the current location.\n"
 				 "Path is relative to the including file.\n"
 				 "Use absolute paths to anchor to the source root.\n"
@@ -140,8 +135,7 @@ namespace ImGui {
 				 "  __MYHEADER__ = 1\n"
 				 "    ; ... code ...\n"
 				 "  ENDIF"},
-				{"DEFB",
-				 "DEFB expr[,expr,...]",
+				{"DEFB", "DEFB expr[,expr,...]",
 				 "Emit one or more 8-bit byte values. Aliases: DB, DM, DEFM, BYTE.\n"
 				 "\n"
 				 "Examples:\n"
@@ -149,49 +143,43 @@ namespace ImGui {
 				 "  DEFB 'H','i',0          ; ASCII string, null-terminated\n"
 				 "  DEFB 'string\\xFF'       ; \\xFF inserts hex byte inline\n"
 				 "  DEFB 'r'-'a'+'A'        ; expression as byte"},
-				{"DEFW",
-				 "DEFW expr[,expr,...]",
+				{"DEFW", "DEFW expr[,expr,...]",
 				 "Emit one or more 16-bit word values (little-endian). Alias: DW.\n"
 				 "\n"
 				 "Examples:\n"
 				 "  DEFW #1234,my_label\n"
 				 "  DEFW $-start            ; word holding a computed size"},
-				{"DEFI",
-				 "DEFI expr[,expr,...]",
+				{"DEFI", "DEFI expr[,expr,...]",
 				 "Emit one or more 32-bit double-word values (little-endian). Aliases: DI, DD, DL.\n"
 				 "\n"
 				 "Example:\n"
 				 "  DEFI #DEADBEEF"},
-				{"DEFR",
-				 "DEFR value",
+				{"DEFR", "DEFR value",
 				 "Emit a 32-bit IEEE 754 floating-point value. Alias: DR.\n"
 				 "\n"
 				 "Example:\n"
 				 "  DEFR 3.14159"},
-				{"DEFS",
-				 "DEFS count[,fill]",
+				{"DEFS", "DEFS count[,fill]",
 				 "Reserve count bytes in the output, filled with 0 by default. Alias: DS.\n"
 				 "\n"
 				 "Examples:\n"
 				 "  DEFS 256           ; reserve 256 zero bytes\n"
 				 "  DEFS 64,#FF        ; reserve 64 bytes filled with #FF"},
-				{"DB",			 "DB expr[,expr,...]",										"Emit 8-bit byte values. Alias of DEFB.\nSee DEFB for full documentation and examples."},
-				{"DW",			 "DW expr[,expr,...]",										"Emit 16-bit word values (little-endian). Alias of DEFW.\nSee DEFW for full documentation and examples."},
-				{"DD",			 "DD expr[,expr,...]",										"Emit 32-bit double-word values. Alias of DEFI.\nSee DEFI for full documentation and examples."},
-				{"DM",			 "DM expr[,expr,...]",										"Emit byte values. Alias of DEFB/DEFM.\nSee DEFB for full documentation and examples."},
-				{"DS",			 "DS count[,fill]",											"Reserve bytes, optionally filled. Alias of DEFS.\nSee DEFS for full documentation and examples."},
-				{"DL",			 "DL expr[,expr,...]",										"Emit 32-bit values. Alias of DEFI.\nSee DEFI for full documentation and examples."},
-				{"BYTE",		 "BYTE expr[,expr,...]",									"Emit 8-bit byte values. Alias of DEFB.\nSee DEFB for full documentation and examples."},
-				{"STR",
-				 "STR 'string'[,'string',...]",
+				{"DB", "DB expr[,expr,...]", "Emit 8-bit byte values. Alias of DEFB.\nSee DEFB for full documentation and examples."},
+				{"DW", "DW expr[,expr,...]", "Emit 16-bit word values (little-endian). Alias of DEFW.\nSee DEFW for full documentation and examples."},
+				{"DD", "DD expr[,expr,...]", "Emit 32-bit double-word values. Alias of DEFI.\nSee DEFI for full documentation and examples."},
+				{"DM", "DM expr[,expr,...]", "Emit byte values. Alias of DEFB/DEFM.\nSee DEFB for full documentation and examples."},
+				{"DS", "DS count[,fill]", "Reserve bytes, optionally filled. Alias of DEFS.\nSee DEFS for full documentation and examples."},
+				{"DL", "DL expr[,expr,...]", "Emit 32-bit values. Alias of DEFI.\nSee DEFI for full documentation and examples."},
+				{"BYTE", "BYTE expr[,expr,...]", "Emit 8-bit byte values. Alias of DEFB.\nSee DEFB for full documentation and examples."},
+				{"STR", "STR 'string'[,'string',...]",
 				 "Emit string bytes, ORing #80 onto the last byte of each string.\n"
 				 "This is the classic Amstrad CPC string termination convention.\n"
 				 "\n"
 				 "Examples:\n"
 				 "  STR 'hello'          ; emits h,e,l,l,'o'|#80\n"
 				 "  STR 'one','two'      ; two strings, each with high-bit set on last byte"},
-				{"EQU",
-				 "name EQU expr",
+				{"EQU", "name EQU expr",
 				 "Declare a constant alias. Cannot be redefined after declaration.\n"
 				 "\n"
 				 "Examples:\n"
@@ -200,74 +188,64 @@ namespace ImGui {
 				 "\n"
 				 "For reassignable values use dynamic variables (name=value).\n"
 				 "Alias: DEFC."},
-				{"DEFC",		 "name DEFC expr",											"Declare a constant alias. Alias of EQU. Cannot be redefined after declaration.\nSee EQU for full documentation."},
-				{"DEFL",
-				 "name DEFL expr",
+				{"DEFC", "name DEFC expr", "Declare a constant alias. Alias of EQU. Cannot be redefined after declaration.\nSee EQU for full documentation."},
+				{"DEFL", "name DEFL expr",
 				 "Declare a dynamic variable alias (can be reassigned at any time).\n"
 				 "\n"
 				 "Example:\n"
 				 "  counter DEFL 0\n"
 				 "  counter DEFL counter+1"},
-				{"DEFP",		 "DEFP expr[,expr,...]",									"Emit packed values."},
-				{"LIMIT",
-				 "LIMIT address",
+				{"DEFP", "DEFP expr[,expr,...]", "Emit packed values."},
+				{"LIMIT", "LIMIT address",
 				 "Set an upper boundary for the assembly address.\n"
 				 "RASM emits an error if the assembled code exceeds this address.\n"
 				 "\n"
 				 "Example:\n"
 				 "  ORG #8000\n"
 				 "  LIMIT #C000          ; code must not exceed #C000"},
-				{"PROTECT",
-				 "PROTECT start,end",
+				{"PROTECT", "PROTECT start,end",
 				 "Mark a memory region as write-protected.\n"
 				 "RASM emits an error if any data is assembled into the protected range.\n"
 				 "\n"
 				 "Example:\n"
 				 "  PROTECT #0000,#3FFF  ; protect lower 16K ROM area"},
-				{"CONFINE",
-				 "CONFINE value",
+				{"CONFINE", "CONFINE value",
 				 "Ensure that the following data block fits within a single 256-byte page.\n"
 				 "If padding is needed to align, a warning is emitted with the byte count.\n"
 				 "\n"
 				 "Example:\n"
 				 "  CONFINE 256          ; next data block must fit in current 256-byte page"},
-				{"SUMMEM",
-				 "SUMMEM start,end",
+				{"SUMMEM", "SUMMEM start,end",
 				 "Emit a 1-byte arithmetic checksum of the byte range start..end.\n"
 				 "Does not work inside crunched code sections.\n"
 				 "\n"
 				 "Example:\n"
 				 "  SUMMEM #4000,#8000   ; sum all bytes in that range, emit one byte"},
-				{"XORMEM",
-				 "XORMEM start,end",
+				{"XORMEM", "XORMEM start,end",
 				 "Emit a 1-byte XOR checksum of the byte range start..end.\n"
 				 "Does not work inside crunched code sections.\n"
 				 "\n"
 				 "Example:\n"
 				 "  XORMEM #0000,#1000   ; XOR all bytes in ROM, write result here"},
-				{"SUM16",
-				 "SUM16 start,end",
+				{"SUM16", "SUM16 start,end",
 				 "Emit a 2-byte (word) unsigned checksum of the byte range start..end.\n"
 				 "Does not work inside crunched code sections.\n"
 				 "\n"
 				 "Example:\n"
 				 "  SUM16 #4000,#8000    ; 16-bit sum, emits 2 bytes"},
-				{"NOCODE",
-				 "NOCODE",
+				{"NOCODE", "NOCODE",
 				 "Stop writing bytes to the output file.\n"
 				 "The address counter still advances normally.\n"
 				 "Resume writing with CODE or CODE SKIP.\n"
 				 "\n"
 				 "See also: CODE"},
-				{"CODE",
-				 "CODE [SKIP]",
+				{"CODE", "CODE [SKIP]",
 				 "Resume normal byte-write mode after NOCODE.\n"
 				 "  CODE       — resume writing at the current address\n"
 				 "  CODE SKIP  — resume at the address reached during NOCODE (skips the gap)\n"
 				 "\n"
 				 "See also: NOCODE"},
-				{"RUN",
-				 "RUN address[,ga_config]",
+				{"RUN", "RUN address[,ga_config]",
 				 "Set the entry point (PC) used in snapshot and AMSDOS exports,\n"
 				 "and the start address in DSK file headers.\n"
 				 "\n"
@@ -276,8 +254,7 @@ namespace ImGui {
 				 "  RUN #4000\n"
 				 "\n"
 				 "Alias: ENT."},
-				{"BANK",
-				 "BANK n",
+				{"BANK", "BANK n",
 				 "Switch RASM to memory bank n and activate cartridge mode.\n"
 				 "Banks 0-31 for standard cartridge; more with BUILDCPR EXTENDED.\n"
 				 "\n"
@@ -287,9 +264,8 @@ namespace ImGui {
 				 "  BANK 1 : INCBIN 'bank1.bin'\n"
 				 "\n"
 				 "See also: BUILDCPR, BANKSET"},
-				{"BANKSET",		 "BANKSET n",												"Select a 64K bank set for BUILDSNA snapshot mode.\nSee also: BUILDSNA, BANK"},
-				{"BUILDCPR",
-				 "BUILDCPR [EXTENDED] [SYMBOLS] ['filename']",
+				{"BANKSET", "BANKSET n", "Select a 64K bank set for BUILDSNA snapshot mode.\nSee also: BUILDSNA, BANK"},
+				{"BUILDCPR", "BUILDCPR [EXTENDED] [SYMBOLS] ['filename']",
 				 "Enable cartridge build mode (banks 0-31, or more with EXTENDED).\n"
 				 "  EXTENDED  — allow more than 32 banks\n"
 				 "  SYMBOLS   — export symbol table\n"
@@ -300,53 +276,50 @@ namespace ImGui {
 				 "  BANK 1 : INCBIN 'bank1.bin'\n"
 				 "\n"
 				 "See also: BANK, SAVECPR, CPRINIT"},
-				{"BUILDSNA",
-				 "BUILDSNA [V2] ['filename']",
+				{"BUILDSNA", "BUILDSNA [V2] ['filename']",
 				 "Enable snapshot build mode.\n"
 				 "  V2 — generate a version-2 snapshot file\n"
 				 "Supports 16K banks 0-259 or BANKSET 64K pages.\n"
 				 "\n"
 				 "See also: BANKSET, SAVESNA, SNAPINIT"},
-				{"BUILDTAPE",	 "BUILDTAPE ['filename']",									"Enable tape CDT output mode.\nSee also: SAVETAPE"},
-				{"BUILDZX",		 "BUILDZX",													"Enable ZX Spectrum snapshot mode (banks 0-7)."},
-				{"BUILDROM",	 "BUILDROM [concat]",										"Enable ROM creation mode."},
-				{"BUILDOBJ",	 "BUILDOBJ",												"Enable binary object output mode (link-editor prototype, WIP)."},
-				{"SNAPINIT",	 "SNAPINIT 'snapshot_file'",								"Pre-load memory from a snapshot file before assembly begins.\nAlias: SNAINIT.\nSee also: BUILDSNA"},
-				{"CPRINIT",		 "CPRINIT 'cartridge_file'",								"Pre-load memory from a cartridge file before assembly begins.\nSee also: BUILDCPR"},
-				{"SNAINIT",		 "SNAINIT 'snapshot_file'",									"Pre-load memory from a snapshot file before assembly. Alias of SNAPINIT."},
-				{"SAVECPR",		 "SAVECPR ['filename']",									"Save the assembled cartridge image to file.\nSee also: BUILDCPR"},
-				{"SAVESNA",		 "SAVESNA ['filename']",									"Save the assembled snapshot image to file.\nSee also: BUILDSNA"},
-				{"SAVETAPE",	 "SAVETAPE ['filename']",									"Save the assembled tape CDT image to file.\nSee also: BUILDTAPE"},
-				{"SAVEHFE",		 "SAVEHFE ['filename']",									"Save the assembled HFE floppy image to file."},
-				{"SNAPSHOT",	 "SNAPSHOT",												"Mark snapshot output. Alias/variant of BUILDSNA."},
-				{"SNARESET",	 "SNARESET",												"Reset the snapshot memory to its initial state."},
-				{"SNASETSQOP",	 "SNASETSQOP",												"Set snapshot SQOP register values."},
-				{"SETCPC",		 "SETCPC model",											"Set the target CPC model for snapshot/cartridge export.\nSee also: SETCRTC, SETGATEARRAY"},
-				{"SETCPCOLD",	 "SETCPCOLD",												"Set the target to a classic (old) CPC model."},
-				{"SETCRTC",		 "SETCRTC type",											"Set the CRTC chip type for snapshot export (0-4).\nAlias: CRTCTYPE.\nSee also: SETCPC"},
-				{"CRTCTYPE",	 "CRTCTYPE type",											"Set the CRTC chip type. Alias of SETCRTC.\nSee also: SETCPC"},
-				{"SETGATEARRAY", "SETGATEARRAY value",										"Set the Gate Array configuration for snapshot export.\nAlias: GATEARRAY, GATE."},
-				{"GATEARRAY",	 "GATEARRAY value",											"Set the Gate Array value. Alias of SETGATEARRAY."},
-				{"GATEARRAYBANK","GATEARRAYBANK value",										"Set the Gate Array bank configuration for snapshot export."},
-				{"GATE",		 "GATE value",												"Set Gate Array value. Short alias of SETGATEARRAY."},
-				{"SETNEXTBANK",	 "SETNEXTBANK n",											"Set the Next bank register for ZX Spectrum Next snapshot export."},
-				{"SETSTACK",	 "SETSTACK address",										"Set the initial SP (stack pointer) value for snapshot export."},
-				{"NAMEBANK",
-				 "NAMEBANK n,'name'",
+				{"BUILDTAPE", "BUILDTAPE ['filename']", "Enable tape CDT output mode.\nSee also: SAVETAPE"},
+				{"BUILDZX", "BUILDZX", "Enable ZX Spectrum snapshot mode (banks 0-7)."},
+				{"BUILDROM", "BUILDROM [concat]", "Enable ROM creation mode."},
+				{"BUILDOBJ", "BUILDOBJ", "Enable binary object output mode (link-editor prototype, WIP)."},
+				{"SNAPINIT", "SNAPINIT 'snapshot_file'", "Pre-load memory from a snapshot file before assembly begins.\nAlias: SNAINIT.\nSee also: BUILDSNA"},
+				{"CPRINIT", "CPRINIT 'cartridge_file'", "Pre-load memory from a cartridge file before assembly begins.\nSee also: BUILDCPR"},
+				{"SNAINIT", "SNAINIT 'snapshot_file'", "Pre-load memory from a snapshot file before assembly. Alias of SNAPINIT."},
+				{"SAVECPR", "SAVECPR ['filename']", "Save the assembled cartridge image to file.\nSee also: BUILDCPR"},
+				{"SAVESNA", "SAVESNA ['filename']", "Save the assembled snapshot image to file.\nSee also: BUILDSNA"},
+				{"SAVETAPE", "SAVETAPE ['filename']", "Save the assembled tape CDT image to file.\nSee also: BUILDTAPE"},
+				{"SAVEHFE", "SAVEHFE ['filename']", "Save the assembled HFE floppy image to file."},
+				{"SNAPSHOT", "SNAPSHOT", "Mark snapshot output. Alias/variant of BUILDSNA."},
+				{"SNARESET", "SNARESET", "Reset the snapshot memory to its initial state."},
+				{"SNASETSQOP", "SNASETSQOP", "Set snapshot SQOP register values."},
+				{"SETCPC", "SETCPC model", "Set the target CPC model for snapshot/cartridge export.\nSee also: SETCRTC, SETGATEARRAY"},
+				{"SETCPCOLD", "SETCPCOLD", "Set the target to a classic (old) CPC model."},
+				{"SETCRTC", "SETCRTC type", "Set the CRTC chip type for snapshot export (0-4).\nAlias: CRTCTYPE.\nSee also: SETCPC"},
+				{"CRTCTYPE", "CRTCTYPE type", "Set the CRTC chip type. Alias of SETCRTC.\nSee also: SETCPC"},
+				{"SETGATEARRAY", "SETGATEARRAY value", "Set the Gate Array configuration for snapshot export.\nAlias: GATEARRAY, GATE."},
+				{"GATEARRAY", "GATEARRAY value", "Set the Gate Array value. Alias of SETGATEARRAY."},
+				{"GATEARRAYBANK", "GATEARRAYBANK value", "Set the Gate Array bank configuration for snapshot export."},
+				{"GATE", "GATE value", "Set Gate Array value. Short alias of SETGATEARRAY."},
+				{"SETNEXTBANK", "SETNEXTBANK n", "Set the Next bank register for ZX Spectrum Next snapshot export."},
+				{"SETSTACK", "SETSTACK address", "Set the initial SP (stack pointer) value for snapshot export."},
+				{"NAMEBANK", "NAMEBANK n,'name'",
 				 "Assign a display name to a non-temporary memory bank.\n"
 				 "Used for cartridge/snapshot labelling in debuggers/emulators.\n"
 				 "\n"
 				 "Example:\n"
 				 "  NAMEBANK 0,'ROM Init'\n"
 				 "  NAMEBANK 1,'Serval screen'"},
-				{"MAP",			 "MAP",														"DSK deferred directive: emit a sector map for the DSK image."},
-				{"MEMSPACE",	 "MEMSPACE",												"Define a memory space region."},
-				{"PAGE",		 "PAGE n",													"Select memory page n."},
-				{"PAGESET",		 "PAGESET n",												"Set the active page set."},
-				{"SLOT",		 "SLOT n",													"Select memory slot n."},
-				{"SECTION",		 "SECTION name",											"Begin a named code/data section."},
-				{"CHARSET",
-				 "CHARSET ['string',value | start[,end],value | 'str','str']",
+				{"MAP", "MAP", "DSK deferred directive: emit a sector map for the DSK image."},
+				{"MEMSPACE", "MEMSPACE", "Define a memory space region."},
+				{"PAGE", "PAGE n", "Select memory page n."},
+				{"PAGESET", "PAGESET n", "Set the active page set."},
+				{"SLOT", "SLOT n", "Select memory slot n."},
+				{"SECTION", "SECTION name", "Begin a named code/data section."},
+				{"CHARSET", "CHARSET ['string',value | start[,end],value | 'str','str']",
 				 "Remap ASCII character codes for string literals. Bare CHARSET resets all mappings.\n"
 				 "\n"
 				 "Forms:\n"
@@ -359,16 +332,14 @@ namespace ImGui {
 				 "Example — shift lowercase to CPC screen codes:\n"
 				 "  CHARSET 'a',1\n"
 				 "  DEFB 'hello'              ; emits 8,6,13,13,16 (remapped)"},
-				{"UTF8REMAP",
-				 "UTF8REMAP 'char',value",
+				{"UTF8REMAP", "UTF8REMAP 'char',value",
 				 "Map a UTF-8 character to an 8-bit code for use in string literals.\n"
 				 "Requires -fq command-line option.\n"
 				 "\n"
 				 "Example:\n"
 				 "  UTF8REMAP 'é',50\n"
 				 "  DEFB 'café'              ; 'é' emits 50"},
-				{"ENUM",
-				 "ENUM [prefix[,start[,step]]] ... MEND",
+				{"ENUM", "ENUM [prefix[,start[,step]]] ... MEND",
 				 "Declare a sequence of aliases with automatic increment.\n"
 				 "  prefix — optional string prepended to each name\n"
 				 "  start  — initial value (default 0)\n"
@@ -382,8 +353,7 @@ namespace ImGui {
 				 "  MEND\n"
 				 "\n"
 				 "Force a specific value mid-enum: name=value"},
-				{"STRUCT",
-				 "STRUCT name ... ENDSTRUCT",
+				{"STRUCT", "STRUCT name ... ENDSTRUCT",
 				 "Declare a data structure. {sizeof}name gives the byte size.\n"
 				 "\n"
 				 "Example:\n"
@@ -398,33 +368,30 @@ namespace ImGui {
 				 "  ;         {sizeof}entity => 5 (byte size)\n"
 				 "\n"
 				 "Multiple instances are accessed via name+index."},
-				{"ENDSTRUCT",	 "ENDSTRUCT",												"Close a STRUCT declaration block. See STRUCT for full documentation."},
-				{"LABEL",
-				 "LABEL LOCAL|GLOBAL",
+				{"ENDSTRUCT", "ENDSTRUCT", "Close a STRUCT declaration block. See STRUCT for full documentation."},
+				{"LABEL", "LABEL LOCAL|GLOBAL",
 				 "Control the ACE-DL label address space.\n"
 				 "  LOCAL  — labels compiled at their compile-time address\n"
 				 "  GLOBAL — labels in full 64K addressable space\n"
 				 "\n"
 				 "See also: LOCALISATION"},
-				{"LOCALISATION",
-				 "LOCALISATION RAM,n | ROM,LOWER | ROM,n",
+				{"LOCALISATION", "LOCALISATION RAM,n | ROM,LOWER | ROM,n",
 				 "Assign space labels to a RAM or ROM page for ACE-DL export.\n"
 				 "\n"
 				 "Examples:\n"
 				 "  LOCALISATION RAM,4\n"
 				 "  LOCALISATION ROM,LOWER\n"
 				 "  LOCALISATION ROM,14"},
-				{"NOEXPORT",
-				 "NOEXPORT [label1,label2,...]",
+				{"NOEXPORT", "NOEXPORT [label1,label2,...]",
 				 "Suppress export of symbols to the symbol table.\n"
 				 "  (bare)          — suppress all following symbols\n"
 				 "  label1,label2   — suppress specific named symbols only\n"
 				 "\n"
 				 "See also: ENOEXPORT, EXPORT"},
-				{"ENOEXPORT",	 "ENOEXPORT [label1,label2,...]",							"Re-enable symbol export after NOEXPORT.\nBare form re-enables all; named form re-enables specific symbols.\nSee also: NOEXPORT"},
-				{"EXPORT",		 "EXPORT label",											"Mark a label for explicit export to the symbol table.\nSee also: NOEXPORT"},
-				{"MODULE",
-				 "MODULE name",
+				{"ENOEXPORT", "ENOEXPORT [label1,label2,...]",
+				 "Re-enable symbol export after NOEXPORT.\nBare form re-enables all; named form re-enables specific symbols.\nSee also: NOEXPORT"},
+				{"EXPORT", "EXPORT label", "Mark a label for explicit export to the symbol table.\nSee also: NOEXPORT"},
+				{"MODULE", "MODULE name",
 				 "Prefix all following global labels with name_ (separator configurable with -msep).\n"
 				 "\n"
 				 "Example:\n"
@@ -436,12 +403,11 @@ namespace ImGui {
 				 "\n"
 				 "Module names can contain loop-generated strings: truc{x}.\n"
 				 "See also: ENDMODULE"},
-				{"ENDMODULE",	 "ENDMODULE",												"End the current MODULE scope.\nSee also: MODULE"},
-				{"INSERT",		 "INSERT 'file'",											"Insert file contents at the current position."},
-				{"READ",		 "READ 'file'",												"Read a file into memory. Alias of INCBIN/INSERT depending on context."},
-				{"WRITE",		 "WRITE 'file'",											"Write assembled output to a named file."},
-				{"RELOCATE",
-				 "RELOCATE ... ENDRELOCATE",
+				{"ENDMODULE", "ENDMODULE", "End the current MODULE scope.\nSee also: MODULE"},
+				{"INSERT", "INSERT 'file'", "Insert file contents at the current position."},
+				{"READ", "READ 'file'", "Read a file into memory. Alias of INCBIN/INSERT depending on context."},
+				{"WRITE", "WRITE 'file'", "Write assembled output to a named file."},
+				{"RELOCATE", "RELOCATE ... ENDRELOCATE",
 				 "Mark a relocatable code section. Status: under development.\n"
 				 "\n"
 				 "RASM assembles the block twice (offset by #102) to detect byte-weight\n"
@@ -458,18 +424,16 @@ namespace ImGui {
 				 "    .reloc16 DEFW #0101,#0115\n"
 				 "    .reloc8h DEFW #0104,#010E\n"
 				 "    .reloc8l DEFW #0109"},
-				{"ENDRELOCATE",	 "ENDRELOCATE",												"Close a RELOCATE block. See RELOCATE for full documentation."},
-				{"ENDORG",		 "ENDORG",													"End a physical ORG override, returning to logical=physical addressing.\nSee also: ORG"},
-				{"PHASE",
-				 "PHASE address",
+				{"ENDRELOCATE", "ENDRELOCATE", "Close a RELOCATE block. See RELOCATE for full documentation."},
+				{"ENDORG", "ENDORG", "End a physical ORG override, returning to logical=physical addressing.\nSee also: ORG"},
+				{"PHASE", "PHASE address",
 				 "Alias of ORG logical,physical — sets the logical address while\n"
 				 "keeping the physical write position unchanged.\n"
 				 "\n"
 				 "Example:\n"
 				 "  ORG #8000\n"
 				 "  PHASE #0100          ; labels from #0100, bytes still at #8000"},
-				{"LZEXO",
-				 "LZEXO ... LZCLOSE",
+				{"LZEXO", "LZEXO ... LZCLOSE",
 				 "Open a crunched code section using Exomizer 2.0 compression.\n"
 				 "Labels before the section are relocated relative to the compressed result.\n"
 				 "Sections cannot be nested.\n"
@@ -483,20 +447,19 @@ namespace ImGui {
 				 "\n"
 				 "Use DELAYED_LZEXO to defer compression until after full assembly.\n"
 				 "See also: LZCLOSE"},
-				{"LZX7",		 "LZX7 ... LZCLOSE",										"Open a crunched code section using ZX7 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE"},
-				{"LZX0",		 "LZX0 ... LZCLOSE",										"Open a crunched code section using ZX0 (forward) compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZX0B"},
-				{"LZX0B",		 "LZX0B ... LZCLOSE",										"Open a crunched code section using ZX0 (backward) compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZX0"},
-				{"LZAPU",		 "LZAPU ... LZCLOSE",										"Open a crunched code section using AP-Ultra compression. See LZEXO for usage pattern.\nSee also: LZCLOSE"},
-				{"LZSA1",		 "LZSA1 ... LZCLOSE",										"Open a crunched code section using LZSA1 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZSA2"},
-				{"LZSA2",		 "LZSA2 ... LZCLOSE",										"Open a crunched code section using LZSA2 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZSA1"},
-				{"LZ4",			 "LZ4 ... LZCLOSE",											"Open a crunched code section using LZ4 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE"},
-				{"LZ48",		 "LZ48 ... LZCLOSE",										"Open a crunched code section using LZ48 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZ49"},
-				{"LZ49",		 "LZ49 ... LZCLOSE",										"Open a crunched code section using LZ49 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZ48"},
-				{"LZ7",			 "LZ7 ... LZCLOSE",											"Open a crunched code section using LZ7 compression. Alias of LZX7.\nSee also: LZCLOSE"},
-				{"ZX0",			 "ZX0 ... LZCLOSE",											"Open a crunched code section using ZX0 compression. Alias of LZX0.\nSee also: LZCLOSE, LZX0"},
-				{"ZX7",			 "ZX7 ... LZCLOSE",											"Open a crunched code section using ZX7 compression. Alias of LZX7.\nSee also: LZCLOSE, LZX7"},
-				{"LZCLOSE",
-				 "LZCLOSE",
+				{"LZX7", "LZX7 ... LZCLOSE", "Open a crunched code section using ZX7 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE"},
+				{"LZX0", "LZX0 ... LZCLOSE", "Open a crunched code section using ZX0 (forward) compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZX0B"},
+				{"LZX0B", "LZX0B ... LZCLOSE", "Open a crunched code section using ZX0 (backward) compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZX0"},
+				{"LZAPU", "LZAPU ... LZCLOSE", "Open a crunched code section using AP-Ultra compression. See LZEXO for usage pattern.\nSee also: LZCLOSE"},
+				{"LZSA1", "LZSA1 ... LZCLOSE", "Open a crunched code section using LZSA1 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZSA2"},
+				{"LZSA2", "LZSA2 ... LZCLOSE", "Open a crunched code section using LZSA2 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZSA1"},
+				{"LZ4", "LZ4 ... LZCLOSE", "Open a crunched code section using LZ4 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE"},
+				{"LZ48", "LZ48 ... LZCLOSE", "Open a crunched code section using LZ48 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZ49"},
+				{"LZ49", "LZ49 ... LZCLOSE", "Open a crunched code section using LZ49 compression. See LZEXO for usage pattern.\nSee also: LZCLOSE, LZ48"},
+				{"LZ7", "LZ7 ... LZCLOSE", "Open a crunched code section using LZ7 compression. Alias of LZX7.\nSee also: LZCLOSE"},
+				{"ZX0", "ZX0 ... LZCLOSE", "Open a crunched code section using ZX0 compression. Alias of LZX0.\nSee also: LZCLOSE, LZX0"},
+				{"ZX7", "ZX7 ... LZCLOSE", "Open a crunched code section using ZX7 compression. Alias of LZX7.\nSee also: LZCLOSE, LZX7"},
+				{"LZCLOSE", "LZCLOSE",
 				 "Close the current crunched code section opened by LZx directives.\n"
 				 "\n"
 				 "Example — crunch and concatenate multiple binaries:\n"
@@ -508,22 +471,21 @@ namespace ImGui {
 				 "  SAVE 'combined.lz',...\n"
 				 "\n"
 				 "See also: LZEXO, LZX0, LZX7, LZAPU, LZSA1, LZSA2, LZ4, LZ48, LZ49"},
-				{"CRUNCH",		 "CRUNCH",													"Mark a crunched data region."},
-				{"CRUNCHBANK",	 "CRUNCHBANK n",											"Mark a crunched bank region (bank n)."},
-				{"INCL",		 "INCL 'file'",												"Include and decompress a crunched binary file on-the-fly."},
-				{"INCL48",		 "INCL48 'file'",											"Include and decompress an LZ48-crunched binary file on-the-fly."},
-				{"INCL49",		 "INCL49 'file'",											"Include and decompress an LZ49-crunched binary file on-the-fly."},
-				{"INCLZ4",		 "INCLZ4 'file'",											"Include and decompress an LZ4-crunched binary file on-the-fly."},
-				{"INCLZSA1",	 "INCLZSA1 'file'",											"Include and decompress an LZSA1-crunched binary file on-the-fly."},
-				{"INCLZSA2",	 "INCLZSA2 'file'",											"Include and decompress an LZSA2-crunched binary file on-the-fly."},
-				{"INCZX0",		 "INCZX0 'file'",											"Include and decompress a ZX0 (forward) crunched binary file on-the-fly."},
-				{"INCZX0B",		 "INCZX0B 'file'",											"Include and decompress a ZX0 (backward) crunched binary file on-the-fly."},
-				{"INCZX7",		 "INCZX7 'file'",											"Include and decompress a ZX7-crunched binary file on-the-fly."},
-				{"INCEXO",		 "INCEXO 'file'",											"Include and decompress an Exomizer-crunched binary file on-the-fly."},
-				{"INCAPU",		 "INCAPU 'file'",											"Include and decompress an AP-Ultra-crunched binary file on-the-fly."},
-				{"INCSNA",		 "INCSNA 'file'",											"Include memory data from a snapshot file."},
-				{"TICKER",
-				 "TICKER START,variable\nTICKER STOP,variable",
+				{"CRUNCH", "CRUNCH", "Mark a crunched data region."},
+				{"CRUNCHBANK", "CRUNCHBANK n", "Mark a crunched bank region (bank n)."},
+				{"INCL", "INCL 'file'", "Include and decompress a crunched binary file on-the-fly."},
+				{"INCL48", "INCL48 'file'", "Include and decompress an LZ48-crunched binary file on-the-fly."},
+				{"INCL49", "INCL49 'file'", "Include and decompress an LZ49-crunched binary file on-the-fly."},
+				{"INCLZ4", "INCLZ4 'file'", "Include and decompress an LZ4-crunched binary file on-the-fly."},
+				{"INCLZSA1", "INCLZSA1 'file'", "Include and decompress an LZSA1-crunched binary file on-the-fly."},
+				{"INCLZSA2", "INCLZSA2 'file'", "Include and decompress an LZSA2-crunched binary file on-the-fly."},
+				{"INCZX0", "INCZX0 'file'", "Include and decompress a ZX0 (forward) crunched binary file on-the-fly."},
+				{"INCZX0B", "INCZX0B 'file'", "Include and decompress a ZX0 (backward) crunched binary file on-the-fly."},
+				{"INCZX7", "INCZX7 'file'", "Include and decompress a ZX7-crunched binary file on-the-fly."},
+				{"INCEXO", "INCEXO 'file'", "Include and decompress an Exomizer-crunched binary file on-the-fly."},
+				{"INCAPU", "INCAPU 'file'", "Include and decompress an AP-Ultra-crunched binary file on-the-fly."},
+				{"INCSNA", "INCSNA 'file'", "Include memory data from a snapshot file."},
+				{"TICKER", "TICKER START,variable\nTICKER STOP,variable",
 				 "Measure T-states or NOP cycles between START and STOP.\n"
 				 "Result is stored in the given variable.\n"
 				 "  Default: NOP cycles\n"
@@ -538,8 +500,7 @@ namespace ImGui {
 				 "  DEFS 64-getnop(DEC A : JR NZ)-measure\n"
 				 "\n"
 				 "See also: PRINT (to display the measured value)"},
-				{"TIMESTAMP",
-				 "TIMESTAMP \"format_string\"",
+				{"TIMESTAMP", "TIMESTAMP \"format_string\"",
 				 "Generate a date/time string at assembly time.\n"
 				 "\n"
 				 "Format codes:\n"
@@ -554,8 +515,7 @@ namespace ImGui {
 				 "Example:\n"
 				 "  TIMESTAMP \"[Y-M-D h:m]\"    ; e.g. => [2024-06-15 14:30]\n"
 				 "  DEFB $-1                    ; embed in binary output"},
-				{"PRINT",
-				 "PRINT 'text',value,...",
+				{"PRINT", "PRINT 'text',value,...",
 				 "Display text and values at assembly time (to stdout).\n"
 				 "\n"
 				 "Format prefixes:\n"
@@ -574,8 +534,7 @@ namespace ImGui {
 				 "  PRINT 'Value: ',myvar\n"
 				 "\n"
 				 "See also: DELAYED_PRINT (for forward-declared variables), STOP, FAIL"},
-				{"DELAYED_PRINT",
-				 "DELAYED_PRINT 'text',value,...",
+				{"DELAYED_PRINT", "DELAYED_PRINT 'text',value,...",
 				 "Like PRINT but output is deferred until the end of assembly.\n"
 				 "Use this when variables are not yet defined at the point of the call.\n"
 				 "\n"
@@ -585,9 +544,8 @@ namespace ImGui {
 				 "  DELAYED_PRINT 'Total size: ',{hex}end_label-start_label\n"
 				 "\n"
 				 "See also: PRINT"},
-				{"STOP",		 "STOP",													"Halt assembly immediately. No output file is produced.\nSee also: FAIL, ASSERT"},
-				{"FAIL",
-				 "FAIL 'text',value,...",
+				{"STOP", "STOP", "Halt assembly immediately. No output file is produced.\nSee also: FAIL, ASSERT"},
+				{"FAIL", "FAIL 'text',value,...",
 				 "Print a message then halt assembly. Equivalent to PRINT + STOP.\n"
 				 "\n"
 				 "Example:\n"
@@ -596,8 +554,7 @@ namespace ImGui {
 				 "  ENDIF\n"
 				 "\n"
 				 "See also: PRINT, STOP, ASSERT"},
-				{"ASSERT",
-				 "ASSERT condition[,'message',...]",
+				{"ASSERT", "ASSERT condition[,'message',...]",
 				 "Halt assembly if condition is false. Optional message is printed.\n"
 				 "\n"
 				 "Examples:\n"
@@ -605,11 +562,10 @@ namespace ImGui {
 				 "  ASSERT screen_table < #C000,'Screen table must be below #C000'\n"
 				 "\n"
 				 "See also: FAIL, STOP"},
-				{"WARN",		 "WARN 'text'",												"Emit an assembly-time warning message without stopping assembly.\nAlias: WARNING.\nSee also: ERROR, FAIL"},
-				{"WARNING",		 "WARNING 'text'",											"Emit an assembly-time warning message. Alias of WARN.\nSee also: ERROR, FAIL"},
-				{"ERROR",		 "ERROR 'text'",											"Emit an assembly-time error message and halt assembly.\nSee also: FAIL, ASSERT"},
-				{"BRK",
-				 "BRK",
+				{"WARN", "WARN 'text'", "Emit an assembly-time warning message without stopping assembly.\nAlias: WARNING.\nSee also: ERROR, FAIL"},
+				{"WARNING", "WARNING 'text'", "Emit an assembly-time warning message. Alias of WARN.\nSee also: ERROR, FAIL"},
+				{"ERROR", "ERROR 'text'", "Emit an assembly-time error message and halt assembly.\nSee also: FAIL, ASSERT"},
+				{"BRK", "BRK",
 				 "Emit hard breakpoint bytes (#ED, #FF) at the current address.\n"
 				 "Not handled by all emulators.\n"
 				 "\n"
@@ -617,16 +573,14 @@ namespace ImGui {
 				 "  REDEFINE_BRK #CF,#CF,#CF\n"
 				 "\n"
 				 "See also: BREAKPOINT (soft breakpoint, does not modify binary)"},
-				{"REDEFINE_BRK",
-				 "REDEFINE_BRK b1,b2,...",
+				{"REDEFINE_BRK", "REDEFINE_BRK b1,b2,...",
 				 "Redefine the bytes emitted by the BRK directive.\n"
 				 "\n"
 				 "Example:\n"
 				 "  REDEFINE_BRK #CF,#CF,#CF   ; RST #28 x3 (custom trap)\n"
 				 "\n"
 				 "See also: BRK"},
-				{"BREAKPOINT",
-				 "BREAKPOINT [options...]",
+				{"BREAKPOINT", "BREAKPOINT [options...]",
 				 "Define a soft exportable breakpoint at the current address.\n"
 				 "The binary is NOT modified. Breakpoints must be exported via command-line.\n"
 				 "\n"
@@ -647,9 +601,8 @@ namespace ImGui {
 				 "\n"
 				 "Export options: -ok, -eb, -sb (see RASM command-line docs)\n"
 				 "See also: BRK (hard breakpoint that modifies binary)"},
-				{"TRACE",		 "TRACE",													"Enable or disable assembly trace output (verbose mode during assembly)."},
-				{"UNDEF",
-				 "UNDEF variable",
+				{"TRACE", "TRACE", "Enable or disable assembly trace output (verbose mode during assembly)."},
+				{"UNDEF", "UNDEF variable",
 				 "Remove a variable. Has no effect if the variable is absent.\n"
 				 "\n"
 				 "Example:\n"
@@ -657,14 +610,12 @@ namespace ImGui {
 				 "  UNDEF x        ; x is no longer defined\n"
 				 "  IFDEF x        ; this block is skipped\n"
 				 "  ENDIF"},
-				{"VOID",
-				 "VOID",
+				{"VOID", "VOID",
 				 "Consume a value/token. Used with -void mode to safely call macros with no parameters.\n"
 				 "\n"
 				 "Example:\n"
 				 "  mymacro (void)    ; call macro with void parameter sentinel"},
-				{"VARIABLE",
-				 "name=value",
+				{"VARIABLE", "name=value",
 				 "Declare or update a dynamic variable. Unlike EQU, variables can be reassigned.\n"
 				 "\n"
 				 "Examples:\n"
@@ -680,32 +631,31 @@ namespace ImGui {
 				 "  REND\n"
 				 "\n"
 				 "See also: EQU (constant, cannot be reassigned), DEFL"},
-				{"HESITANT",	 "HESITANT",												"Mark a symbol as hesitant (evaluated lazily, deferred until value is needed)."},
-				{"GRAB",		 "GRAB address",											"Grab memory from a given address for output (used to re-read assembled bytes)."},
-				{"UNGRAB",		 "UNGRAB",													"Release a grabbed memory region. See also: GRAB"},
-				{"NOPSPLIT",	 "NOPSPLIT",												"Enable NOP split mode for timing calculations (splits multi-byte NOP expansions)."},
-				{"NOLIST",		 "NOLIST",													"Suppress listing output for the following code.\nSee also: LIST"},
-				{"LIST",		 "LIST",													"Re-enable listing output after NOLIST.\nSee also: NOLIST"},
-				{"OUTPUT",		 "OUTPUT 'file'",											"Set the output file for assembly results."},
-				{"CLOSEBIN",	 "CLOSEBIN",												"Close the current binary output file."},
-				{"FIELD",		 "FIELD offset",											"Define a structure field at a given offset (used inside STRUCT blocks)."},
-				{"TAG",			 "TAG name",												"Attach a tag/label to the current address for debug export."},
-				{"PROCEDURE",	 "PROCEDURE label",											"Declare a procedure address for object export. (WIP)\nSee also: ENDPROCEDURE, PROC"},
-				{"EXTERNAL",	 "EXTERNAL sym1,sym2,...",									"Declare external symbols for import in object mode. (WIP)\nSee also: EXPORT"},
-				{"PROC",		 "PROC name",												"Begin a procedure block. Alias of PROCEDURE. (WIP)\nSee also: ENDPROC"},
-				{"RUNTEST",		 "RUNTEST",													"Execute an assembly-time test."},
-				{"SKIP",		 "SKIP n",													"Skip n bytes in the output without changing the address counter."},
-				{"RAMPRESET",	 "RAMPRESET",												"Reset RAM state for snapshot export."},
-				{"LET",			 "name LET expr",											"Assign a value to a variable. Alias of variable assignment (name=expr).\nSee also: EQU, DEFL"},
-				{"ENT",			 "ENT address",												"Set the entry point (PC). Alias of RUN.\nSee also: RUN"},
-				{"END",			 "END",														"Signal the end of assembly source. Optional — RASM processes all source regardless."},
+				{"HESITANT", "HESITANT", "Mark a symbol as hesitant (evaluated lazily, deferred until value is needed)."},
+				{"GRAB", "GRAB address", "Grab memory from a given address for output (used to re-read assembled bytes)."},
+				{"UNGRAB", "UNGRAB", "Release a grabbed memory region. See also: GRAB"},
+				{"NOPSPLIT", "NOPSPLIT", "Enable NOP split mode for timing calculations (splits multi-byte NOP expansions)."},
+				{"NOLIST", "NOLIST", "Suppress listing output for the following code.\nSee also: LIST"},
+				{"LIST", "LIST", "Re-enable listing output after NOLIST.\nSee also: NOLIST"},
+				{"OUTPUT", "OUTPUT 'file'", "Set the output file for assembly results."},
+				{"CLOSEBIN", "CLOSEBIN", "Close the current binary output file."},
+				{"FIELD", "FIELD offset", "Define a structure field at a given offset (used inside STRUCT blocks)."},
+				{"TAG", "TAG name", "Attach a tag/label to the current address for debug export."},
+				{"PROCEDURE", "PROCEDURE label", "Declare a procedure address for object export. (WIP)\nSee also: ENDPROCEDURE, PROC"},
+				{"EXTERNAL", "EXTERNAL sym1,sym2,...", "Declare external symbols for import in object mode. (WIP)\nSee also: EXPORT"},
+				{"PROC", "PROC name", "Begin a procedure block. Alias of PROCEDURE. (WIP)\nSee also: ENDPROC"},
+				{"RUNTEST", "RUNTEST", "Execute an assembly-time test."},
+				{"SKIP", "SKIP n", "Skip n bytes in the output without changing the address counter."},
+				{"RAMPRESET", "RAMPRESET", "Reset RAM state for snapshot export."},
+				{"LET", "name LET expr", "Assign a value to a variable. Alias of variable assignment (name=expr).\nSee also: EQU, DEFL"},
+				{"ENT", "ENT address", "Set the entry point (PC). Alias of RUN.\nSee also: RUN"},
+				{"END", "END", "Signal the end of assembly source. Optional — RASM processes all source regardless."},
 			};
 			//
 			// Preprocessor / flow-control directives
 			//
 			static const DirectiveDef kZ80PreprocessorDirectiveDefs[] = {
-				{"IF",
-				 "IF condition ... [ELSEIF condition] ... [ELSE] ... ENDIF",
+				{"IF", "IF condition ... [ELSEIF condition] ... [ELSE] ... ENDIF",
 				 "Conditional assembly. Assembles the block only if condition is true.\n"
 				 "\n"
 				 "Example:\n"
@@ -718,8 +668,7 @@ namespace ImGui {
 				 "  ENDIF\n"
 				 "\n"
 				 "See also: IFNOT, IFDEF, IFNDEF, IFUSED, IFNUSED"},
-				{"IFNOT",
-				 "IFNOT condition ... ENDIF",
+				{"IFNOT", "IFNOT condition ... ENDIF",
 				 "Conditional assembly. Assembles the block only if condition is false.\n"
 				 "\n"
 				 "Example:\n"
@@ -728,8 +677,7 @@ namespace ImGui {
 				 "  ENDIF\n"
 				 "\n"
 				 "See also: IF, IFDEF, IFNDEF"},
-				{"IFDEF",
-				 "IFDEF symbol ... ENDIF",
+				{"IFDEF", "IFDEF symbol ... ENDIF",
 				 "Conditional assembly. Assembles the block only if symbol/variable/alias/macro is defined.\n"
 				 "\n"
 				 "Example:\n"
@@ -744,8 +692,7 @@ namespace ImGui {
 				 "  ENDIF\n"
 				 "\n"
 				 "See also: IFNDEF, IF, UNDEF"},
-				{"IFNDEF",
-				 "IFNDEF symbol ... ENDIF",
+				{"IFNDEF", "IFNDEF symbol ... ENDIF",
 				 "Conditional assembly. Assembles the block only if symbol is NOT defined.\n"
 				 "\n"
 				 "Example (include guard):\n"
@@ -755,21 +702,18 @@ namespace ImGui {
 				 "  ENDIF\n"
 				 "\n"
 				 "See also: IFDEF, IF"},
-				{"IFUSED",
-				 "IFUSED symbol ... ENDIF",
+				{"IFUSED", "IFUSED symbol ... ENDIF",
 				 "Conditional assembly. Assembles the block only if symbol has been referenced.\n"
 				 "\n"
 				 "See also: IFNUSED, IFDEF"},
-				{"IFNUSED",
-				 "IFNUSED symbol ... ENDIF",
+				{"IFNUSED", "IFNUSED symbol ... ENDIF",
 				 "Conditional assembly. Assembles the block only if symbol has NOT been referenced.\n"
 				 "\n"
 				 "See also: IFUSED, IFDEF"},
-				{"ELSEIF",		 "ELSEIF condition",										"Alternative condition branch inside an IF block.\nSee IF for full documentation and examples."},
-				{"ELSE",		 "ELSE",													"Fallback branch inside an IF/IFDEF/IFNDEF/IFUSED/IFNUSED block.\nSee IF for full documentation and examples."},
-				{"ENDIF",		 "ENDIF",													"Close an IF/IFDEF/IFNDEF/IFUSED/IFNUSED block.\nSee IF for full documentation and examples."},
-				{"SWITCH",
-				 "SWITCH expr ... CASE n ... [DEFAULT] ... ENDSWITCH",
+				{"ELSEIF", "ELSEIF condition", "Alternative condition branch inside an IF block.\nSee IF for full documentation and examples."},
+				{"ELSE", "ELSE", "Fallback branch inside an IF/IFDEF/IFNDEF/IFUSED/IFNUSED block.\nSee IF for full documentation and examples."},
+				{"ENDIF", "ENDIF", "Close an IF/IFDEF/IFNDEF/IFUSED/IFNUSED block.\nSee IF for full documentation and examples."},
+				{"SWITCH", "SWITCH expr ... CASE n ... [DEFAULT] ... ENDSWITCH",
 				 "C-style switch on an expression.\n"
 				 "Multiple CASE blocks with the same value are allowed (partial code sharing).\n"
 				 "No implicit fall-through — use BREAK to exit a case early.\n"
@@ -786,8 +730,7 @@ namespace ImGui {
 				 "    DEFAULT\n"
 				 "      DEFB 'F'\n"
 				 "  ENDSWITCH"},
-				{"MACRO",
-				 "name MACRO [param1,param2,...] ... MEND",
+				{"MACRO", "name MACRO [param1,param2,...] ... MEND",
 				 "Declare a macro. Parameters are referenced as {param} in the body.\n"
 				 "\n"
 				 "Example:\n"
@@ -814,11 +757,10 @@ namespace ImGui {
 				 "  test {eval}repeat_counter  ; evaluate counter before passing\n"
 				 "\n"
 				 "See also: MEND, ENDM, ENDMACRO"},
-				{"MEND",		 "MEND",													"Close a MACRO declaration block. Aliases: ENDM, ENDMACRO.\nSee MACRO for full documentation."},
-				{"ENDM",		 "ENDM",													"Close a MACRO declaration block. Alias of MEND.\nSee MACRO for full documentation."},
-				{"ENDMACRO",	 "ENDMACRO",												"Close a MACRO declaration block. Alias of MEND.\nSee MACRO for full documentation."},
-				{"REPEAT",
-				 "REPEAT n[,counter[,start[,step]]] ... REND",
+				{"MEND", "MEND", "Close a MACRO declaration block. Aliases: ENDM, ENDMACRO.\nSee MACRO for full documentation."},
+				{"ENDM", "ENDM", "Close a MACRO declaration block. Alias of MEND.\nSee MACRO for full documentation."},
+				{"ENDMACRO", "ENDMACRO", "Close a MACRO declaration block. Alias of MEND.\nSee MACRO for full documentation."},
+				{"REPEAT", "REPEAT n[,counter[,start[,step]]] ... REND",
 				 "Repeat a block n times. All parameters except n are optional.\n"
 				 "  counter — variable name tracking the current iteration\n"
 				 "  start   — initial counter value (default 1)\n"
@@ -842,12 +784,11 @@ namespace ImGui {
 				 "  NOP 5        ; five NOPs\n"
 				 "\n"
 				 "See also: REND, UNTIL, WHILE"},
-				{"REPT",		 "REPT n[,counter[,start[,step]]] ... REND",				"Repeat a block n times. Alias of REPEAT.\nSee REPEAT for full documentation and examples."},
-				{"REND",		 "REND",													"Close a REPEAT/REPT block. Aliases: ENDREPT, ENDREPEAT.\nSee REPEAT for full documentation."},
-				{"ENDREPT",		 "ENDREPT",													"Close a REPEAT/REPT block. Alias of REND.\nSee REPEAT for full documentation."},
-				{"ENDREPEAT",	 "ENDREPEAT",												"Close a REPEAT/REPT block. Alias of REND.\nSee REPEAT for full documentation."},
-				{"UNTIL",
-				 "UNTIL condition",
+				{"REPT", "REPT n[,counter[,start[,step]]] ... REND", "Repeat a block n times. Alias of REPEAT.\nSee REPEAT for full documentation and examples."},
+				{"REND", "REND", "Close a REPEAT/REPT block. Aliases: ENDREPT, ENDREPEAT.\nSee REPEAT for full documentation."},
+				{"ENDREPT", "ENDREPT", "Close a REPEAT/REPT block. Alias of REND.\nSee REPEAT for full documentation."},
+				{"ENDREPEAT", "ENDREPEAT", "Close a REPEAT/REPT block. Alias of REND.\nSee REPEAT for full documentation."},
+				{"UNTIL", "UNTIL condition",
 				 "Conditional loop terminator inside a REPEAT block.\n"
 				 "Stops repeating when condition is true.\n"
 				 "\n"
@@ -859,8 +800,7 @@ namespace ImGui {
 				 "  UNTIL cpt>0\n"
 				 "\n"
 				 "See also: REPEAT, WHILE"},
-				{"WHILE",
-				 "WHILE condition ... WEND",
+				{"WHILE", "WHILE condition ... WEND",
 				 "Repeat a block while condition is true.\n"
 				 "\n"
 				 "Example:\n"
@@ -871,9 +811,8 @@ namespace ImGui {
 				 "  WEND\n"
 				 "\n"
 				 "See also: WEND, REPEAT, UNTIL"},
-				{"WEND",		 "WEND",													"Close a WHILE block.\nSee WHILE for full documentation and examples."},
-				{"STRUCT",
-				 "STRUCT name ... ENDSTRUCT",
+				{"WEND", "WEND", "Close a WHILE block.\nSee WHILE for full documentation and examples."},
+				{"STRUCT", "STRUCT name ... ENDSTRUCT",
 				 "Declare a data structure. {sizeof}name gives the byte size.\n"
 				 "\n"
 				 "Example:\n"
@@ -887,9 +826,8 @@ namespace ImGui {
 				 "  ; {sizeof}entity => 5\n"
 				 "\n"
 				 "See also: ENDSTRUCT"},
-				{"ENDSTRUCT",	 "ENDSTRUCT",												"Close a STRUCT declaration block. See STRUCT for full documentation."},
-				{"MODULE",
-				 "MODULE name",
+				{"ENDSTRUCT", "ENDSTRUCT", "Close a STRUCT declaration block. See STRUCT for full documentation."},
+				{"MODULE", "MODULE name",
 				 "Prefix all following global labels with name_ (separator configurable with -msep).\n"
 				 "\n"
 				 "Example:\n"
@@ -900,12 +838,12 @@ namespace ImGui {
 				 "  JP soft1_label_global  ; cross-module reference\n"
 				 "\n"
 				 "See also: ENDMODULE"},
-				{"ENDMODULE",	 "ENDMODULE",												"End the current MODULE scope.\nSee also: MODULE"},
-				{"PROCEDURE",	 "PROCEDURE label",											"Declare a procedure for object export. (WIP)\nSee also: ENDPROCEDURE, PROC, ENDPROC"},
-				{"PROC",		 "PROC name",												"Begin a procedure block. Alias of PROCEDURE. (WIP)\nSee also: ENDPROC, ENDPROCEDURE"},
-				{"ENDPROC",		 "ENDPROC",													"End a PROC/PROCEDURE block.\nSee also: PROC, PROCEDURE"},
-				{"ENDPROCEDURE", "ENDPROCEDURE",											"End a PROCEDURE block. Alias of ENDPROC.\nSee also: PROCEDURE, PROC"},
-				{"ENDP",		 "ENDP",													"End a procedure block. Short alias of ENDPROC.\nSee also: PROC, PROCEDURE"},
+				{"ENDMODULE", "ENDMODULE", "End the current MODULE scope.\nSee also: MODULE"},
+				{"PROCEDURE", "PROCEDURE label", "Declare a procedure for object export. (WIP)\nSee also: ENDPROCEDURE, PROC, ENDPROC"},
+				{"PROC", "PROC name", "Begin a procedure block. Alias of PROCEDURE. (WIP)\nSee also: ENDPROC, ENDPROCEDURE"},
+				{"ENDPROC", "ENDPROC", "End a PROC/PROCEDURE block.\nSee also: PROC, PROCEDURE"},
+				{"ENDPROCEDURE", "ENDPROCEDURE", "End a PROCEDURE block. Alias of ENDPROC.\nSee also: PROCEDURE, PROC"},
+				{"ENDP", "ENDP", "End a procedure block. Short alias of ENDPROC.\nSee also: PROC, PROCEDURE"},
 			};
 			//
 			// Tokenizer functions for Z80 assembly
@@ -2509,7 +2447,7 @@ namespace ImGui {
 			//
 			static const char* const kZ80ConditionCodes[] = {"C", "NC", "Z", "NZ", "M", "P", "PE", "PO", nullptr};
 			static const char* const kZ80Registers16[] = {"BC", "DE", "HL", "SP", "IX", "IY", "AF", "AF'", nullptr};
-			static const char* const kZ80Registers8[] = {"A", "B", "C", "D", "E", "H", "L", "I", "R", "IXL", "IXH", "IYL", "IYH", nullptr};
+			static const char* const kZ80Registers8[] = {"A", "B", "C", "D", "E", "H", "L", "I", "R", "IXL", "IXH", "IYL", "IYH", "XH", "XL", "YH", "YL", nullptr};
 			static std::deque<std::pair<int, std::string>> gCodeLensRecentLines;
 			static bool gCodeLensInsideMacro = false;
 			static std::string gCodeLensMacroName;
@@ -2555,9 +2493,13 @@ namespace ImGui {
 																				{"ADD (IX+o)", "ADD A,(IX+o)"},
 																				{"ADD (IY+o)", "ADD A,(IY+o)"},
 																				{"ADD IXH", "ADD A,IXH"},
+																				{"ADD XH", "ADD A,IXH"},
 																				{"ADD IXL", "ADD A,IXL"},
+																				{"ADD XL", "ADD A,IXL"},
 																				{"ADD IYH", "ADD A,IYH"},
+																				{"ADD YH", "ADD A,IYH"},
 																				{"ADD IYL", "ADD A,IYL"},
+																				{"ADD YL", "ADD A,IYL"},
 																				{"ADD n", "ADD A,n"},
 																				{"ADD B", "ADD A,B"},
 																				{"ADD C", "ADD A,C"},
@@ -2570,9 +2512,13 @@ namespace ImGui {
 																				{"ADC (IX+o)", "ADC A,(IX+o)"},
 																				{"ADC (IY+o)", "ADC A,(IY+o)"},
 																				{"ADC IXH", "ADC A,IXH"},
+																				{"ADC XH", "ADC A,IXH"},
 																				{"ADC IXL", "ADC A,IXL"},
+																				{"ADC XL", "ADC A,IXL"},
 																				{"ADC IYH", "ADC A,IYH"},
+																				{"ADC YH", "ADC A,IYH"},
 																				{"ADC IYL", "ADC A,IYL"},
+																				{"ADC YL", "ADC A,IYL"},
 																				{"ADC n", "ADC A,n"},
 																				{"ADC B", "ADC A,B"},
 																				{"ADC C", "ADC A,C"},
@@ -2585,9 +2531,13 @@ namespace ImGui {
 																				{"SBC (IX+o)", "SBC A,(IX+o)"},
 																				{"SBC (IY+o)", "SBC A,(IY+o)"},
 																				{"SBC IXH", "SBC A,IXH"},
+																				{"SBC XH", "SBC A,IXH"},
 																				{"SBC IXL", "SBC A,IXL"},
+																				{"SBC XL", "SBC A,IXL"},
 																				{"SBC IYH", "SBC A,IYH"},
+																				{"SBC YH", "SBC A,IYH"},
 																				{"SBC IYL", "SBC A,IYL"},
+																				{"SBC YL", "SBC A,IYL"},
 																				{"SBC n", "SBC A,n"},
 																				{"SBC B", "SBC A,B"},
 																				{"SBC C", "SBC A,C"},
@@ -2600,9 +2550,13 @@ namespace ImGui {
 																				{"SUB A,(IX+o)", "SUB (IX+o)"},
 																				{"SUB A,(IY+o)", "SUB (IY+o)"},
 																				{"SUB A,IXH", "SUB IXH"},
+																				{"SUB XH", "SUB IXH"},
 																				{"SUB A,IXL", "SUB IXL"},
+																				{"SUB XL", "SUB IXL"},
 																				{"SUB A,IYH", "SUB IYH"},
+																				{"SUB YH", "SUB IYH"},
 																				{"SUB A,IYL", "SUB IYL"},
+																				{"SUB YL", "SUB IYL"},
 																				{"SUB A,n", "SUB n"},
 																				{"SUB A,B", "SUB B"},
 																				{"SUB A,C", "SUB C"},
@@ -2615,9 +2569,13 @@ namespace ImGui {
 																				{"AND A,(IX+o)", "AND (IX+o)"},
 																				{"AND A,(IY+o)", "AND (IY+o)"},
 																				{"AND A,IXH", "AND IXH"},
+																				{"AND XH", "AND IXH"},
 																				{"AND A,IXL", "AND IXL"},
+																				{"AND XL", "AND IXL"},
 																				{"AND A,IYH", "AND IYH"},
+																				{"AND YH", "AND IYH"},
 																				{"AND A,IYL", "AND IYL"},
+																				{"AND YL", "AND IYL"},
 																				{"AND A,n", "AND n"},
 																				{"AND A,B", "AND B"},
 																				{"AND A,C", "AND C"},
@@ -2630,9 +2588,13 @@ namespace ImGui {
 																				{"OR A,(IX+o)", "OR (IX+o)"},
 																				{"OR A,(IY+o)", "OR (IY+o)"},
 																				{"OR A,IXH", "OR IXH"},
+																				{"OR XH", "OR IXH"},
 																				{"OR A,IXL", "OR IXL"},
+																				{"OR XL", "OR IXL"},
 																				{"OR A,IYH", "OR IYH"},
+																				{"OR YH", "OR IYH"},
 																				{"OR A,IYL", "OR IYL"},
+																				{"OR YL", "OR IYL"},
 																				{"OR A,n", "OR n"},
 																				{"OR A,B", "OR B"},
 																				{"OR A,C", "OR C"},
@@ -2645,9 +2607,13 @@ namespace ImGui {
 																				{"XOR A,(IX+o)", "XOR (IX+o)"},
 																				{"XOR A,(IY+o)", "XOR (IY+o)"},
 																				{"XOR A,IXH", "XOR IXH"},
+																				{"XOR XH", "XOR IXH"},
 																				{"XOR A,IXL", "XOR IXL"},
+																				{"XOR XL", "XOR IXL"},
 																				{"XOR A,IYH", "XOR IYH"},
+																				{"XOR YH", "XOR IYH"},
 																				{"XOR A,IYL", "XOR IYL"},
+																				{"XOR YL", "XOR IYL"},
 																				{"XOR A,n", "XOR n"},
 																				{"XOR A,B", "XOR B"},
 																				{"XOR A,C", "XOR C"},
@@ -2660,9 +2626,13 @@ namespace ImGui {
 																				{"CP A,(IX+o)", "CP (IX+o)"},
 																				{"CP A,(IY+o)", "CP (IY+o)"},
 																				{"CP A,IXH", "CP IXH"},
+																				{"CP XH", "CP IXH"},
 																				{"CP A,IXL", "CP IXL"},
+																				{"CP XL", "CP IXL"},
 																				{"CP A,IYH", "CP IYH"},
+																				{"CP YH", "CP IYH"},
 																				{"CP A,IYL", "CP IYL"},
+																				{"CP YL", "CP IYL"},
 																				{"CP A,n", "CP n"},
 																				{"CP A,B", "CP B"},
 																				{"CP A,C", "CP C"},
@@ -2670,7 +2640,15 @@ namespace ImGui {
 																				{"CP A,E", "CP E"},
 																				{"CP A,H", "CP H"},
 																				{"CP A,L", "CP L"},
-																				{"CP A,A", "CP A"}};
+																				{"CP A,A", "CP A"},
+																				{"INC XH", "INC IXH"},
+																				{"INC XL", "INC IXL"},
+																				{"INC YH", "INC IYH"},
+																				{"INC YL", "INC IYL"},
+																				{"DEC XH", "DEC IXH"},
+																				{"DEC XL", "DEC IXL"},
+																				{"DEC YH", "DEC IYH"},
+																				{"DEC YL", "DEC IYL"}};
 			//
 			// O(1) set-based lookup
 			//
@@ -2763,11 +2741,19 @@ namespace ImGui {
 			static std::string NormalizeParameter(const std::string& p, std::string& prevParam, const std::string& mnemonic) {
 				if (p.empty())
 					return "";
-				if (p[0] == '(') {
-					size_t close = p.find(')');
+				//
+				// Remap short register aliases to canonical names before any lookup
+				//
+				const std::string& param = (p == "XH")	 ? std::string("IXH")
+										   : (p == "XL") ? std::string("IXL")
+										   : (p == "YH") ? std::string("IYH")
+										   : (p == "YL") ? std::string("IYL")
+														 : p;
+				if (param[0] == '(') {
+					size_t close = param.find(')');
 					if (close == std::string::npos)
 						return "(nn)";
-					std::string inside = p.substr(1, close - 1);
+					std::string inside = param.substr(1, close - 1);
 					if (inside == "C")
 						return "(C)";
 					bool insideIsNum = !inside.empty() && ((inside[0] >= '0' && inside[0] <= '9') || inside[0] == '$' || inside[0] == '#' || inside[0] == '%');
@@ -2790,25 +2776,25 @@ namespace ImGui {
 						return "n";
 					return "(nn)";
 				}
-				if ((mnemonic == "JP" || mnemonic == "JR" || mnemonic == "CALL" || mnemonic == "RET") && IsInSet(p, sConditionCodesSet))
-					return p;
-				if (p[0] == '{') {
+				if ((mnemonic == "JP" || mnemonic == "JR" || mnemonic == "CALL" || mnemonic == "RET") && IsInSet(param, sConditionCodesSet))
+					return param;
+				if (param[0] == '{') {
 					if (IsInSet(prevParam, sRegisters16Set))
 						return "nn";
 					return "n";
 				}
-				if (IsInSet(p, sRegisters16Set))
-					return p;
-				if (IsInSet(p, sRegisters8Set))
-					return p;
-				bool isNum = !p.empty() && ((p[0] >= '0' && p[0] <= '9') || p[0] == '$' || p[0] == '#' || p[0] == '%');
+				if (IsInSet(param, sRegisters16Set))
+					return param;
+				if (IsInSet(param, sRegisters8Set))
+					return param;
+				bool isNum = !param.empty() && ((param[0] >= '0' && param[0] <= '9') || param[0] == '$' || param[0] == '#' || param[0] == '%');
 				if (isNum) {
-					if (mnemonic == "OUT" && prevParam == "(C)" && p == "0")
+					if (mnemonic == "OUT" && prevParam == "(C)" && param == "0")
 						return "0";
 					if (mnemonic == "SET" || mnemonic == "BIT" || mnemonic == "RES")
-						return p;
+						return param;
 					if (mnemonic == "IM")
-						return p;
+						return param;
 					if (mnemonic == "JR" || mnemonic == "DJNZ")
 						return "o";
 					if (mnemonic == "CALL" || mnemonic == "JP" || mnemonic == "PUSH")
@@ -2871,7 +2857,7 @@ namespace ImGui {
 						result += ",";
 					std::string param = Trim(params[i]);
 					result += NormalizeParameter(param, prevParam, mnemonic);
-					prevParam = param;
+					prevParam = ToUpper(Trim(params[i]));
 				}
 				return result;
 			}
@@ -3299,10 +3285,10 @@ namespace ImGui {
 			//
 			static void ParseCodeLensStart(const std::string& filePath, void* userData) {
 				gZ80TimingType = (userData != nullptr) ? *static_cast<const TextEditor::TimingType*>(userData) : TextEditor::TimingType::Cycles;
-					gCodeLensCollectErrors = true;
-					gCodeLensCurrentFilePath = filePath;
-					InjectDirectiveSymbols();
-					gCodeLensRecentLines.clear();
+				gCodeLensCollectErrors = true;
+				gCodeLensCurrentFilePath = filePath;
+				InjectDirectiveSymbols();
+				gCodeLensRecentLines.clear();
 				gCodeLensInsideMacro = false;
 				gCodeLensMacroName.clear();
 				gCodeLensMacroStartLine = -1;

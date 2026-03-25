@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Source asset -- emulator launch configuration.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -12,7 +15,7 @@
 namespace RetrodevLib {
 
 	//
-	// SourceEmulator — launches the configured emulator for a build item.
+	// SourceEmulator -- launches the configured emulator for a build item.
 	// Reads EmulatorParams from the supplied SourceParams, builds the correct
 	// command line for the selected emulator (WinAPE / RVM / ACE-DL) and
 	// spawns the process.  All diagnostic messages are forwarded through logCb.
@@ -33,4 +36,4 @@ namespace RetrodevLib {
 		static void Poll();
 	};
 
-} // namespace RetrodevLib
+}

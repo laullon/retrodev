@@ -1,10 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image asset -- pixel buffer and colour access.
 //
+// (c) TLOTB 2026
 //
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include <assets/image/image.h>
 #include <log/log.h>
@@ -246,7 +248,7 @@ namespace RetrodevLib {
 		RgbColor result(0, 0, 0);
 		if (m_surface->format == SDL_PIXELFORMAT_INDEX8) {
 			//
-			// INDEX8: one byte per pixel — resolve through the palette
+			// INDEX8: one byte per pixel -- resolve through the palette
 			//
 			uint8_t idx = pixels[y * pitch + x];
 			SDL_Palette* pal = SDL_GetSurfacePalette(m_surface);
@@ -396,4 +398,4 @@ namespace RetrodevLib {
 		return count;
 	}
 
-} // namespace RetrodevLib
+}

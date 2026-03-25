@@ -1,12 +1,12 @@
-﻿//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Palette widget -- hardware colour palette display and selection.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
@@ -61,6 +61,7 @@ namespace RetrodevGui {
 		static int m_selectedPen;
 		static int m_selectedColorIndex; // Persistent across frames
 		static bool m_showColorPicker;
+		static bool m_openColorPickerThisFrame;
 		//
 		// Transparency color picker state
 		//
@@ -76,11 +77,11 @@ namespace RetrodevGui {
 		//
 		static bool RenderPaletteColors(RetrodevLib::GFXParams* params, std::shared_ptr<RetrodevLib::IPaletteConverter> palette);
 		static bool RenderColorPickerPopup(RetrodevLib::GFXParams* params, std::shared_ptr<RetrodevLib::IPaletteConverter> palette);
-		static bool RenderTransparencySection(RetrodevLib::GFXParams* params);
+		static bool RenderTransparencySection(RetrodevLib::GFXParams* params, std::shared_ptr<RetrodevLib::IPaletteConverter> palette);
 		//
 		// Helper to ensure pen states match current palette size
 		//
 		static void EnsurePenStates(int penCount);
 	};
 
-} // namespace RetrodevGui
+}

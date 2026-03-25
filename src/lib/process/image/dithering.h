@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image processing -- dithering methods (ordered matrices and error diffusion).
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
@@ -47,7 +47,7 @@ namespace RetrodevLib {
 		const std::string ClusterDots = "Cluster Dots (3x3)";
 		const std::string GradientHorizontal = "Gradient Horizontal (2x4)";
 		const std::string GradientDiagonal = "Gradient Diagonal (4x4)";
-	} // namespace DitheringMethods
+	}
 
 	// =====================================================================================
 	//  GFXDithering
@@ -227,4 +227,4 @@ namespace RetrodevLib {
 		static const std::vector<std::vector<double>> gradient_diagonal;
 	};
 
-} // namespace RetrodevLib
+}

@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Tileset export engine -- runs AngelScript export scripts for tileset items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -68,13 +71,19 @@ namespace RetrodevLib {
 		IPaletteConverter* TilesetExportContext::GetPalette() const {
 			return converter ? converter->GetPalette().get() : nullptr;
 		}
+		bool TilesetExportContext::GetUseTransparentColor() const {
+			return params ? params->RParams.UseTransparentColor : false;
+		}
+		int TilesetExportContext::GetTransparentPen() const {
+			return params ? params->RParams.TransparentPen : -1;
+		}
 
 		// ---------------------------------------------------------------- //
 		// RegisterTilesetContextBinding                                     //
 		// ---------------------------------------------------------------- //
 
 		//
-		// Generic wrappers — required by AS_MAX_PORTABILITY builds
+		// Generic wrappers -- required by AS_MAX_PORTABILITY builds
 		//
 		static void TilesetExportContext_GetTileCount_Generic(asIScriptGeneric* gen) {
 			gen->SetReturnDWord((asDWORD) static_cast<TilesetExportContext*>(gen->GetObject())->GetTileCount());
@@ -108,12 +117,18 @@ namespace RetrodevLib {
 		static void TilesetExportContext_GetPalette_Generic(asIScriptGeneric* gen) {
 			gen->SetReturnAddress(static_cast<TilesetExportContext*>(gen->GetObject())->GetPalette());
 		}
+		static void TilesetExportContext_GetUseTransparentColor_Generic(asIScriptGeneric* gen) {
+			gen->SetReturnByte(static_cast<TilesetExportContext*>(gen->GetObject())->GetUseTransparentColor() ? 1 : 0);
+		}
+		static void TilesetExportContext_GetTransparentPen_Generic(asIScriptGeneric* gen) {
+			gen->SetReturnDWord((asDWORD) static_cast<TilesetExportContext*>(gen->GetObject())->GetTransparentPen());
+		}
 		//
 		void RegisterTilesetContextBinding(asIScriptEngine* engine) {
 			if (g_engine.tilesetContextRegistered)
 				return;
 			//
-			// TilesetExportContext — ref type, no script-side reference counting
+			// TilesetExportContext -- ref type, no script-side reference counting
 			//
 			engine->RegisterObjectType("TilesetExportContext", 0, asOBJ_REF | asOBJ_NOCOUNT);
 			engine->RegisterObjectMethod("TilesetExportContext", "int GetTileCount() const", asFUNCTION(TilesetExportContext_GetTileCount_Generic), asCALL_GENERIC);
@@ -126,6 +141,8 @@ namespace RetrodevLib {
 			engine->RegisterObjectMethod("TilesetExportContext", "string GetTargetSystem() const", asFUNCTION(TilesetExportContext_GetTargetSystem_Generic), asCALL_GENERIC);
 			engine->RegisterObjectMethod("TilesetExportContext", "string GetParam(const string &in) const", asFUNCTION(TilesetExportContext_GetParam_Generic), asCALL_GENERIC);
 			engine->RegisterObjectMethod("TilesetExportContext", "Palette@ GetPalette() const", asFUNCTION(TilesetExportContext_GetPalette_Generic), asCALL_GENERIC);
+			engine->RegisterObjectMethod("TilesetExportContext", "bool GetUseTransparentColor() const", asFUNCTION(TilesetExportContext_GetUseTransparentColor_Generic), asCALL_GENERIC);
+			engine->RegisterObjectMethod("TilesetExportContext", "int GetTransparentPen() const", asFUNCTION(TilesetExportContext_GetTransparentPen_Generic), asCALL_GENERIC);
 			g_engine.tilesetContextRegistered = true;
 		}
 
@@ -134,9 +151,9 @@ namespace RetrodevLib {
 		// ---------------------------------------------------------------- //
 
 		bool RunTilesetExport(const std::string& scriptPath, const std::string& outputPath, const std::string& scriptParams, IBitmapConverter* converter, const GFXParams* params,
-						  ITileExtractor* tileExtractor, const TileExtractionParams* tileParams) {
+							  ITileExtractor* tileExtractor, const TileExtractionParams* tileParams) {
 			if (!g_engine.initialized) {
-				ReportError("[Script] ExportTileset: engine not initialized — call ExportEngine::Initialize() first");
+				ReportError("[Script] ExportTileset: engine not initialized -- call ExportEngine::Initialize() first");
 				return false;
 			}
 			if (!EnsureOutputDirectory(outputPath))
@@ -205,5 +222,5 @@ namespace RetrodevLib {
 			return true;
 		}
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

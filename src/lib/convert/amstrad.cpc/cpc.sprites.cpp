@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Amstrad CPC sprite converter -- region extraction and pixel encoding.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -40,8 +43,8 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		if (params->Sprites.empty()) {
 			return true;
 		}
-		Log::Info(LogChannel::General, "[CPC Sprites] Extracting %d sprite(s) from %dx%d image.",
-			static_cast<int>(params->Sprites.size()), sourceImage->GetWidth(), sourceImage->GetHeight());
+		Log::Info(LogChannel::General, "[CPC Sprites] Extracting %d sprite(s) from %dx%d image.", static_cast<int>(params->Sprites.size()), sourceImage->GetWidth(),
+				  sourceImage->GetHeight());
 		//
 		// Extract each sprite definition
 		//
@@ -67,14 +70,20 @@ namespace RetrodevLib::ConverterAmstradCPC {
 				continue;
 			}
 			//
-			// Copy pixels from source to sprite image
+			// Copy pixels from source to sprite image, applying flip and shift transforms.
+			// Shift wraps cyclically within the bounding box (applied after flip).
 			//
 			for (int y = 0; y < spriteDef.Height; y++) {
 				for (int x = 0; x < spriteDef.Width; x++) {
-					int srcX = spriteDef.X + x;
-					int srcY = spriteDef.Y + y;
+					int srcX = spriteDef.X + (spriteDef.FlipH ? (spriteDef.Width - 1 - x) : x);
+					int srcY = spriteDef.Y + (spriteDef.FlipV ? (spriteDef.Height - 1 - y) : y);
 					RgbColor color = sourceImage->GetPixelColor(srcX, srcY);
-					spriteImage->SetPixelColor(x, y, color);
+					//
+					// Compute destination with cyclic shift
+					//
+					int dstX = (x + spriteDef.ShiftX % spriteDef.Width + spriteDef.Width) % spriteDef.Width;
+					int dstY = (y + spriteDef.ShiftY % spriteDef.Height + spriteDef.Height) % spriteDef.Height;
+					spriteImage->SetPixelColor(dstX, dstY, color);
 				}
 			}
 			//
@@ -108,4 +117,4 @@ namespace RetrodevLib::ConverterAmstradCPC {
 			return nullptr;
 		return &m_definitions[index];
 	}
-} // namespace RetrodevLib::ConverterAmstradCPC
+}

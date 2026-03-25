@@ -1,6 +1,14 @@
 // ---------------------------------------------------------------------------
 //
-// Script metadata — read by the tool at script selection time.
+// Retrodev SDK
+//
+// CPC screen export script -- exports converted bitmap as CPC screen data.
+//
+// (c) TLOTB 2026
+//
+// ---------------------------------------------------------------------------
+//
+// Script metadata -- read by the tool at script selection time.
 // All tags are optional but recommended. Lines are scanned as plain text;
 // no compilation occurs when the tool reads these values.
 // All the tags must be preceded by "@"
@@ -13,10 +21,10 @@
 //   Declares the kind of data this script exports.
 //   The picker uses this to show only relevant scripts for the active document.
 //   Known values:
-//     bitmap   — pixel/screen data (tile sheets, full screens, sprites)
-//     map      — tilemap or room layout data
-//     sprites  — individual sprite definitions
-//     tiles    — tile set / character set data
+//     bitmap   -- pixel/screen data (tile sheets, full screens, sprites)
+//     map      -- tilemap or room layout data
+//     sprites  -- individual sprite definitions
+//     tiles    -- tile set / character set data
 //
 // target <system>
 //   Declares the hardware this script targets.
@@ -25,10 +33,10 @@
 //   project targets an Amstrad CPC).
 //   The value is the system identifier, not the display name shown in the UI.
 //   Known values:
-//     amstrad.cpc  — Amstrad CPC/CPC+
-//     spectrum     — ZX Spectrum
-//     c64          — Commodore 64
-//     msx          — MSX
+//     amstrad.cpc  -- Amstrad CPC/CPC+
+//     spectrum     -- ZX Spectrum
+//     c64          -- Commodore 64
+//     msx          -- MSX
 //   Omit the tag entirely if the script is hardware-agnostic.
 //
 // param <key> <type> <default> <label...>
@@ -36,10 +44,10 @@
 //   The tool builds one control per @param and stores the chosen values in
 //   the project file.  At export time the script reads them via GetParam().
 //   Supported types:
-//     bool    — checkbox;  default must be  true  or  false
-//     int     — integer spinner;  default is any decimal integer
-//     string  — text field;  default is a single word (no spaces)
-//     combo   — drop-down list;  format:  <key> combo <default> <opt1|opt2|...> <label...>
+//     bool    -- checkbox;  default must be  true  or  false
+//     int     -- integer spinner;  default is any decimal integer
+//     string  -- text field;  default is a single word (no spaces)
+//     combo   -- drop-down list;  format:  <key> combo <default> <opt1|opt2|...> <label...>
 //               default must be one of the options
 //   The label is everything after the default value; spaces are allowed.
 //
@@ -55,14 +63,14 @@
 
 // ---------------------------------------------------------------------------
 //
-// Shared CPC utilities — pixel encoding for all three video modes.
+// Shared CPC utilities -- pixel encoding for all three video modes.
 //
 // cpc.utils.as provides:
-//   EncodeByte(p0..p7, mode)  — encodes one byte from up to 8 pen indices;
+//   EncodeByte(p0..p7, mode)  -- encodes one byte from up to 8 pen indices;
 //                               use this directly when the tile or sprite
 //                               ordering is not a plain horizontal run.
 //   EncodePixels(pen, xStart, count, mode, buf)
-//                             — encodes a full horizontal run of pixels.
+//                             -- encodes a full horizontal run of pixels.
 //
 // Any CPC script can reuse these by adding the same #include line.
 //
@@ -82,9 +90,9 @@
 //   The CPC 16 KB screen is organised as 8 banks of 2048 bytes each.
 //   Bank n contains scanlines n, n+8, n+16, ..., n+(h/8-1)*8 in order.
 //   Any bytes remaining in the 2048-byte bank after the scanline data are
-//   written as zero-padding, so the output file is always 8×2048 = 16384 bytes.
-//   Example: Mode 0, 160×200 → 80 bytes/line × 25 lines = 2000 bytes data
-//            + 48 zero bytes padding per bank → 16384 bytes total.
+//   written as zero-padding, so the output file is always 8x2048 = 16384 bytes.
+//   Example: Mode 0, 160x200 -> 80 bytes/line x 25 lines = 2000 bytes data
+//            + 48 zero bytes padding per bank -> 16384 bytes total.
 //
 // ---------------------------------------------------------------------------
 void Export(Image@ image, const string& in outputPath, BitmapExportContext@ ctx)
@@ -116,7 +124,7 @@ void Export(Image@ image, const string& in outputPath, BitmapExportContext@ ctx)
 			+ " must be a multiple of 8 for CPC screen memory layout.");
 		return;
 	}
-	Log_Info("Export started — system: " + system + "  mode: " + mode
+	Log_Info("Export started -- system: " + system + "  mode: " + mode
 		+ "  size: " + w + "x" + h
 		+ "  screenlayout: " + useScreenLayout
 		+ "  output: " + outputPath);
@@ -124,22 +132,38 @@ void Export(Image@ image, const string& in outputPath, BitmapExportContext@ ctx)
 	// Resolve every pixel's palette pen index up front so EncodePixels can
 	// work with a plain integer array rather than calling back into the image.
 	//
+	bool useTransp = ctx.GetUseTransparentColor();
+	int transpPen = ctx.GetTransparentPen();
 	array<int> penMap(w * h);
 	int penCount = palette.PaletteMaxColors();
+	bool warnedNoTranspPen = false;
+	bool warnedNoPen = false;
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
 			RgbColor c = image.GetPixelColor(x, y);
 			//
-			// The image was already converted — every pixel colour must map exactly
-			// to one of the active pen slots. PenGetIndexByColor searches only
-			// within the active pens (not the full system palette).
+			// Transparent pixel: alpha==0 (IsTransparent) or chroma-key enabled
 			//
-			int pen = palette.PenGetIndex(c);
-			if (pen < 0) {
-				Log_Warning("Pixel at " + x + "," + y
-					+ " rgb(" + c.r + "," + c.g + "," + c.b + ")"
-					+ " has no matching pen — image may not have been converted. Using pen 0.");
-				pen = 0;
+			bool isTransp = useTransp && c.IsTransparent();
+			int pen;
+			if (isTransp) {
+				pen = transpPen;
+				if (pen < 0) {
+					if (!warnedNoTranspPen) {
+						Log_Warning("Transparent pixels found but no transparent pen configured -- using pen 0.");
+						warnedNoTranspPen = true;
+					}
+					pen = 0;
+				}
+			} else {
+				pen = palette.PenGetIndex(c);
+				if (pen < 0) {
+					if (!warnedNoPen) {
+						Log_Warning("One or more pixels have no matching pen -- image may not have been converted. Using pen 0.");
+						warnedNoPen = true;
+					}
+					pen = 0;
+				}
 			}
 			penMap[y * w + x] = pen;
 		}
@@ -195,9 +219,9 @@ void Export(Image@ image, const string& in outputPath, BitmapExportContext@ ctx)
 	for (uint i = 0; i < buf.length(); i++)
 		f.writeUInt(buf[i], 1);
 	f.close();
-	Log_Info("Export finished — " + buf.length() + " bytes written.");
+	Log_Info("Export finished -- " + buf.length() + " bytes written.");
 	//
-	// Palette export — one byte per pen, written to <outputPath base>.pal
+	// Palette export -- one byte per pen, written to <outputPath base>.pal
 	//
 	if (exportPalette) {
 		//
@@ -237,7 +261,7 @@ void Export(Image@ image, const string& in outputPath, BitmapExportContext@ ctx)
 			for (uint i = 0; i < palBuf.length(); i++)
 				pf.writeUInt(palBuf[i], 1);
 			pf.close();
-			Log_Info("Palette exported — " + palBuf.length() + " bytes written to: " + palPath);
+			Log_Info("Palette exported -- " + palBuf.length() + " bytes written to: " + palPath);
 		}
 	}
 }

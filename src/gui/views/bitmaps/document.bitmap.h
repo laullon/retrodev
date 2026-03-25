@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Bitmap conversion document -- editor for bitmap conversion build items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -45,7 +48,7 @@ namespace RetrodevGui {
 		//
 		std::shared_ptr<RetrodevLib::IBitmapConverter> m_converter;
 		//
-		// Export widget instance — owns its own path buffers and ImGui ID scope
+		// Export widget instance -- owns its own path buffers and ImGui ID scope
 		//
 		DataExportWidget m_exportWidget;
 		//
@@ -57,7 +60,7 @@ namespace RetrodevGui {
 		// Preview display settings (UI-only, not saved in project)
 		//
 		bool m_previewAspectCorrection = true;
-		//int m_previewScaleFactor = 1;
+		// int m_previewScaleFactor = 1;
 		bool m_previewScanlines = false;
 
 		// Image state for the left (original)
@@ -78,4 +81,4 @@ namespace RetrodevGui {
 		float m_imgSizeRight = 0;
 	};
 
-} // namespace RetrodevGui
+}

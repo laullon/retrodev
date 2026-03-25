@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Embedded resource registry -- binary blobs compiled into the executable.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -57,4 +60,4 @@ namespace RetrodevGui {
 		static void AddResource(Resource* resource);
 	};
 
-} // namespace RetrodevGui
+}

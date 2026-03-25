@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Painting widget -- per-pixel paint tool for sprite editing.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
@@ -30,7 +30,7 @@ namespace RetrodevGui {
 
 	//
 	// Pixel painting tools panel for the image document.
-	// Color selection is driven externally by ImagePaletteWidget —
+	// Color selection is driven externally by ImagePaletteWidget --
 	// the active palette index is passed in each frame via Render().
 	//
 	class PaintingWidget {
@@ -68,4 +68,4 @@ namespace RetrodevGui {
 		static void RenderBrushSizeButtons();
 	};
 
-} // namespace RetrodevGui
+}

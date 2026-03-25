@@ -15,11 +15,11 @@ using static Kltv.Kombine.Api.Statics;
 using static Kltv.Kombine.Api.Tool;
 
 // Name of the library for the output
-KValue libfriendlyname = "Rasm (v3.0.8)";
+KValue libfriendlyname = "Rasm (master)";
 // Path to store the lib sources
 KValue libpath = "rasm/";
 // Branch to use for the lib sources
-KValue libbranch = "v3.0.8";
+KValue libbranch = "master";
 // Name of the library for the output
 KValue libname = "rasm";
 // Repository to use for the lib sources

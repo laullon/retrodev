@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image processing -- per-channel colour correction (brightness, contrast, saturation).
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "color.correction.h"
 #include <utils/utils.h>
@@ -188,4 +188,4 @@ namespace RetrodevLib {
 		return {PaletteReductionLimits::Upper_None, PaletteReductionLimits::Upper_0xEE, PaletteReductionLimits::Upper_0xDD, PaletteReductionLimits::Upper_0xCC};
 	}
 
-} // namespace RetrodevLib
+}

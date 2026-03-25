@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Palette solver document -- shared palette computation across build items.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -18,7 +20,7 @@
 
 namespace RetrodevGui {
 	//
-	// Called when any project build item changes — clear the solution if a participant is affected
+	// Called when any project build item changes -- clear the solution if a participant is affected
 	//
 	void DocumentPalette::OnProjectItemChanged(const std::string& itemName) {
 		RetrodevLib::PaletteParams* params = nullptr;
@@ -37,6 +39,11 @@ namespace RetrodevGui {
 					m_lastOriginalParticipant = -1;
 					m_originalConverter = nullptr;
 					m_selectedPreviewKey = "";
+					//
+					// A participant changed externally -- the previous user validation is no
+					// longer trustworthy; require a new solve + validate cycle.
+					//
+					params->userValidated = false;
 					return;
 				}
 			}
@@ -73,7 +80,7 @@ namespace RetrodevGui {
 			return;
 		//
 		// If the target was already set (not first-time init), clear all zone participants
-		// only when the system or palette type changes — those determine which colors are
+		// only when the system or palette type changes -- those determine which colors are
 		// available.
 		//
 		bool wasInitialized = !m_lastTargetSystem.empty();
@@ -83,6 +90,10 @@ namespace RetrodevGui {
 		if (wasInitialized && paletteChanged) {
 			for (auto& zone : params->zones)
 				zone.participants.clear();
+			params->preloadedColors.clear();
+			params->preloadedLocked.clear();
+			params->userValidated = false;
+			m_preloadedSelected = false;
 			m_selectedParticipant = -1;
 			m_lastOriginalParticipant = -1;
 			m_originalConverter = nullptr;
@@ -132,6 +143,41 @@ namespace RetrodevGui {
 			int sysCount = palette->GetSystemMaxColors();
 			for (int i = 0; i < penCount; i++)
 				palette->PenSetColorIndex(i, i < sysCount ? i : 0);
+			//
+			// Ensure the preloaded arrays are sized to match the pen count.
+			// Rebuild m_preloadGfx so the palette widget reflects saved pre-loaded state.
+			//
+			params->preloadedColors.resize(penCount, -1);
+			params->preloadedLocked.resize(penCount, false);
+			m_preloadGfx = RetrodevLib::GFXParams{};
+			m_preloadGfx.SParams.TargetSystem = params->targetSystem;
+			m_preloadGfx.SParams.TargetMode = currentMode;
+			m_preloadGfx.SParams.PaletteType = params->targetPaletteType;
+			m_preloadGfx.RParams.TargetWidth = 1;
+			m_preloadGfx.RParams.TargetHeight = 1;
+			m_preloadGfx.SParams.PaletteColors.assign(penCount, -1);
+			m_preloadGfx.SParams.PaletteLocked.assign(penCount, false);
+			m_preloadGfx.SParams.PaletteEnabled.assign(penCount, false);
+			for (int i = 0; i < penCount; i++) {
+				int col = params->preloadedColors[i];
+				bool locked = params->preloadedLocked[i];
+				m_preloadGfx.SParams.PaletteColors[i] = col;
+				m_preloadGfx.SParams.PaletteLocked[i] = locked;
+				m_preloadGfx.SParams.PaletteEnabled[i] = (locked && col >= 0);
+			}
+			// Build and persist the fake palette for the widget's lifetime
+			m_preloadPalette = RetrodevLib::Converters::GetBitmapConverter(&m_preloadGfx);
+			if (m_preloadPalette) {
+				// Prime with a 1x1 dummy image so the palette is initialized
+				auto dummy = RetrodevLib::Image::ImageCreate(1, 1);
+				if (dummy) {
+					m_preloadGfx.RParams.TargetWidth = 1;
+					m_preloadGfx.RParams.TargetHeight = 1;
+					m_preloadPalette->SetOriginal(dummy);
+					m_preloadPalette->Convert(&m_preloadGfx);
+					m_preloadPalette->SetOriginal(nullptr);
+				}
+			}
 		}
 	}
 	//
@@ -158,6 +204,7 @@ namespace RetrodevGui {
 		m_lastDisplayZone = -1;
 		m_lastDisplayTag = -1;
 		m_displayConverter = nullptr;
+		params->userValidated = false;
 		RetrodevLib::Project::MarkAsModified();
 		SetModified(true);
 	}
@@ -180,6 +227,7 @@ namespace RetrodevGui {
 		m_lastDisplayZone = -1;
 		m_lastDisplayTag = -1;
 		m_displayConverter = nullptr;
+		params->userValidated = false;
 		RetrodevLib::Project::MarkAsModified();
 		SetModified(true);
 	}
@@ -211,7 +259,7 @@ namespace RetrodevGui {
 			}
 		}
 		//
-		// Level tag combo — always shown; disabled when no Level participants exist
+		// Level tag combo -- always shown; disabled when no Level participants exist
 		//
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Level tag");
@@ -241,7 +289,7 @@ namespace RetrodevGui {
 			}
 		}
 		//
-		// Thumbnail scroll area — fills remaining left panel height
+		// Thumbnail scroll area -- fills remaining left panel height
 		//
 		if (ImGui::BeginChild("##Thumbnails", ImVec2(-1, -1), true)) {
 			//
@@ -261,7 +309,7 @@ namespace RetrodevGui {
 				}
 				if (p.buildItemName.empty())
 					continue;
-				std::string key = zone.name + ":" + p.buildItemType + ":" + p.buildItemName;
+				std::string key = zone.name + ":" + p.buildItemType + ":" + p.buildItemName + ":" + std::to_string(pi);
 				//
 				// Find the converter for this participant from the solution.
 				// Always/ScreenZone participants live in the base tag solution (index 0).
@@ -306,7 +354,7 @@ namespace RetrodevGui {
 				}
 				if (!thumbConv || !thumbGfx) {
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-					ImGui::TextUnformatted((p.buildItemName + " — solve to preview").c_str());
+					ImGui::TextUnformatted((p.buildItemName + " -- solve to preview").c_str());
 					ImGui::PopStyleColor();
 					continue;
 				}
@@ -339,7 +387,7 @@ namespace RetrodevGui {
 				ImVec2 itemTopLeft = ImGui::GetCursorScreenPos();
 				bool isSelected = (m_selectedPreviewKey == key);
 				//
-				// Label line — centered using the same anchor
+				// Label line -- centered using the same anchor
 				//
 				std::string labelStr = std::string(roleIcon) + "  " + p.buildItemName;
 				if (!p.tag.empty())
@@ -371,29 +419,29 @@ namespace RetrodevGui {
 				ImVec2 itemBotRight = ImGui::GetCursorScreenPos();
 				ImVec2 selectableSize = ImVec2(panelW, itemBotRight.y - itemTopLeft.y);
 				ImGui::SetCursorScreenPos(itemTopLeft);
-					if (ImGui::InvisibleButton(("##sel_" + key).c_str(), selectableSize)) {
-						m_selectedPreviewKey = key;
-						//
-						// Auto-select the solution entry that contains this participant.
-						// Walk all zone/tag solutions to find where pi appears, then
-						// update m_selectedSolutionZone and m_selectedSolutionTag so the
-						// right panel immediately shows the correct solved palette.
-						//
-						if (m_hasSolution) {
-							bool found = false;
-							for (int szi = 0; szi < (int)m_solution.zones.size() && !found; szi++) {
-								const RetrodevLib::PaletteZoneSolution& szs = m_solution.zones[szi];
-								for (int sti = 0; sti < (int)szs.tagSolutions.size() && !found; sti++) {
-									const RetrodevLib::PaletteTagSolution& sts = szs.tagSolutions[sti];
-									if (sts.converters.find(pi) != sts.converters.end()) {
-										m_selectedSolutionZone = szi;
-										m_selectedSolutionTag = sti;
-										found = true;
-									}
+				if (ImGui::InvisibleButton(("##sel_" + key).c_str(), selectableSize)) {
+					m_selectedPreviewKey = key;
+					//
+					// Auto-select the solution entry that contains this participant.
+					// Walk all zone/tag solutions to find where pi appears, then
+					// update m_selectedSolutionZone and m_selectedSolutionTag so the
+					// right panel immediately shows the correct solved palette.
+					//
+					if (m_hasSolution) {
+						bool found = false;
+						for (int szi = 0; szi < (int)m_solution.zones.size() && !found; szi++) {
+							const RetrodevLib::PaletteZoneSolution& szs = m_solution.zones[szi];
+							for (int sti = 0; sti < (int)szs.tagSolutions.size() && !found; sti++) {
+								const RetrodevLib::PaletteTagSolution& sts = szs.tagSolutions[sti];
+								if (sts.converters.find(pi) != sts.converters.end()) {
+									m_selectedSolutionZone = szi;
+									m_selectedSolutionTag = sti;
+									found = true;
 								}
 							}
 						}
 					}
+				}
 				//
 				// Highlight border for the selected thumbnail
 				//
@@ -479,7 +527,7 @@ namespace RetrodevGui {
 							  "color changes within a single frame.");
 		ImGui::Separator();
 		//
-		// Zone list — fixed height so the thumbnail area below has room
+		// Zone list -- fixed height so the thumbnail area below has room
 		//
 		float zoneListHeight = fontSize * 10.0f;
 		if (ImGui::BeginChild("##ZoneList", ImVec2(-1, zoneListHeight), true)) {
@@ -575,7 +623,7 @@ namespace RetrodevGui {
 			SetModified(true);
 		}
 		//
-		// Target mode for this zone — allows each zone to use a different screen mode
+		// Target mode for this zone -- allows each zone to use a different screen mode
 		//
 		if (m_converter) {
 			std::vector<std::string> modes = m_converter->GetTargetModes();
@@ -598,6 +646,7 @@ namespace RetrodevGui {
 						zone.targetMode = m;
 						m_hasSolution = false;
 						m_solution = {};
+						params->userValidated = false;
 						RetrodevLib::Project::MarkAsModified();
 						SetModified(true);
 					}
@@ -651,6 +700,7 @@ namespace RetrodevGui {
 				m_lastDisplayZone = -1;
 				m_lastDisplayTag = -1;
 				m_displayConverter = nullptr;
+				params->userValidated = false;
 				RetrodevLib::Project::MarkAsModified();
 				SetModified(true);
 			}
@@ -658,7 +708,7 @@ namespace RetrodevGui {
 				ImGui::SetTooltip("Add a graphics build item as a participant in this zone.\nAll participants must share the zone's pen budget,\nso their combined colors must fit "
 								  "within the\nmaximum pens the target system allows for this mode.");
 			//
-			// Participant scrollable list — fills all space except the editor rows below
+			// Participant scrollable list -- fills all space except the editor rows below
 			//
 			float editorReserve = (m_selectedParticipant >= 0 && m_selectedParticipant < (int)zone.participants.size())
 									  ? (fontSize * 2.0f + ImGui::GetStyle().ItemSpacing.y * 3.0f + ImGui::GetStyle().FramePadding.y * 4.0f + 1.0f)
@@ -708,6 +758,7 @@ namespace RetrodevGui {
 							m_lastDisplayZone = -1;
 							m_lastDisplayTag = -1;
 							m_displayConverter = nullptr;
+							params->userValidated = false;
 							RetrodevLib::Project::MarkAsModified();
 							SetModified(true);
 							ImGui::PopID();
@@ -795,7 +846,8 @@ namespace RetrodevGui {
 					"Always\n\nThis graphic is present in every level and every\npart of the screen. Its colors must always be\naccounted for in this zone's pen budget.",
 					"Level\n\nThis graphic is only loaded for a specific game level.\nUse the Tag field to identify the level name.\nPens used by this graphic only need to fit "
 					"when\nthat level is active.",
-					"Zone Always\n\nThis graphic is always present within this zone across\nall levels. Its colors are added on top of the\nglobal Always base for this zone only.\n"
+					"Zone Always\n\nThis graphic is always present within this zone across\nall levels. Its colors are added on top of the\nglobal Always base for this zone "
+					"only.\n"
 					"Unlike Always, these colors are not shared across zones."};
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text("Role      ");
@@ -821,64 +873,69 @@ namespace RetrodevGui {
 					ImGui::EndCombo();
 				}
 				//
-					// Tag (shown only for Level role)
+				// Tag (shown only for Level role)
+				//
+				if (p.role == RetrodevLib::PaletteParticipantRole::Level) {
+					ImGui::SameLine();
+					ImGui::AlignTextToFramePadding();
+					ImGui::Text("Tag");
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+						ImGui::SetTooltip("Level tag\n\nEnter the name of the level this graphic belongs to\n(e.g. \"Level1\", \"World2\"). Only graphics sharing\nthe same "
+										  "tag are combined when solving that level's palette.\nPress the arrow button to pick an existing tag.");
+					ImGui::SameLine();
 					//
-					if (p.role == RetrodevLib::PaletteParticipantRole::Level) {
-						ImGui::SameLine();
-						ImGui::AlignTextToFramePadding();
-						ImGui::Text("Tag");
-						if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
-							ImGui::SetTooltip("Level tag\n\nEnter the name of the level this graphic belongs to\n(e.g. \"Level1\", \"World2\"). Only graphics sharing\nthe same "
-											  "tag are combined when solving that level's palette.\nPress the arrow button to pick an existing tag.");
-						ImGui::SameLine();
-						//
-						// Tag input + arrow button to pick an existing tag from this zone
-						//
-						float arrowW = ImGui::GetFrameHeight();
-						ImGui::SetNextItemWidth(fontSize * 10.0f - arrowW - ImGui::GetStyle().ItemSpacing.x);
-						char tagBuf[128];
-						strncpy_s(tagBuf, p.tag.c_str(), sizeof(tagBuf) - 1);
-						tagBuf[sizeof(tagBuf) - 1] = '\0';
-						if (ImGui::InputText("##PartTag", tagBuf, sizeof(tagBuf))) {
-							p.tag = tagBuf;
-							RetrodevLib::Project::MarkAsModified();
-							SetModified(true);
+					// Tag input + arrow button to pick an existing tag from this zone
+					//
+					float arrowW = ImGui::GetFrameHeight();
+					ImGui::SetNextItemWidth(fontSize * 10.0f - arrowW - ImGui::GetStyle().ItemSpacing.x);
+					char tagBuf[128];
+					strncpy_s(tagBuf, p.tag.c_str(), sizeof(tagBuf) - 1);
+					tagBuf[sizeof(tagBuf) - 1] = '\0';
+					if (ImGui::InputText("##PartTag", tagBuf, sizeof(tagBuf))) {
+						p.tag = tagBuf;
+						RetrodevLib::Project::MarkAsModified();
+						SetModified(true);
+					}
+					ImGui::SameLine();
+					if (ImGui::ArrowButton("##TagPick", ImGuiDir_Down))
+						ImGui::OpenPopup("##TagPicker");
+					if (ImGui::IsItemHovered())
+						ImGui::SetTooltip("Pick an existing tag from this zone");
+					//
+					// Collect unique non-empty Level tags from the current zone
+					//
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+					if (ImGui::BeginPopup("##TagPicker")) {
+						std::vector<std::string> existingTags;
+						for (const auto& other : zone.participants) {
+							if (other.role != RetrodevLib::PaletteParticipantRole::Level || other.tag.empty())
+								continue;
+							bool found = false;
+							for (const auto& t : existingTags)
+								if (t == other.tag) {
+									found = true;
+									break;
+								}
+							if (!found)
+								existingTags.push_back(other.tag);
 						}
-						ImGui::SameLine();
-						if (ImGui::ArrowButton("##TagPick", ImGuiDir_Down))
-							ImGui::OpenPopup("##TagPicker");
-						//
-						// Collect unique non-empty Level tags from the current zone
-						//
-						ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
-						if (ImGui::BeginPopup("##TagPicker")) {
-							std::vector<std::string> existingTags;
-							for (const auto& other : zone.participants) {
-								if (other.role != RetrodevLib::PaletteParticipantRole::Level || other.tag.empty())
-									continue;
-								bool found = false;
-								for (const auto& t : existingTags)
-									if (t == other.tag) { found = true; break; }
-								if (!found)
-									existingTags.push_back(other.tag);
-							}
-							if (existingTags.empty()) {
-								ImGui::TextDisabled("No existing tags in this zone.");
-							} else {
-								for (const auto& t : existingTags) {
-									bool sel = (t == p.tag);
-									if (ImGui::Selectable(t.c_str(), sel)) {
-										p.tag = t;
-										RetrodevLib::Project::MarkAsModified();
-										SetModified(true);
-										ImGui::CloseCurrentPopup();
-									}
+						if (existingTags.empty()) {
+							ImGui::TextDisabled("No existing tags in this zone.");
+						} else {
+							for (const auto& t : existingTags) {
+								bool sel = (t == p.tag);
+								if (ImGui::Selectable(t.c_str(), sel)) {
+									p.tag = t;
+									RetrodevLib::Project::MarkAsModified();
+									SetModified(true);
+									ImGui::CloseCurrentPopup();
 								}
 							}
-							ImGui::EndPopup();
 						}
-						ImGui::PopStyleVar();
+						ImGui::EndPopup();
 					}
+					ImGui::PopStyleVar();
+				}
 			}
 		}
 		ImGui::EndChild();
@@ -965,6 +1022,11 @@ namespace RetrodevGui {
 			return;
 		RetrodevLib::PaletteSolver::Validate(m_solution, params);
 		//
+		// Record that the user has explicitly accepted this solution so the build pipeline
+		// will apply the assignments even when the palette fit was imperfect (overflow remaps).
+		//
+		params->userValidated = true;
+		//
 		// Notify all open documents that the affected build items have changed so they
 		// can refresh their previews with the newly assigned palette.
 		//
@@ -973,6 +1035,54 @@ namespace RetrodevGui {
 				if (!p.buildItemName.empty())
 					DocumentsView::NotifyProjectItemChanged(p.buildItemName);
 			}
+		}
+	}
+	//
+	// Pre-loaded palette widget: lets the user manually assign and lock pen slots before solving.
+	// Locked slots are injected into the solver as immutable seed colors (first-pass always union).
+	//
+	void DocumentPalette::RenderPreloadPaletteWidget(RetrodevLib::PaletteParams* params) {
+		if (!m_converter)
+			return;
+		if (!m_preloadPalette)
+			return;
+		auto pal = m_preloadPalette->GetPalette();
+		if (!pal)
+			return;
+		int penCount = pal->PaletteMaxColors();
+		//
+		// Keep m_preloadGfx arrays in sync with the current pen count
+		//
+		if ((int)m_preloadGfx.SParams.PaletteColors.size() != penCount) {
+			m_preloadGfx.SParams.PaletteColors.resize(penCount, -1);
+			m_preloadGfx.SParams.PaletteLocked.resize(penCount, false);
+			m_preloadGfx.SParams.PaletteEnabled.resize(penCount, false);
+		}
+		//
+		// Render the palette widget; returns true when any pen was changed
+		//
+		if (PaletteWidget::Render(&m_preloadGfx, pal, false)) {
+			params->preloadedColors.resize(penCount, -1);
+			params->preloadedLocked.resize(penCount, false);
+			for (int i = 0; i < penCount; i++) {
+				params->preloadedColors[i] = m_preloadGfx.SParams.PaletteColors[i];
+				params->preloadedLocked[i] = m_preloadGfx.SParams.PaletteLocked[i];
+			}
+			//
+			// Any change to the pre-loaded palette invalidates the current solution
+			//
+			m_hasSolution = false;
+			m_solution = {};
+			m_selectedSolutionZone = -1;
+			m_selectedSolutionTag = -1;
+			m_lastDisplayZone = -1;
+			m_lastDisplayTag = -1;
+			m_displayConverter = nullptr;
+			m_selectedPreviewKey = "";
+			m_preloadedSelected = false;
+			params->userValidated = false;
+			RetrodevLib::Project::MarkAsModified();
+			SetModified(true);
 		}
 	}
 	//
@@ -1000,6 +1110,7 @@ namespace RetrodevGui {
 			m_lastDisplayTag = -1;
 			m_displayConverter = nullptr;
 			m_selectedPreviewKey = "";
+			m_preloadedSelected = true;
 		}
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
 			ImGui::SetTooltip("Run a three-pass solve for all zones.\n\n"
@@ -1026,26 +1137,26 @@ namespace RetrodevGui {
 							  "so that subsequent conversions use the solved palette.\n\n"
 							  "The project is marked as modified and must be saved to persist the changes.");
 		//
-		// Overflow method combo — controls how the solver handles color counts exceeding the pen budget
+		// Overflow method combo -- controls how the solver handles color counts exceeding the pen budget
 		//
 		ImGui::SameLine();
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Overflow");
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
 			ImGui::SetTooltip("How to handle palettes that exceed the hardware pen budget:\n\n"
-							  "  Hard Cap      —  Truncate the union list at the pen limit. Priority\n"
+							  "  Hard Cap      --  Truncate the union list at the pen limit. Priority\n"
 							  "                   order (Always > Zone > Level) ensures the most\n"
 							  "                   important colors survive. Dropped colors are remapped\n"
 							  "                   to the nearest surviving entry.\n\n"
-							  "  Soft Cap      —  For each overflow color, find the nearest accepted\n"
+							  "  Soft Cap      --  For each overflow color, find the nearest accepted\n"
 							  "                   entry and replace it with the system color closest to\n"
 							  "                   their 50/50 RGB midpoint. Packs more perceptual\n"
 							  "                   variety into fewer pens at some cost to accuracy.\n\n"
-							  "  Weighted Blend—  Like Soft Cap but the blend is 67%% accepted + 33%%\n"
+							  "  Weighted Blend--  Like Soft Cap but the blend is 67%% accepted + 33%%\n"
 							  "                   overflow. Accepted colors shift only slightly toward\n"
 							  "                   overflow neighbors, preserving dominant color\n"
 							  "                   fidelity better while still gaining some coverage.\n\n"
-							  "  Median        —  Cluster each overflow color with the accepted entry\n"
+							  "  Median        --  Cluster each overflow color with the accepted entry\n"
 							  "                   it is nearest to, then replace the accepted entry with\n"
 							  "                   the RGB centroid of the whole cluster. Multiple\n"
 							  "                   overflow colors hitting the same accepted entry are\n"
@@ -1068,7 +1179,15 @@ namespace RetrodevGui {
 			ImGui::EndCombo();
 		}
 		if (!hasSolution) {
-			ImGui::TextDisabled("Press " ICON_PLAY "  Solve to validate all zone palettes.");
+			ImGui::Separator();
+			ImGui::AlignTextToFramePadding();
+			ImGui::TextDisabled(ICON_PALETTE "  Pre-loaded palette");
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				ImGui::SetTooltip("Lock one or more pen slots before solving.\n"
+								  "Locked colors are injected first into the solver's\n"
+								  "global Always pass, guaranteeing they occupy specific\n"
+								  "pen slots in every zone and every level solution.");
+			RenderPreloadPaletteWidget(params);
 			return;
 		}
 		//
@@ -1087,12 +1206,20 @@ namespace RetrodevGui {
 		if (palWidth < fontSize * 8.0f)
 			palWidth = fontSize * 8.0f;
 		//
-		// Solution list — one selectable row per (zone x tag)
+		// Solution list -- one selectable row per (zone x tag)
 		//
 		if (ImGui::BeginChild("##SolveList", ImVec2(listWidth, -1), true)) {
 			static const ImVec4 kColorOK = {0.3f, 1.0f, 0.3f, 1.0f};
 			static const ImVec4 kColorBad = {1.0f, 0.4f, 0.4f, 1.0f};
 			// static const ImVec4 kColorTagLabel = {0.7f, 0.85f, 1.0f, 1.0f};
+			//
+			// Pre-loaded entry -- always at the top of the list
+			//
+			if (ImGui::Selectable(ICON_PALETTE "  Pre-loaded##preloaded", m_preloadedSelected))
+				m_preloadedSelected = true;
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+				ImGui::SetTooltip("Show the pre-loaded palette -- the seed colors that\nwere locked before solving.");
+			ImGui::Separator();
 			for (int zi = 0; zi < (int)m_solution.zones.size(); zi++) {
 				const RetrodevLib::PaletteZoneSolution& zs = m_solution.zones[zi];
 				const std::string& zoneName = (zi < (int)params->zones.size()) ? params->zones[zi].name : "Zone " + std::to_string(zi + 1);
@@ -1118,6 +1245,7 @@ namespace RetrodevGui {
 					if (ImGui::Selectable(rowLabel.c_str(), isSel)) {
 						m_selectedSolutionZone = zi;
 						m_selectedSolutionTag = ti;
+						m_preloadedSelected = false;
 					}
 					ImGui::PopStyleColor();
 				}
@@ -1131,8 +1259,21 @@ namespace RetrodevGui {
 		// Right side: selected palette display
 		//
 		if (ImGui::BeginChild("##SolvePalette", ImVec2(palWidth, -1), true)) {
-			bool shown = false;
-			if (m_selectedSolutionZone >= 0 && m_selectedSolutionZone < (int)m_solution.zones.size()) {
+			//
+			// Pre-loaded palette view -- shown when the Pre-loaded entry is selected
+			//
+			if (m_preloadedSelected) {
+				ImGui::AlignTextToFramePadding();
+				ImGui::TextDisabled(ICON_PALETTE "  Pre-loaded palette");
+				if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+					ImGui::SetTooltip("Lock one or more pen slots before solving.\n"
+									  "Locked colors are injected first into the solver's\n"
+									  "global Always pass, guaranteeing they occupy specific\n"
+									  "pen slots in every zone and every level solution.");
+				RenderPreloadPaletteWidget(params);
+			}
+			bool shown = m_preloadedSelected;
+			if (!m_preloadedSelected && m_selectedSolutionZone >= 0 && m_selectedSolutionZone < (int)m_solution.zones.size()) {
 				const RetrodevLib::PaletteZoneSolution& zs = m_solution.zones[m_selectedSolutionZone];
 				if (m_selectedSolutionTag >= 0 && m_selectedSolutionTag < (int)zs.tagSolutions.size()) {
 					const RetrodevLib::PaletteTagSolution& ts = zs.tagSolutions[m_selectedSolutionTag];
@@ -1220,7 +1361,7 @@ namespace RetrodevGui {
 							}
 							ImGui::PushID(r.participantIndex);
 							ImGui::PushStyleColor(ImGuiCol_Text, col);
-							ImGui::TextUnformatted((std::string(icon) + "  " + partName + " — " + r.message).c_str());
+							ImGui::TextUnformatted((std::string(icon) + "  " + partName + " -- " + r.message).c_str());
 							ImGui::PopStyleColor();
 							//
 							// Overflow swatches inline after the participant text.
@@ -1252,7 +1393,7 @@ namespace RetrodevGui {
 											ImGui::Separator();
 										}
 										if (rm.dropped) {
-											ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.3f, 1.0f), "Dropped — slot %d unchanged", rm.slot >= 0 ? rm.slot : 0);
+											ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.3f, 1.0f), "Dropped -- slot %d unchanged", rm.slot >= 0 ? rm.slot : 0);
 										} else {
 											bool slotChanged = (rm.resultColorIndex != rm.nearestColorIndex);
 											ImGui::TextDisabled(slotChanged ? "Slot %d updated to:" : "Slot %d unchanged (overflow absorbed):", rm.slot);
@@ -1291,7 +1432,7 @@ namespace RetrodevGui {
 						for (const auto& r : ts.participantResults)
 							renderParticipantResult(r);
 						//
-						// Overflow remap strip — one swatch per color that exceeded the pen budget.
+						// Overflow remap strip -- one swatch per color that exceeded the pen budget.
 						// Only the overflow colors are shown inline; all remap details are in the tooltip.
 						//
 						if (!ts.overflowRemaps.empty()) {
@@ -1332,7 +1473,7 @@ namespace RetrodevGui {
 									// Result: dropped or slot updated
 									//
 									if (rm.dropped) {
-										ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.3f, 1.0f), "Dropped — slot %d unchanged", rm.slot >= 0 ? rm.slot : 0);
+										ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.3f, 1.0f), "Dropped -- slot %d unchanged", rm.slot >= 0 ? rm.slot : 0);
 									} else {
 										bool slotChanged = (rm.resultColorIndex != rm.nearestColorIndex);
 										if (slotChanged)
@@ -1352,7 +1493,7 @@ namespace RetrodevGui {
 						}
 						ImGui::Separator();
 						//
-						// Compact read-only solved palette strip — one swatch per pen slot.
+						// Compact read-only solved palette strip -- one swatch per pen slot.
 						// Occupied slots show their solved color; free slots show as dark grey.
 						// Hover a swatch to see its pen number, system color index and RGB.
 						//
@@ -1388,7 +1529,7 @@ namespace RetrodevGui {
 						}
 						//
 						// Solution preview: display the selected left-panel thumbnail as converted
-						// by the solver with the solution palette — use the solver's own converter
+						// by the solver with the solution palette -- use the solver's own converter
 						// so the image is exactly what the solver produced, not a re-conversion.
 						//
 						if (!m_selectedPreviewKey.empty()) {
@@ -1398,39 +1539,37 @@ namespace RetrodevGui {
 							//
 							std::shared_ptr<RetrodevLib::IBitmapConverter> previewConv;
 							const RetrodevLib::GFXParams* previewGfx = nullptr;
+							//
+							// Key format: "zoneName:buildItemType:buildItemName:pi"
+							// Find the three colon positions to extract type, name and participant index.
+							//
 							size_t c1 = m_selectedPreviewKey.find(':');
 							size_t c2 = (c1 != std::string::npos) ? m_selectedPreviewKey.find(':', c1 + 1) : std::string::npos;
-							if (c1 != std::string::npos && c2 != std::string::npos) {
+							size_t c3 = (c2 != std::string::npos) ? m_selectedPreviewKey.find(':', c2 + 1) : std::string::npos;
+							if (c1 != std::string::npos && c2 != std::string::npos && c3 != std::string::npos) {
 								std::string keyType = m_selectedPreviewKey.substr(c1 + 1, c2 - c1 - 1);
-								std::string keyName = m_selectedPreviewKey.substr(c2 + 1);
-								if (m_selectedSolutionZone < (int)params->zones.size()) {
-									const RetrodevLib::PaletteZone& selZone = params->zones[m_selectedSolutionZone];
-									for (int pi = 0; pi < (int)selZone.participants.size(); pi++) {
-										const RetrodevLib::PaletteParticipant& sp = selZone.participants[pi];
-										if (sp.buildItemType != keyType || sp.buildItemName != keyName)
-											continue;
-										//
-										// Found the participant index — look it up in the selected tag solution first,
-										// then fall back to the base solution (index 0) for Always/ZoneAlways
-										// participants whose converters live there rather than in level solutions.
-										//
-										auto cit = ts.converters.find(pi);
-										if (cit != ts.converters.end()) {
-											previewConv = cit->second;
-											auto git = ts.converterGfx.find(pi);
-											if (git != ts.converterGfx.end())
-												previewGfx = &git->second;
-										} else if (!zs.tagSolutions.empty()) {
-											const RetrodevLib::PaletteTagSolution& base = zs.tagSolutions[0];
-											auto bit = base.converters.find(pi);
-											if (bit != base.converters.end()) {
-												previewConv = bit->second;
-												auto git = base.converterGfx.find(pi);
-												if (git != base.converterGfx.end())
-													previewGfx = &git->second;
-											}
-										}
-										break;
+								std::string keyName = m_selectedPreviewKey.substr(c2 + 1, c3 - c2 - 1);
+								int keyPi = std::stoi(m_selectedPreviewKey.substr(c3 + 1));
+								//
+								// Look up by participant index directly -- handles duplicate build items.
+								// Fall back to base solution for Always/ZoneAlways participants.
+								//
+								(void)keyType;
+								(void)keyName;
+								auto cit = ts.converters.find(keyPi);
+								if (cit != ts.converters.end()) {
+									previewConv = cit->second;
+									auto git = ts.converterGfx.find(keyPi);
+									if (git != ts.converterGfx.end())
+										previewGfx = &git->second;
+								} else if (!zs.tagSolutions.empty()) {
+									const RetrodevLib::PaletteTagSolution& base = zs.tagSolutions[0];
+									auto bit = base.converters.find(keyPi);
+									if (bit != base.converters.end()) {
+										previewConv = bit->second;
+										auto git = base.converterGfx.find(keyPi);
+										if (git != base.converterGfx.end())
+											previewGfx = &git->second;
 									}
 								}
 							}
@@ -1444,10 +1583,16 @@ namespace RetrodevGui {
 									//
 									ImGui::ZoomableState& zoomSt = m_previewZoomStates[m_selectedPreviewKey];
 									//
-									// Configure and render the zoomable preview — fills remaining panel space
+									// Configure and render the zoomable preview -- fills remaining panel space
+									// Name: extract the build item name segment (between c2 and c3)
 									//
-									size_t lastColon = m_selectedPreviewKey.rfind(':');
-									zoomSt.name = ICON_FILE_IMAGE "  " + ((lastColon != std::string::npos) ? m_selectedPreviewKey.substr(lastColon + 1) : m_selectedPreviewKey);
+									size_t nc1 = m_selectedPreviewKey.find(':');
+									size_t nc2 = (nc1 != std::string::npos) ? m_selectedPreviewKey.find(':', nc1 + 1) : std::string::npos;
+									size_t nc3 = (nc2 != std::string::npos) ? m_selectedPreviewKey.find(':', nc2 + 1) : std::string::npos;
+									std::string displayName = (nc2 != std::string::npos && nc3 != std::string::npos)
+										? m_selectedPreviewKey.substr(nc2 + 1, nc3 - nc2 - 1)
+										: m_selectedPreviewKey;
+									zoomSt.name = ICON_FILE_IMAGE "  " + displayName;
 									zoomSt.textureSize = ImVec2((float)previewImg->GetWidth(), (float)previewImg->GetHeight());
 									zoomSt.logicalSize = ImVec2((float)previewGfx->RParams.TargetWidth, (float)previewGfx->RParams.TargetHeight);
 									zoomSt.maintainAspectRatio = true;
@@ -1517,7 +1662,7 @@ namespace RetrodevGui {
 		}
 		float fontSize = ImGui::GetFontSize();
 		//
-		// Build item name — editable for renaming (press Enter to apply)
+		// Build item name -- editable for renaming (press Enter to apply)
 		//
 		static char paletteNameBuf[256] = "";
 		if (paletteNameBuf[0] == '\0' || m_name != std::string(paletteNameBuf)) {
@@ -1614,4 +1759,4 @@ namespace RetrodevGui {
 		ImGui::EndChild();
 	}
 
-} // namespace RetrodevGui
+}

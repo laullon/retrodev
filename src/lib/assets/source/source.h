@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Source asset -- assembler source file reference.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -15,7 +18,7 @@
 namespace RetrodevLib {
 
 	//
-	// SourceBuild — entry point for assembling / compiling a build item.
+	// SourceBuild -- entry point for assembling / compiling a build item.
 	// Reads the SourceParams, selects the appropriate back-end tool (currently
 	// only RASM), and streams all diagnostics through the Log facility on
 	// LogChannel::Build so the host can route them to the Build console tab.
@@ -30,4 +33,4 @@ namespace RetrodevLib {
 		static bool Build(const SourceParams* params);
 	};
 
-} // namespace RetrodevLib
+}

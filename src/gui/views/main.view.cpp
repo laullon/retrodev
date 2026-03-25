@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Main application view -- top-level layout and docking.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -32,7 +35,7 @@ namespace RetrodevGui {
 	static bool bottomPanelOpen = false;
 
 	//
-	// INI settings handler — persists splitter sizes and bottom panel state
+	// INI settings handler -- persists splitter sizes and bottom panel state
 	//
 	static void* LayoutHandler_ReadOpen(ImGuiContext*, ImGuiSettingsHandler*, const char*) {
 		return (void*)1;
@@ -48,12 +51,15 @@ namespace RetrodevGui {
 			vSizeBottom = f;
 		else if (sscanf(line, "BottomOpen=%d", &i) == 1)
 			bottomPanelOpen = (i != 0);
+		else if (sscanf(line, "AutoHide=%d", &i) == 1)
+			AppConsole::SetAutoHide(i != 0);
 	}
 	static void LayoutHandler_WriteAll(ImGuiContext*, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf) {
 		buf->appendf("[%s][MainView]\n", handler->TypeName);
 		buf->appendf("SplitterH=%.3f\n", size1);
 		buf->appendf("SplitterV=%.3f\n", vSizeBottom);
 		buf->appendf("BottomOpen=%d\n", (int)bottomPanelOpen);
+		buf->appendf("AutoHide=%d\n", (int)AppConsole::GetAutoHide());
 		buf->append("\n");
 	}
 
@@ -134,8 +140,14 @@ namespace RetrodevGui {
 					vSizeTop = workAvail.y - (vSizeBottom + mainSplitterThickness + ImGui::GetStyle().ItemSpacing.y);
 					if (vSizeTop < vMinTop)
 						vSizeTop = vMinTop;
+					//
 					// Vertical splitter: documents | bottom panel
+					// Capture the splitter rect before rendering children so the auto-hide
+					// check can exclude clicks on the splitter bar from triggering a collapse
+					//
 					ImGui::DrawSplitter(true, mainSplitterThickness, &vSizeTop, &vSizeBottom, vMinTop, vMinBottom);
+					ImVec2 splitterMin = ImGui::GetItemRectMin();
+					ImVec2 splitterMax = ImGui::GetItemRectMax();
 					// Top Panel
 					//
 					if (ImGui::BeginChild("DocumentsArea", ImVec2(childWidth, vSizeTop), ImGuiChildFlags_None)) {
@@ -164,6 +176,19 @@ namespace RetrodevGui {
 						AppConsole::Render();
 					}
 					ImGui::EndChild();
+					//
+					// Auto-hide: collapse when a left-click lands outside the bottom panel rect
+					// Exclude the splitter bar so dragging to resize does not trigger a collapse
+					//
+					if (AppConsole::GetAutoHide() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+						ImVec2 panelMin = ImGui::GetItemRectMin();
+						ImVec2 panelMax = ImGui::GetItemRectMax();
+						ImVec2 mousePos = ImGui::GetMousePos();
+						bool insidePanel = mousePos.x >= panelMin.x && mousePos.x <= panelMax.x && mousePos.y >= panelMin.y && mousePos.y <= panelMax.y;
+						bool insideSplitter = mousePos.x >= splitterMin.x && mousePos.x <= splitterMax.x && mousePos.y >= splitterMin.y && mousePos.y <= splitterMax.y;
+						if (!insidePanel && !insideSplitter)
+							bottomPanelOpen = false;
+					}
 				} else {
 					// Documents take all space except the collapsed header
 					float docsHeight = workAvail.y - (collapsedHeaderHeight + ImGui::GetStyle().ItemSpacing.y);
@@ -189,4 +214,4 @@ namespace RetrodevGui {
 		}
 		ImGui::End();
 	}
-} // namespace RetrodevGui
+}

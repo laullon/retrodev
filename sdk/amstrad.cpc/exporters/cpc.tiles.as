@@ -1,5 +1,13 @@
 // ---------------------------------------------------------------------------
 //
+// Retrodev SDK
+//
+// CPC tiles export script -- exports extracted tileset as raw byte data.
+//
+// (c) TLOTB 2026
+//
+// ---------------------------------------------------------------------------
+//
 // Script metadata
 //
 // @description Exports CPC tileset as raw byte data, one tile after another.
@@ -13,9 +21,9 @@
 // Each tile is exported as a contiguous block of bytes.
 // Byte order follows the CPC hardware encoding for the active video mode:
 //
-//   Mode 0 — 2 pixels per byte, 16 colours
-//   Mode 1 — 4 pixels per byte,  4 colours
-//   Mode 2 — 8 pixels per byte,  2 colours
+//   Mode 0 -- 2 pixels per byte, 16 colours
+//   Mode 1 -- 4 pixels per byte,  4 colours
+//   Mode 2 -- 8 pixels per byte,  2 colours
 //
 // "chunky" emits rows top-to-bottom (standard for software blitters).
 //
@@ -45,7 +53,7 @@ void Export(const string& in outputPath, TilesetExportContext@ ctx)
     // Validate that we have tiles to export
     //
     if (tileCount <= 0) {
-        Log_Error("Export failed: no tiles extracted — run extraction first.");
+        Log_Error("Export failed: no tiles extracted -- run extraction first.");
         return;
     }
     //
@@ -59,7 +67,7 @@ void Export(const string& in outputPath, TilesetExportContext@ ctx)
             + ppb + " for " + mode + ".");
         return;
     }
-    Log_Info("Export started — system: " + system + "  mode: " + mode
+    Log_Info("Export started -- system: " + system + "  mode: " + mode
         + "  tiles: " + tileCount + "  size: " + tileW + "x" + tileH
         + "  layout: " + layout
         + "  header: " + writeHeader
@@ -77,6 +85,13 @@ void Export(const string& in outputPath, TilesetExportContext@ ctx)
     int bytesPerRow = tileW / ppb;
     buf.reserve(tileCount * tileH * bytesPerRow + (writeHeader ? 1 : 0));
     //
+    // Transparency settings used during pen resolution
+    //
+    bool useTransp = ctx.GetUseTransparentColor();
+    int transpPen = ctx.GetTransparentPen();
+    bool warnedNoTranspPen = false;
+    bool warnedNoPen = false;
+    //
     // Optional one-byte header: number of tiles (clamped to 255)
     //
     if (writeHeader)
@@ -84,7 +99,7 @@ void Export(const string& in outputPath, TilesetExportContext@ ctx)
     for (int t = 0; t < tileCount; t++) {
         Image@ tile = ctx.GetTile(t);
         if (tile is null) {
-            Log_Warning("Tile #" + t + " is null — filling with zeros.");
+            Log_Warning("Tile #" + t + " is null -- filling with zeros.");
             for (int b = 0; b < tileH * bytesPerRow; b++)
                 buf.insertLast(uint8(0));
             continue;
@@ -96,16 +111,33 @@ void Export(const string& in outputPath, TilesetExportContext@ ctx)
         for (int y = 0; y < tileH; y++) {
             for (int x = 0; x < tileW; x++) {
                 RgbColor c = tile.GetPixelColor(x, y);
-                int pen = palette.PenGetIndex(c);
-                if (pen < 0) {
-                    Log_Warning("Tile #" + t + " pixel " + x + "," + y
-                        + " rgb(" + c.r + "," + c.g + "," + c.b + ")"
-                        + " transparent has no matching pen — using pen 0.");
-                    pen = 0;
-                }
-                    penMap[y * tileW + x] = pen;
+                //
+                // Transparent pixel: alpha==0 (IsTransparent) or chroma-key enabled
+                //
+                bool isTransp = useTransp && c.IsTransparent();
+                int pen;
+                if (isTransp) {
+                    pen = transpPen;
+                    if (pen < 0) {
+                        if (!warnedNoTranspPen) {
+                            Log_Warning("Transparent pixels found but no transparent pen configured -- using pen 0.");
+                            warnedNoTranspPen = true;
+                        }
+                        pen = 0;
+                    }
+                } else {
+                    pen = palette.PenGetIndex(c);
+                    if (pen < 0) {
+                        if (!warnedNoPen) {
+                            Log_Warning("One or more pixels have no matching pen -- using pen 0.");
+                            warnedNoPen = true;
+                        }
+                        pen = 0;
                     }
                 }
+                penMap[y * tileW + x] = pen;
+            }
+        }
                 //
                 // Encode rows in the selected order and append to the output buffer
         //
@@ -125,6 +157,6 @@ void Export(const string& in outputPath, TilesetExportContext@ ctx)
     for (uint i = 0; i < buf.length(); i++)
         f.writeUInt(buf[i], 1);
     f.close();
-    Log_Info("Export finished — " + tileCount + " tiles, "
+    Log_Info("Export finished -- " + tileCount + " tiles, "
         + buf.length() + " bytes written.");
 }

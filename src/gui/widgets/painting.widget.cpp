@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Painting widget -- per-pixel paint tool for sprite editing.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "painting.widget.h"
 #include <app/app.icons.mdi.h>
@@ -27,7 +27,7 @@ namespace RetrodevGui {
 		//
 		m_selectedColor = selectedColor;
 		//
-		// Active color section — always visible; dimmed when no drawing tool is active
+		// Active color section -- always visible; dimmed when no drawing tool is active
 		//
 		ImGui::SeparatorText("Active Color");
 		bool noTool = (m_selectedTool == PaintingTool::None);
@@ -98,7 +98,7 @@ namespace RetrodevGui {
 			DrawSwatch(eraseMin, eraseMax, eraseCol, true);
 		}
 		//
-		// Invisible buttons for hit-testing — placed after Dummy so they don't shift layout
+		// Invisible buttons for hit-testing -- placed after Dummy so they don't shift layout
 		// Paint button covers the paint swatch area not obscured by erase swatch when erase is active
 		// Erase button covers the erase swatch area not obscured by paint swatch when paint is active
 		// We use the full swatch rects; ImGui processes them in order so the top one wins on overlap
@@ -106,7 +106,7 @@ namespace RetrodevGui {
 		ImGui::SetCursorScreenPos(paintActive ? eraseMin : paintMin);
 		if (paintActive) {
 			//
-			// Erase is behind, paint is on top — click erase area first (behind), then paint on top
+			// Erase is behind, paint is on top -- click erase area first (behind), then paint on top
 			//
 			ImGui::InvisibleButton("##erasehit", ImVec2(swatchSize, swatchSize));
 			if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
@@ -123,7 +123,7 @@ namespace RetrodevGui {
 				ImGui::SetTooltip("Paint\nIndex %d\nClick to activate", m_selectedColor);
 		} else {
 			//
-			// Paint is behind, erase is on top — click paint area first (behind), then erase on top
+			// Paint is behind, erase is on top -- click paint area first (behind), then erase on top
 			//
 			ImGui::InvisibleButton("##painthit", ImVec2(swatchSize, swatchSize));
 			if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
@@ -203,7 +203,7 @@ namespace RetrodevGui {
 				m_activeSlot = PaintSlot::Paint;
 		}
 		//
-		// Brush size and shape — shown for all tools that draw stroked pixels
+		// Brush size and shape -- shown for all tools that draw stroked pixels
 		//
 		bool hasBrush = (m_selectedTool == PaintingTool::Pencil || m_selectedTool == PaintingTool::Eraser || m_selectedTool == PaintingTool::Line ||
 						 m_selectedTool == PaintingTool::RectOutline || m_selectedTool == PaintingTool::RectFill || m_selectedTool == PaintingTool::EllipseOutline ||
@@ -213,7 +213,7 @@ namespace RetrodevGui {
 			RenderBrushSizeButtons();
 		}
 		//
-		// Fill tolerance — only relevant for Fill tool
+		// Fill tolerance -- only relevant for Fill tool
 		//
 		if (m_selectedTool == PaintingTool::Fill) {
 			ImGui::SeparatorText("Fill Tolerance");
@@ -228,7 +228,7 @@ namespace RetrodevGui {
 
 	void PaintingWidget::RenderToolButtons() {
 		//
-		// Tool entries: icon, tooltip, tool value — laid out in a 5-column grid
+		// Tool entries: icon, tooltip, tool value -- laid out in a 5-column grid
 		//
 		struct ToolEntry {
 			const char* icon;
@@ -304,14 +304,14 @@ namespace RetrodevGui {
 				ImGui::SetTooltip("%s", shapes[i].tip);
 		}
 		//
-		// Slider for brush size 1–8
+		// Slider for brush size 1-8
 		//
 		ImGui::SetNextItemWidth(panelWidth);
 		ImGui::SliderInt("##brushsize", &m_brushSize, 1, 8);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Brush size: %d pixel(s)", m_brushSize);
 		//
-		// Shape preview drawn with ImDrawList — shows the actual brush footprint
+		// Shape preview drawn with ImDrawList -- shows the actual brush footprint
 		//
 		const float maxPreview = 48.0f;
 		const float minPreview = 8.0f;
@@ -344,4 +344,4 @@ namespace RetrodevGui {
 		ImGui::Dummy(ImVec2(panelWidth, previewArea));
 	}
 
-} // namespace RetrodevGui
+}

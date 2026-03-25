@@ -76,6 +76,8 @@ namespace ImGui {
 				{"GetTargetSystem", "string GetTargetSystem() const", "Returns the target system identifier (e.g. \"amstrad.cpc\")."},
 				{"GetParam", "string GetParam(const string &in key) const", "Returns the export parameter value for key, or empty string if absent."},
 				{"GetPalette", "Palette@ GetPalette() const", "Returns the active palette object for pen/colour lookup."},
+				{"GetUseTransparentColor", "bool GetUseTransparentColor() const", "Returns true when transparent colour handling is enabled for this asset."},
+				{"GetTransparentPen", "int GetTransparentPen() const", "Returns the pen index reserved for transparent pixels, or -1 if none is configured."},
 			};
 			//
 			// TilesetExportContext object methods
@@ -91,6 +93,8 @@ namespace ImGui {
 				{"GetTargetSystem", "string GetTargetSystem() const", "Returns the target system identifier."},
 				{"GetParam", "string GetParam(const string &in key) const", "Returns the export parameter value for key."},
 				{"GetPalette", "Palette@ GetPalette() const", "Returns the active palette object."},
+				{"GetUseTransparentColor", "bool GetUseTransparentColor() const", "Returns true when transparent colour handling is enabled for this asset."},
+				{"GetTransparentPen", "int GetTransparentPen() const", "Returns the pen index reserved for transparent pixels, or -1 if none is configured."},
 			};
 			//
 			// SpriteExportContext object methods
@@ -107,6 +111,8 @@ namespace ImGui {
 				{"GetTargetSystem", "string GetTargetSystem() const", "Returns the target system identifier."},
 				{"GetParam", "string GetParam(const string &in key) const", "Returns the export parameter value for key."},
 				{"GetPalette", "Palette@ GetPalette() const", "Returns the active palette object."},
+				{"GetUseTransparentColor", "bool GetUseTransparentColor() const", "Returns true when transparent colour handling is enabled for this asset."},
+				{"GetTransparentPen", "int GetTransparentPen() const", "Returns the pen index reserved for transparent pixels, or -1 if none is configured."},
 			};
 			//
 			// MapExportContext object methods
@@ -124,13 +130,15 @@ namespace ImGui {
 				{"GetParam", "string GetParam(const string &in key) const", "Returns the export parameter value for key."},
 			};
 			//
-			// RgbColor value-type fields
+			// RgbColor value-type fields and methods
 			//
 			static const ApiSymbolDef kApiRgbColorFields[] = {
 				{"r", "uint8 r", "Red channel (0-255)."},
 				{"g", "uint8 g", "Green channel (0-255)."},
 				{"b", "uint8 b", "Blue channel (0-255)."},
 				{"a", "uint8 a", "Alpha channel (0-255)."},
+				{"IsTransparent", "bool IsTransparent() const", "Returns true when the alpha channel is 0 (fully transparent)."},
+				{"IsOpaque", "bool IsOpaque() const", "Returns true when the alpha channel is 255 (fully opaque)."},
 			};
 			//
 			// array<T> addon methods (scriptarray)
@@ -521,8 +529,8 @@ namespace ImGui {
 				gCodeLensRecentLines.clear();
 				gCodeLensCurrentFilePath.clear();
 			}
-		} 
-	} 
+		}
+	}
 
 	const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::AngelScript() {
 		static bool inited = false;

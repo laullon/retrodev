@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Tile extraction document -- grid slicing and pack-to-grid tools.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -15,6 +18,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 struct SDL_Texture;
 
@@ -60,6 +64,17 @@ namespace RetrodevGui {
 		//
 		std::shared_ptr<RetrodevLib::ITileExtractor> m_tileExtractor;
 		//
+		// Packed image produced by Pack-to-Grid (nullptr = not active; use converter output)
+		//
+		std::shared_ptr<RetrodevLib::Image> m_packedImage;
+		//
+		// Cached aspect-corrected version of m_packedImage for display
+		// Regenerated whenever m_packedImage, m_previewAspectCorrection or m_previewScanlines changes
+		//
+		std::shared_ptr<RetrodevLib::Image> m_packedImagePreview;
+		bool m_cachedPackedAspect = false;
+		bool m_cachedPackedScanlines = false;
+		//
 		// Previous preview image (kept alive to prevent texture blinking)
 		// This holds the old preview while a new one is being generated
 		//
@@ -97,9 +112,11 @@ namespace RetrodevGui {
 		float m_extractionVSizeTop = 0;
 		float m_extractionVSizeBottom = 0;
 		//
-		// Selected tile tracking
+		// Selected tile tracking -- primary index drives the tooling panel; selection holds the full multi-select set
 		//
 		int m_selectedTileIndex = -1;
+		std::vector<int> m_tileSelection;
+		int m_tilePrimaryIndex = -1;
 		std::shared_ptr<RetrodevLib::Image> m_selectedTileImage;
 		// Cached generated preview for the selected tile (keeps texture alive)
 		std::shared_ptr<RetrodevLib::Image> m_selectedTilePreview;
@@ -107,6 +124,7 @@ namespace RetrodevGui {
 		int m_cachedTilePreviewIndex = -1;
 		bool m_cachedTilePreviewAspect = false;
 		bool m_cachedTilePreviewScanlines = false;
+		bool m_cachedTileHasTransparency = false;
 		//
 		// Tile preview display settings (UI-only, for right panel)
 		//
@@ -131,4 +149,4 @@ namespace RetrodevGui {
 		void RenderTileExtractionTab();
 	};
 
-} 
+}

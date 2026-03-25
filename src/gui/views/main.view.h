@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Main application view -- top-level layout and docking.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -17,4 +20,4 @@ namespace RetrodevGui {
 		static void RegisterSettingsHandler();
 	};
 
-} // namespace RetrodevGui
+}

@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Amstrad CPC tileset converter -- grid slicing and pixel encoding.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -36,13 +39,25 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		//
 		bool Extract(std::shared_ptr<Image> sourceImage, const TileExtractionParams* params) override;
 		//
-		// Get the number of tiles that were extracted
+		// Extract all tiles ignoring the deleted list
+		//
+		bool ExtractAll(std::shared_ptr<Image> sourceImage, const TileExtractionParams* params) override;
+		//
+		// Get the number of tiles that were extracted (excluding deleted)
 		//
 		int GetTileCount() const override;
 		//
-		// Get a specific tile by index
+		// Get a specific tile by index (excluding deleted)
 		//
 		std::shared_ptr<Image> GetTile(int index) const override;
+		//
+		// Get the total count from the full (unfiltered) extraction
+		//
+		int GetTileAllCount() const override;
+		//
+		// Get a tile by absolute grid index from the full extraction
+		//
+		std::shared_ptr<Image> GetTileAll(int index) const override;
 
 	private:
 		//
@@ -51,8 +66,12 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		//
 		[[maybe_unused]] IBitmapConverter* m_converter;
 		//
-		// Array of extracted tile images
+		// Array of extracted tile images (deleted tiles excluded)
 		//
 		std::vector<std::shared_ptr<Image>> tiles;
+		//
+		// Array of all tile images including deleted positions (populated by ExtractAll)
+		//
+		std::vector<std::shared_ptr<Image>> allTiles;
 	};
-} // namespace RetrodevLib::ConverterAmstradCPC
+}

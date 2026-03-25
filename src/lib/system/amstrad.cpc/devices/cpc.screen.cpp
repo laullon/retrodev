@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Amstrad CPC screen -- mode definitions, resolution and pixel geometry.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "cpc.screen.h"
 #include <convert/amstrad.cpc/amstrad.cpc.h>
@@ -115,7 +115,7 @@ namespace RetrodevLib {
 			// Mode 0: 160x200 (40 chars * 4 pixels/char)
 			// Current aspect ratio: 160:200 = 4:5
 			// To achieve 4:3: need (160*h)/(200*v) = 4/3
-			// Solution: h=5, v=3 gives (160*5)/(200*3) = 800/600 = 4/3 ✓
+			// Solution: h=5, v=3 gives (160*5)/(200*3) = 800/600 = 4/3 OK
 			// Pixel aspect ratio: 5:3 (width is 5/3 times the height)
 			//
 			hScale = 5.0f;
@@ -125,7 +125,7 @@ namespace RetrodevLib {
 			// Mode 1: 320x200 (40 chars * 8 pixels/char)
 			// Current aspect ratio: 320:200 = 8:5
 			// To achieve 4:3: need (320*h)/(200*v) = 4/3
-			// Solution: h=5, v=6 gives (320*5)/(200*6) = 1600/1200 = 4/3 ✓
+			// Solution: h=5, v=6 gives (320*5)/(200*6) = 1600/1200 = 4/3 OK
 			// Pixel aspect ratio: 5:6 (width is 5/6 of the height - taller than wide)
 			//
 			hScale = 5.0f;
@@ -135,7 +135,7 @@ namespace RetrodevLib {
 			// Mode 2: 640x200 (80 chars * 8 pixels/char)
 			// Current aspect ratio: 640:200 = 16:5
 			// To achieve 4:3: need (640*h)/(200*v) = 4/3
-			// Solution: h=5, v=12 gives (640*5)/(200*12) = 3200/2400 = 4/3 ✓
+			// Solution: h=5, v=12 gives (640*5)/(200*12) = 3200/2400 = 4/3 OK
 			// Pixel aspect ratio: 5:12 (width is 5/12 of the height - very tall, narrow)
 			//
 			hScale = 5.0f;
@@ -192,4 +192,4 @@ namespace RetrodevLib {
 			}
 		}
 	}
-} // namespace RetrodevLib
+}

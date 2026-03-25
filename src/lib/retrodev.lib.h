@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Library entry point -- initialisation and shutdown.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -14,7 +17,7 @@
 #define UNUSED(x) (void)(x)
 
 //
-// Logging — must be included first so Log::Info/Warning/Error are
+// Logging -- must be included first so Log::Info/Warning/Error are
 // available to every other subsystem header that follows
 //
 #include <log/log.h>
@@ -52,4 +55,4 @@ namespace RetrodevLib {
 	//
 	bool RetroDevInit();
 	void RetroDevShutdown();
-} // namespace RetrodevLib
+}

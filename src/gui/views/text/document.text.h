@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Text/code editor document -- Z80 assembly and AngelScript editing.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -88,4 +90,4 @@ namespace RetrodevGui {
 		int m_contextMenuSymbolLine = -1;
 	};
 
-} // namespace RetrodevGui
+}

@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
-// TODO: Fix change opened document on selection. Filepath mess on documents
+// Main view -- documents panel (open editors tabbed area).
+//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -9,6 +12,7 @@
 #include <views/bitmaps/document.bitmap.h>
 #include <dialogs/dialog.confirm.h>
 #include <filesystem>
+#include <unordered_map>
 
 namespace RetrodevGui {
 
@@ -33,9 +37,15 @@ namespace RetrodevGui {
 	// Open a document tab
 	//
 	void DocumentsView::OpenDocument(std::shared_ptr<DocumentView> document) {
-		// Check if the document is already open
+		//
+		// Check if an identical document is already open.
+		// Must compare name + filePath + buildType so that files with the same leaf name
+		// but different paths (e.g. out/sprites.asm vs src/sprites.asm, or sdk files)
+		// and build items that share a source file but differ by type (bitmap vs tileset)
+		// can both be open simultaneously.
+		//
 		for (auto& doc : documents) {
-			if (doc->GetName() == document->GetName()) {
+			if (doc->GetName() == document->GetName() && doc->GetFilePath() == document->GetFilePath() && doc->GetBuildType() == document->GetBuildType()) {
 				return;
 			}
 		}
@@ -123,6 +133,15 @@ namespace RetrodevGui {
 	}
 
 	//
+	// Returns true if any open document has unsaved modifications
+	//
+	bool DocumentsView::HasAnyModifiedDocuments() {
+		for (const auto& doc : documents)
+			if (doc->IsModified())
+				return true;
+		return false;
+	}
+	//
 	// Clear the modified flag for all open documents
 	// Called when the project is saved
 	//
@@ -197,17 +216,15 @@ namespace RetrodevGui {
 		// If any dirty tabs remain, show a single confirmation dialog
 		//
 		if (!dirtyNames.empty()) {
-			ConfirmDialog::Show(
-				"The following tabs have unsaved changes:\n" + dirtyNames + "\n\nClose without saving?",
-				[]() {
-					//
-					// Close all remaining modified documents from back to front
-					//
-					for (int j = (int)documents.size() - 1; j >= 0; j--) {
-						if (documents[j]->IsModified())
-							DocumentsView::CloseDocument(j);
-					}
-				});
+			ConfirmDialog::Show("The following tabs have unsaved changes:\n" + dirtyNames + "\n\nClose without saving?", []() {
+				//
+				// Close all remaining modified documents from back to front
+				//
+				for (int j = (int)documents.size() - 1; j >= 0; j--) {
+					if (documents[j]->IsModified())
+						DocumentsView::CloseDocument(j);
+				}
+			});
 		}
 	}
 	//
@@ -243,6 +260,29 @@ namespace RetrodevGui {
 		if (ImGui::BeginTabBar("DocumentTabs", tabBarFlags)) {
 			int renderedThisFrame = -1;
 			bool anyTabClosed = false;
+			//
+			// Build a name-frequency map so we can show disambiguated labels for files
+			// that share the same leaf name but live in different paths
+			// (e.g. out/sprites.asm vs src/sprites.asm, or an sdk file vs a project file)
+			//
+			std::unordered_map<std::string, int> nameCount;
+			for (const auto& d : documents)
+				nameCount[d->GetName()]++;
+			//
+			// Returns the visible tab label: just the document name when unique, or
+			// the project-relative path (or parent-folder/name) when names collide
+			//
+			auto tabLabel = [&](const DocumentView* d) -> std::string {
+				if (nameCount[d->GetName()] > 1) {
+					const std::string& rel = d->GetProjectRelativePath();
+					if (!rel.empty())
+						return rel;
+					std::filesystem::path p(d->GetFilePath());
+					if (p.has_parent_path() && p.parent_path().has_filename())
+						return p.parent_path().filename().string() + "/" + p.filename().string();
+				}
+				return d->GetName();
+			};
 			for (int i = 0; i < (int)documents.size(); i++) {
 				auto& doc = documents[i];
 
@@ -257,15 +297,16 @@ namespace RetrodevGui {
 					activeDocumentIndex = -1;
 				}
 
+				std::string label = tabLabel(doc.get());
 				bool tabOpen = true;
-				if (ImGui::BeginTabItem(doc->GetName().c_str(), &tabOpen, tabFlags)) {
+				if (ImGui::BeginTabItem(label.c_str(), &tabOpen, tabFlags)) {
 					renderedThisFrame = i;
 					//
 					// Tab context menu
 					//
 					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
 					if (ImGui::BeginPopupContextItem()) {
-							if (ImGui::MenuItem("Close")) {
+						if (ImGui::MenuItem("Close")) {
 							//
 							// Reuse the existing single-tab close path
 							//
@@ -290,7 +331,8 @@ namespace RetrodevGui {
 							//
 							std::vector<int> others;
 							for (int k = 0; k < (int)documents.size(); k++)
-								if (k != i) others.push_back(k);
+								if (k != i)
+									others.push_back(k);
 							CloseDocumentSet(std::move(others));
 							ImGui::EndPopup();
 							ImGui::PopStyleVar();
@@ -313,24 +355,25 @@ namespace RetrodevGui {
 				if (!tabOpen) {
 					if (doc->IsModified()) {
 						//
-						// Document has unsaved changes — ask for confirmation before closing.
-						// Capture the document name as a stable identity; look it up by name
-						// inside the callback so the index remains valid even if earlier tabs
-						// were closed in the same session.
+						// Document has unsaved changes -- ask for confirmation before closing.
+						// Capture name + filePath + buildType so the callback unambiguously
+						// identifies the right document even when multiple tabs share the same
+						// leaf name (e.g. out/sprites.asm and src/sprites.asm open at once).
 						//
 						std::string docName = doc->GetName();
+						std::string docFilePath = doc->GetFilePath();
+						RetrodevLib::ProjectBuildType docBuildType = doc->GetBuildType();
+						std::string docLabel = tabLabel(doc.get());
 						s_pendingCloseDocumentName = docName;
-						ConfirmDialog::Show(
-							"\"" + docName + "\" has unsaved changes.\nClose without saving?",
-							[docName]() {
-								for (int j = 0; j < (int)documents.size(); j++) {
-									if (documents[j]->GetName() == docName) {
-										CloseDocument(j);
-										break;
-									}
+						ConfirmDialog::Show("\"" + docLabel + "\" has unsaved changes.\nClose without saving?", [docName, docFilePath, docBuildType]() {
+							for (int j = 0; j < (int)documents.size(); j++) {
+								if (documents[j]->GetName() == docName && documents[j]->GetFilePath() == docFilePath && documents[j]->GetBuildType() == docBuildType) {
+									CloseDocument(j);
+									break;
 								}
-								s_pendingCloseDocumentName.clear();
-							});
+							}
+							s_pendingCloseDocumentName.clear();
+						});
 					} else {
 						CloseDocument(i);
 						anyTabClosed = true;
@@ -347,5 +390,4 @@ namespace RetrodevGui {
 			}
 		}
 	}
-
-} // namespace RetrodevGui
+}

@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Converter registry -- maps target system IDs to converter implementations.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "converters.h"
 #include "amstrad.cpc/cpc.bitmap.h"
@@ -23,7 +23,7 @@ namespace RetrodevLib {
 		const std::string ZXSpectrum = "ZX Spectrum";
 		const std::string Commodore64 = "Commodore 64";
 		const std::string MSX = "MSX";
-	} // namespace SupportedSystems
+	}
 	//
 	// List of supported systems for conversion
 	//
@@ -69,9 +69,7 @@ namespace RetrodevLib {
 	// Resolves pixel aspect scale factors and the mode list for the given system display name.
 	// Delegates to ScreenAspect so all aspect knowledge stays in the system layer.
 	//
-	void Converters::GetAspectData(const std::string& system, const std::string& mode,
-								   float& hScale, float& vScale,
-								   std::vector<std::string>& modes) {
+	void Converters::GetAspectData(const std::string& system, const std::string& mode, float& hScale, float& vScale, std::vector<std::string>& modes) {
 		hScale = 1.0f;
 		vScale = 1.0f;
 		if (system == SupportedSystems::AmstradCPC) {
@@ -110,4 +108,4 @@ namespace RetrodevLib {
 		return nullptr;
 	}
 
-} // namespace RetrodevLib
+}

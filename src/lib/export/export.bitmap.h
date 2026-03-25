@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Bitmap export engine -- runs AngelScript export scripts for bitmap items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -20,7 +23,7 @@ namespace RetrodevLib {
 	namespace ExportImpl {
 
 		// -------------------------------------------------------------- //
-		// BitmapExportContext — wraps converter + params for script access //
+		// BitmapExportContext -- wraps converter + params for script access //
 		// -------------------------------------------------------------- //
 
 		struct BitmapExportContext {
@@ -57,6 +60,12 @@ namespace RetrodevLib {
 			// Returns the value string if the key is found, or an empty string if absent.
 			//
 			std::string GetParam(const std::string& key) const;
+			//
+			// Transparency settings -- forwarded from ResizeParams so export scripts can
+			// handle transparent pixels without falling back to a per-pixel warning.
+			//
+			bool GetUseTransparentColor() const;
+			int GetTransparentPen() const;
 		};
 
 		//
@@ -72,5 +81,5 @@ namespace RetrodevLib {
 		bool RunBitmapExport(const std::string& scriptPath, const std::string& outputPath, const std::string& scriptParams, Image* image, IBitmapConverter* converter,
 							 const GFXParams* params);
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

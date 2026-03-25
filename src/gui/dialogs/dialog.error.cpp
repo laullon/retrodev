@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Error message dialog.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -18,6 +21,8 @@ namespace RetrodevGui {
 		if (!m_message.empty()) {
 			ImGui::OpenPopup("Error");
 		}
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 		if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
 			// Add some padding at the top
 			ImGui::Dummy(ImVec2(0.0f, 10.0f));
@@ -50,4 +55,4 @@ namespace RetrodevGui {
 			ImGui::EndPopup();
 		}
 	}
-} // namespace RetrodevGui
+}

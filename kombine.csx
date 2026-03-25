@@ -64,8 +64,11 @@ int help(string[] args){
 	Msg.Print("      Always packages the release build output (build mode is forced to release).");
 	Msg.Print("      Stages the release binary, sdk/ and examples/ into a zip named");
 	Msg.Print("      retrodev-<version>.zip in out/pkg/.");
-	Msg.Print("      If the tlotb_token environment variable is set, a GitHub release is");
-	Msg.Print("      created on tlotb/retrodev and the zip is uploaded automatically.");
+	Msg.Print("      parameters:");
+	Msg.Print("                  upload  also create the GitHub release, upload the zip,");
+	Msg.Print("                          and stamp doc/changelog.md with the new version tag.");
+	Msg.Print("                          Requires the tlotb_token environment variable to be set.");
+	Msg.Print("                          Without this parameter only the zip is produced.");
 	Msg.Print("      Release notes are read from doc/changelog.md (entries above the first version tag).");
 	Msg.Print("");
 	Msg.Print("  help - This help");
@@ -402,6 +405,7 @@ void stampChangelogVersion(string changelogPath, string versionNumber) {
 	System.IO.File.WriteAllText(changelogPath, stamp + existing);
 	Msg.Print("Changelog stamped with version " + versionNumber);
 }
+
 //
 // Assemble the release package into out/pkg and optionally publish it to GitHub.
 // Steps:
@@ -412,6 +416,12 @@ void stampChangelogVersion(string changelogPath, string versionNumber) {
 //   5) Stamp doc/changelog.md with the new version tag so future entries start fresh.
 //
 int publish(string[] args) {
+	//
+	// Determine whether to upload to GitHub and stamp the changelog
+	//
+	bool doUpload = false;
+	foreach (string arg in args)
+		if (arg == "upload") { doUpload = true; break; }
 	//
 	// Read the version number written by stampVersionHeader during the release build
 	//
@@ -489,13 +499,16 @@ int publish(string[] args) {
 	Compress.Zip.CompressFolder(stagingDir, zipPath, true, false);
 	Folders.Delete(stagingDir);
 	Msg.Print("Package ready: out/pkg/" + zipName);
+	if (!doUpload) {
+		Msg.Print("Upload skipped — run 'mkb publish upload' to create the GitHub release.");
+		return 0;
+	}
 	//
-	// Publish to GitHub only if the dada_token environment variable is available
+	// Publish to GitHub — requires the tlotb_token environment variable
 	//
 	KValue token = KValue.Import("tlotb_token", "");
 	if (token == "") {
-		Msg.Print("tlotb_token not set — skipping GitHub release. Package is at out/pkg/" + zipName);
-		return 0;
+		Msg.PrintAndAbort("tlotb_token not set — cannot upload. Package is at out/pkg/" + zipName);
 	}
 	Msg.Print("tlotb_token found — creating GitHub release...");
 	Github github = new Github();

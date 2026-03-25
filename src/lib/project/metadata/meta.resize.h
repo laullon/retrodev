@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Project metadata -- resize settings serialisation.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -40,5 +43,5 @@ template <> struct glz::meta<RetrodevLib::ResizeParams> {
 	static constexpr auto value =
 		object("ResMode", &T::ResMode, "InterpMode", &T::InterpMode, "TargetResolution", &T::TargetResolution, "TargetWidth", &T::TargetWidth, "TargetHeight", &T::TargetHeight,
 			   "SourceRect", &T::SourceRect, "UseTransparentColor", &T::UseTransparentColor, "TransparentColorR", &T::TransparentColorR, "TransparentColorG", &T::TransparentColorG,
-			   "TransparentColorB", &T::TransparentColorB, "TransparentColorTolerance", &T::TransparentColorTolerance);
+			   "TransparentColorB", &T::TransparentColorB, "TransparentColorTolerance", &T::TransparentColorTolerance, "TransparentPen", &T::TransparentPen);
 };

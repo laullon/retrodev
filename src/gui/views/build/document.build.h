@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Build document -- editor for build pipeline items (sources, output, debug).
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -82,15 +84,15 @@ namespace RetrodevGui {
 		//
 		// Render the Sources sub-panel (used by RenderTabSource)
 		//
-		void RenderSources(RetrodevLib::SourceParams* params);
+		void RenderSources(RetrodevLib::SourceParams* params, float listHeight);
 		//
 		// Render the Include Directories sub-panel (used by RenderTabSource)
 		//
-		void RenderIncludeDirs(RetrodevLib::SourceParams* params);
+		void RenderIncludeDirs(RetrodevLib::SourceParams* params, float listHeight);
 		//
 		// Render the Defines sub-panel (used by RenderTabSource)
 		//
-		void RenderDefines(RetrodevLib::SourceParams* params);
+		void RenderDefines(RetrodevLib::SourceParams* params, float listHeight);
 		//
 		// Render the Dependencies sub-panel (used by RenderTabSource)
 		//
@@ -101,4 +103,4 @@ namespace RetrodevGui {
 		float m_srcTabLeftW = 0.0f;
 	};
 
-} 
+}

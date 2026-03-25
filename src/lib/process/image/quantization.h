@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image processing -- colour quantization and palette reduction.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 #pragma once
 
 #include <vector>
@@ -104,4 +104,4 @@ namespace RetrodevLib {
 		static void ConvertStd(std::shared_ptr<Image> source, const GFXParams* prm, std::shared_ptr<IPaletteConverter> palette, std::vector<std::vector<RgbColor>>& tabCol);
 	};
 
-} // namespace RetrodevLib
+}

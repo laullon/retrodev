@@ -165,8 +165,10 @@ private KList CreateSourceList(KValue libpath){
 	src += libpath + "src/base/ftbase.c";
 	src += libpath + "src/cache/ftcache.c";
 	src += libpath + "src/gzip/ftgzip.c";
+	src += libpath + "src/bzip2/ftbzip2.c";
 	src += libpath + "src/base/ftinit.c";
 	src += libpath + "src/lzw/ftlzw.c";
+	src += libpath + "src/hvf/hvf.c";
 
 	src += libpath + "src/pcf/pcf.c";
 	src += libpath + "src/pfr/pfr.c";

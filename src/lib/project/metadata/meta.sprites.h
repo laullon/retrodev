@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Project metadata -- sprites item serialisation.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -15,7 +18,7 @@
 //
 template <> struct glz::meta<RetrodevLib::SpriteDefinition> {
 	using T = RetrodevLib::SpriteDefinition;
-	static constexpr auto value = object("X", &T::X, "Y", &T::Y, "Width", &T::Width, "Height", &T::Height, "Name", &T::Name);
+	static constexpr auto value = object("X", &T::X, "Y", &T::Y, "Width", &T::Width, "Height", &T::Height, "Name", &T::Name, "FlipH", &T::FlipH, "FlipV", &T::FlipV, "ShiftX", &T::ShiftX, "ShiftY", &T::ShiftY);
 };
 //
 // Glaze metadata for SpriteExtractionParams serialization

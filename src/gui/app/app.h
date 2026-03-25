@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Application entry point and main SDL/ImGui loop.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -56,6 +59,9 @@ namespace RetrodevGui {
 
 		// ImGui context for the UI framework
 		inline static ImGuiContext* imguiContext = nullptr;
+
+		// Absolute path to retrodev.ini -- must outlive the ImGui context
+		inline static std::string iniFilePath;
 	};
 
-} // namespace RetrodevGui
+}

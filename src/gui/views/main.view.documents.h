@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Main view -- documents panel (open editors tabbed area).
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -39,6 +42,11 @@ namespace RetrodevGui {
 
 		// Check if a document with the given name exists (returns true if found)
 		static bool IsDocumentNameOpen(const std::string& name);
+		//
+		// Returns true if any open document has unsaved modifications.
+		// Used by the quit handler to decide whether to show a confirmation dialog.
+		//
+		static bool HasAnyModifiedDocuments();
 		//
 		// Clear the modified flag for all open documents
 		// Called when the project is saved
@@ -101,4 +109,4 @@ namespace RetrodevGui {
 		static void CloseDocumentSet(std::vector<int> indicesToClose);
 	};
 
-} 
+}

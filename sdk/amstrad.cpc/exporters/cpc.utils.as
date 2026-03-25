@@ -1,5 +1,13 @@
 // ---------------------------------------------------------------------------
 //
+// Retrodev SDK
+//
+// CPC export utilities -- shared pixel encoding helpers for all CPC modes.
+//
+// (c) TLOTB 2026
+//
+// ---------------------------------------------------------------------------
+//
 // Script metadata
 //
 // @description Utils to export CPC graphic data.
@@ -8,7 +16,7 @@
 //
 // ---------------------------------------------------------------------------
 //
-// cpc.utils.as — Amstrad CPC pixel encoding utilities
+// cpc.utils.as -- Amstrad CPC pixel encoding utilities
 //
 // Include this file from any CPC export script to get hardware-accurate
 // pixel-to-byte encoding for all three video modes:
@@ -24,7 +32,7 @@
 //
 //     Encodes up to 8 pen indices into a single CPC byte for the given mode.
 //     Unused pixel slots (beyond the mode's pixel-per-byte count) are ignored.
-//     This is the primitive unit — use it when encoding sprites, tiles, or any
+//     This is the primitive unit -- use it when encoding sprites, tiles, or any
 //     layout that works one byte at a time (e.g. zigzag ordering).
 //
 //   void EncodePixels(array<int>@ pen, int xStart, int count,
@@ -48,26 +56,26 @@
 // -------------------------------------
 //
 //   Mode 0  (16 colours, 2 pixels per byte)
-//     Pixel 0 pen bits → display byte bits:  bit3→1, bit2→5, bit1→3, bit0→7
-//     Pixel 1 pen bits → display byte bits:  bit3→0, bit2→4, bit1→2, bit0→6
+//     Pixel 0 pen bits -> display byte bits:  bit3->1, bit2->5, bit1->3, bit0->7
+//     Pixel 1 pen bits -> display byte bits:  bit3->0, bit2->4, bit1->2, bit0->6
 //     byte: [p0b0][p1b0][p0b2][p1b2][p0b1][p1b1][p0b3][p1b3]
 //
 //   Mode 1  (4 colours, 4 pixels per byte)
-//     Pixel 0 pen bits → display byte bits:  bit1→3, bit0→7
-//     Pixel 1 pen bits → display byte bits:  bit1→2, bit0→6
-//     Pixel 2 pen bits → display byte bits:  bit1→1, bit0→5
-//     Pixel 3 pen bits → display byte bits:  bit1→0, bit0→4
+//     Pixel 0 pen bits -> display byte bits:  bit1->3, bit0->7
+//     Pixel 1 pen bits -> display byte bits:  bit1->2, bit0->6
+//     Pixel 2 pen bits -> display byte bits:  bit1->1, bit0->5
+//     Pixel 3 pen bits -> display byte bits:  bit1->0, bit0->4
 //     byte: [p0b0][p1b0][p2b0][p3b0][p0b1][p1b1][p2b1][p3b1]
 //
 //   Mode 2  (2 colours, 8 pixels per byte)
-//     P0→bit7, P1→bit6, P2→bit5, P3→bit4, P4→bit3, P5→bit2, P6→bit1, P7→bit0
+//     P0->bit7, P1->bit6, P2->bit5, P3->bit4, P4->bit3, P5->bit2, P6->bit1, P7->bit0
 //     byte: [p0][p1][p2][p3][p4][p5][p6][p7]
 //
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 //
-// EncodeByte — encode one CPC byte from up to 8 pen indices.
+// EncodeByte -- encode one CPC byte from up to 8 pen indices.
 //
 // Parameters p0..p7 are pen indices; pass 0 for any unused slots.
 // Only the number of pixels relevant to the mode are read:
@@ -82,8 +90,8 @@ uint8 EncodeByte(int p0, int p1, int p2, int p3,
 {
     if (mode == "Mode 0") {
         //
-        // Pixel 0 pen bits → display byte bits:  bit3→1, bit2→5, bit1→3, bit0→7
-        // Pixel 1 pen bits → display byte bits:  bit3→0, bit2→4, bit1→2, bit0→6
+        // Pixel 0 pen bits -> display byte bits:  bit3->1, bit2->5, bit1->3, bit0->7
+        // Pixel 1 pen bits -> display byte bits:  bit3->0, bit2->4, bit1->2, bit0->6
         //
         return uint8(
             ((p0 & 1) << 7) | ((p1 & 1) << 6) |
@@ -94,10 +102,10 @@ uint8 EncodeByte(int p0, int p1, int p2, int p3,
     }
     if (mode == "Mode 1") {
         //
-        // Pixel 0 pen bits → display byte bits:  bit1→3, bit0→7
-        // Pixel 1 pen bits → display byte bits:  bit1→2, bit0→6
-        // Pixel 2 pen bits → display byte bits:  bit1→1, bit0→5
-        // Pixel 3 pen bits → display byte bits:  bit1→0, bit0→4
+        // Pixel 0 pen bits -> display byte bits:  bit1->3, bit0->7
+        // Pixel 1 pen bits -> display byte bits:  bit1->2, bit0->6
+        // Pixel 2 pen bits -> display byte bits:  bit1->1, bit0->5
+        // Pixel 3 pen bits -> display byte bits:  bit1->0, bit0->4
         //
         return uint8(
             ((p0 & 1) << 7) | ((p1 & 1) << 6) |
@@ -123,7 +131,7 @@ uint8 EncodeByte(int p0, int p1, int p2, int p3,
 
 // ---------------------------------------------------------------------------
 //
-// EncodePixels — encode a horizontal run of pixels and append to buf.
+// EncodePixels -- encode a horizontal run of pixels and append to buf.
 //
 // pen    : flat pen-index array (typically the full-image penMap)
 // xStart : index of the first pixel in pen[] to encode
@@ -169,7 +177,7 @@ void EncodePixels(array<int>@ pen, int xStart, int count,
 
 // ---------------------------------------------------------------------------
 //
-// CpcHardwareColorIndex — convert a CPC firmware color index (0-26) to the
+// CpcHardwareColorIndex -- convert a CPC firmware color index (0-26) to the
 // raw hardware color index (0-31) used by the Gate Array.
 //
 // Returns -1 for an out-of-range firmware index.
@@ -218,7 +226,7 @@ int CpcHardwareColorIndex(int sysIndex)
 
 // ---------------------------------------------------------------------------
 //
-// CpcHardwareCmdColorIndex — convert a CPC firmware color index (0-26) to the
+// CpcHardwareCmdColorIndex -- convert a CPC firmware color index (0-26) to the
 // Gate Array ink register command byte (hardware index | 0x40).
 //
 // Some entries have a known alternate command byte (noted in comments);

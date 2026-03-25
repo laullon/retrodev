@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Project metadata -- palette solver serialisation.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -49,5 +51,6 @@ template <> struct glz::meta<RetrodevLib::PaletteOverflowMethod> {
 //
 template <> struct glz::meta<RetrodevLib::PaletteParams> {
 	using T = RetrodevLib::PaletteParams;
-	static constexpr auto value = glz::object("targetSystem", &T::targetSystem, "targetPaletteType", &T::targetPaletteType, "overflowMethod", &T::overflowMethod, "zones", &T::zones);
+	static constexpr auto value = glz::object("targetSystem", &T::targetSystem, "targetPaletteType", &T::targetPaletteType, "overflowMethod", &T::overflowMethod, "zones",
+											  &T::zones, "preloadedColors", &T::preloadedColors, "preloadedLocked", &T::preloadedLocked);
 };

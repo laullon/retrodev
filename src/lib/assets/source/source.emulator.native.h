@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Source asset -- platform-specific emulator process launch interface.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -13,7 +16,7 @@
 namespace RetrodevLib {
 
 	//
-	// SourceEmulatorNative — platform-specific process launch and polling.
+	// SourceEmulatorNative -- platform-specific process launch and polling.
 	// Each platform supplies one implementation file; the build system
 	// includes only the file matching the current target OS.
 	//
@@ -45,4 +48,4 @@ namespace RetrodevLib {
 		static void Destroy(void* handle);
 	};
 
-} // namespace RetrodevLib
+}

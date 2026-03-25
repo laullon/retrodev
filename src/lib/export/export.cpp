@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Export engine -- AngelScript VM setup and script execution.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -53,4 +56,4 @@ namespace RetrodevLib {
 	bool ExportEngine::ExportMap(const std::string& scriptPath, const std::string& outputPath, const std::string& scriptParams, const MapParams* mapParams) {
 		return ExportImpl::RunMapExport(scriptPath, outputPath, scriptParams, mapParams);
 	}
-} 
+}

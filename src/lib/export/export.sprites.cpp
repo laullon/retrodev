@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Sprite export engine -- runs AngelScript export scripts for sprite items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -80,13 +83,19 @@ namespace RetrodevLib {
 		IPaletteConverter* SpriteExportContext::GetPalette() const {
 			return converter ? converter->GetPalette().get() : nullptr;
 		}
+		bool SpriteExportContext::GetUseTransparentColor() const {
+			return params ? params->RParams.UseTransparentColor : false;
+		}
+		int SpriteExportContext::GetTransparentPen() const {
+			return params ? params->RParams.TransparentPen : -1;
+		}
 
 		// ---------------------------------------------------------------- //
 		// RegisterSpriteContextBinding                                      //
 		// ---------------------------------------------------------------- //
 
 		//
-		// Generic wrappers — required by AS_MAX_PORTABILITY builds
+		// Generic wrappers -- required by AS_MAX_PORTABILITY builds
 		//
 		static void SpriteExportContext_GetSpriteCount_Generic(asIScriptGeneric* gen) {
 			gen->SetReturnDWord((asDWORD) static_cast<SpriteExportContext*>(gen->GetObject())->GetSpriteCount());
@@ -126,12 +135,18 @@ namespace RetrodevLib {
 		static void SpriteExportContext_GetPalette_Generic(asIScriptGeneric* gen) {
 			gen->SetReturnAddress(static_cast<SpriteExportContext*>(gen->GetObject())->GetPalette());
 		}
+		static void SpriteExportContext_GetUseTransparentColor_Generic(asIScriptGeneric* gen) {
+			gen->SetReturnByte(static_cast<SpriteExportContext*>(gen->GetObject())->GetUseTransparentColor() ? 1 : 0);
+		}
+		static void SpriteExportContext_GetTransparentPen_Generic(asIScriptGeneric* gen) {
+			gen->SetReturnDWord((asDWORD) static_cast<SpriteExportContext*>(gen->GetObject())->GetTransparentPen());
+		}
 		//
 		void RegisterSpriteContextBinding(asIScriptEngine* engine) {
 			if (g_engine.spriteContextRegistered)
 				return;
 			//
-			// SpriteExportContext — ref type, no script-side reference counting
+			// SpriteExportContext -- ref type, no script-side reference counting
 			//
 			engine->RegisterObjectType("SpriteExportContext", 0, asOBJ_REF | asOBJ_NOCOUNT);
 			engine->RegisterObjectMethod("SpriteExportContext", "int GetSpriteCount() const", asFUNCTION(SpriteExportContext_GetSpriteCount_Generic), asCALL_GENERIC);
@@ -145,6 +160,8 @@ namespace RetrodevLib {
 			engine->RegisterObjectMethod("SpriteExportContext", "string GetTargetSystem() const", asFUNCTION(SpriteExportContext_GetTargetSystem_Generic), asCALL_GENERIC);
 			engine->RegisterObjectMethod("SpriteExportContext", "string GetParam(const string &in) const", asFUNCTION(SpriteExportContext_GetParam_Generic), asCALL_GENERIC);
 			engine->RegisterObjectMethod("SpriteExportContext", "Palette@ GetPalette() const", asFUNCTION(SpriteExportContext_GetPalette_Generic), asCALL_GENERIC);
+			engine->RegisterObjectMethod("SpriteExportContext", "bool GetUseTransparentColor() const", asFUNCTION(SpriteExportContext_GetUseTransparentColor_Generic), asCALL_GENERIC);
+			engine->RegisterObjectMethod("SpriteExportContext", "int GetTransparentPen() const", asFUNCTION(SpriteExportContext_GetTransparentPen_Generic), asCALL_GENERIC);
 			g_engine.spriteContextRegistered = true;
 		}
 
@@ -153,9 +170,9 @@ namespace RetrodevLib {
 		// ---------------------------------------------------------------- //
 
 		bool RunSpriteExport(const std::string& scriptPath, const std::string& outputPath, const std::string& scriptParams, IBitmapConverter* converter, const GFXParams* params,
-						 ISpriteExtractor* spriteExtractor, const SpriteExtractionParams* spriteParams) {
+							 ISpriteExtractor* spriteExtractor, const SpriteExtractionParams* spriteParams) {
 			if (!g_engine.initialized) {
-				ReportError("[Script] ExportSprites: engine not initialized — call ExportEngine::Initialize() first");
+				ReportError("[Script] ExportSprites: engine not initialized -- call ExportEngine::Initialize() first");
 				return false;
 			}
 			if (!EnsureOutputDirectory(outputPath))
@@ -224,5 +241,5 @@ namespace RetrodevLib {
 			return true;
 		}
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

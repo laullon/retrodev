@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Source asset -- macOS emulator process launch implementation.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -82,9 +85,9 @@ namespace RetrodevLib {
 
 	void SourceEmulatorNative::Destroy(void* handle) {
 		//
-		// pid was stored directly in the pointer value — nothing to free
+		// pid was stored directly in the pointer value -- nothing to free
 		//
 		(void)handle;
 	}
 
-} // namespace RetrodevLib
+}

@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Project metadata -- top-level project file structure.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -115,7 +118,7 @@ template <> struct glz::meta<RetrodevLib::ProjectBuildPaletteEntry> {
 template <> struct glz::meta<RetrodevLib::ProjectFile> {
 	using T = RetrodevLib::ProjectFile;
 	static constexpr auto value =
-		object("ProjectName", &T::ProjectName, "images", &T::images, "audio", &T::audio, "sources", &T::sources, "scripts", &T::scripts, "data", &T::data, "buildBitmaps",
-			   &T::buildBitmaps, "buildTiles", &T::buildTiles, "buildSprites", &T::buildSprites, "buildMaps", &T::buildMaps, "buildBuilds", &T::buildBuilds, "buildPalettes",
-			   &T::buildPalettes, "buildFolders", &T::buildFolders, "selectedBuildItem", &T::selectedBuildItem);
+		object("version", &T::version, "ProjectName", &T::ProjectName, "images", &T::images, "audio", &T::audio, "sources", &T::sources, "scripts", &T::scripts, "data", &T::data,
+			   "buildBitmaps", &T::buildBitmaps, "buildTiles", &T::buildTiles, "buildSprites", &T::buildSprites, "buildMaps", &T::buildMaps, "buildBuilds", &T::buildBuilds,
+			   "buildPalettes", &T::buildPalettes, "buildFolders", &T::buildFolders, "selectedBuildItem", &T::selectedBuildItem);
 };

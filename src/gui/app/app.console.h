@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Console output panel -- captures and displays build/script/find log messages.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
@@ -27,7 +27,7 @@ namespace RetrodevGui {
 		//
 		enum class LogLevel { Info, Warning, Error };
 		//
-		// Output channels — each has its own entry list
+		// Output channels -- each has its own entry list
 		// Find, Script and Build are cleared before each new operation
 		//
 		enum class Channel { Output, Find, Script, Build };
@@ -70,6 +70,14 @@ namespace RetrodevGui {
 		// Programmatically switch the active channel tab
 		//
 		static void SetActiveChannel(Channel channel);
+		//
+		// Returns true when the auto-hide behavior is active
+		//
+		static bool GetAutoHide();
+		//
+		// Set the auto-hide state (used by INI restore)
+		//
+		static void SetAutoHide(bool value);
 
 	private:
 		//
@@ -97,14 +105,18 @@ namespace RetrodevGui {
 		//
 		static LogLevel m_filterLevel;
 		//
-		// Pending reveal — set when a warning or error is logged, consumed by TakeRevealRequest
+		// Pending reveal -- set when a warning or error is logged, consumed by TakeRevealRequest
 		//
 		static bool m_revealPending;
 		static Channel m_revealChannel;
 		//
-		// Pending programmatic tab switch — consumed by the tab bar on the next render
+		// Pending programmatic tab switch -- consumed by the tab bar on the next render
 		//
 		static bool m_pendingChannelSwitch;
+		//
+		// Auto-hide: collapse the panel when the user clicks outside it
+		//
+		static bool m_autoHide;
 		//
 		// Returns true when a message on the given channel and level should trigger a reveal.
 		// Single source of truth used by all AddLog / AddLogF overloads.
@@ -120,4 +132,4 @@ namespace RetrodevGui {
 		static ImVec4 GetColorForLevel(LogLevel level);
 	};
 
-} // namespace RetrodevGui
+}

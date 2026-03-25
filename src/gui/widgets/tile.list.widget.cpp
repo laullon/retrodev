@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Tile list widget -- thumbnail grid of extracted tiles.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "tile.list.widget.h"
 #include <app/app.h>
@@ -14,22 +14,26 @@
 
 namespace RetrodevGui {
 	//
+	// Static member definitions
+	//
+	std::vector<int> TileListWidget::m_selectedIndices;
+	int TileListWidget::m_lastClickedIndex = -1;
+	//
 	// Render the tile list widget
 	//
 	TileListWidget::RenderResult TileListWidget::Render(std::shared_ptr<RetrodevLib::ITileExtractor> tileExtractor, const RetrodevLib::TileExtractionParams* tileParams,
-														int imageWidth, int imageHeight) {
+														const std::vector<int>& selectedIndices, int primaryIndex, int imageWidth, int imageHeight) {
 		RenderResult result;
+		result.newSelection = selectedIndices;
+		result.primaryIndex = primaryIndex;
 		//
-		// Check if we have a valid tile extractor
+		// Sync internal selection state with the caller-supplied selection
 		//
+		m_selectedIndices = selectedIndices;
 		if (!tileExtractor) {
 			ImGui::Text("No tile extractor available");
 			return result;
 		}
-		//
-		// Only show tiles if extraction has been performed
-		// Don't show the grid if no tiles have been extracted yet
-		//
 		int extractedCount = tileExtractor->GetTileCount();
 		if (extractedCount == 0) {
 			ImGui::Text("No tiles extracted yet");
@@ -38,13 +42,9 @@ namespace RetrodevGui {
 		}
 		//
 		// Calculate total tiles in the extraction grid (including deleted ones)
-		// We need to show ALL tile positions, marking deleted ones visually
 		//
 		int totalGridTiles = 0;
 		if (tileParams && imageWidth > 0 && imageHeight > 0) {
-			//
-			// Calculate grid dimensions from image and parameters
-			//
 			int availableWidth = imageWidth - tileParams->OffsetX;
 			int availableHeight = imageHeight - tileParams->OffsetY;
 			if (availableWidth >= tileParams->TileWidth && availableHeight >= tileParams->TileHeight) {
@@ -53,9 +53,6 @@ namespace RetrodevGui {
 				totalGridTiles = tilesX * tilesY;
 			}
 		} else {
-			//
-			// Fallback: use extracted tile count
-			//
 			totalGridTiles = extractedCount;
 		}
 		if (totalGridTiles == 0) {
@@ -63,22 +60,18 @@ namespace RetrodevGui {
 			return result;
 		}
 		//
-		// Calculate tile display size (use a reasonable default)
+		// Calculate tile display size and layout
 		//
 		const float tileDisplaySize = 64.0f;
 		const float tilePadding = 8.0f;
-		const float totalTileWidth = tileDisplaySize + tilePadding;
-		//
-		// Get available width for wrapping
-		//
+		float fp = ImGui::GetStyle().FramePadding.x;
+		float tileCellSize = tileDisplaySize + fp * 2.0f;
+		float totalTileWidth = tileCellSize + tilePadding;
 		ImVec2 availableRegion = ImGui::GetContentRegionAvail();
 		float availableWidth = availableRegion.x;
-		//
-		// Calculate tiles per row and precompute extracted-index mapping for the list clipper
-		//
 		int tilesPerRow = std::max(1, (int)((availableWidth + tilePadding) / totalTileWidth));
 		int numRows = (totalGridTiles + tilesPerRow - 1) / tilesPerRow;
-		float rowHeight = tileDisplaySize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetTextLineHeightWithSpacing() + ImGui::GetStyle().ItemSpacing.y;
+		float rowHeight = tileCellSize + ImGui::GetTextLineHeightWithSpacing() + ImGui::GetStyle().ItemSpacing.y;
 		//
 		// Precompute absolute-to-extracted index mapping (deleted tiles map to -1)
 		//
@@ -92,6 +85,11 @@ namespace RetrodevGui {
 			}
 		}
 		//
+		// Track whether context menu should open this frame (set inside loop, used outside PushID scope)
+		//
+		bool anyContextMenuOpen = ImGui::IsPopupOpen("##tilectx");
+		bool openContextMenu = false;
+		//
 		// Render visible rows only using list clipper
 		//
 		ImGuiListClipper clipper;
@@ -104,90 +102,109 @@ namespace RetrodevGui {
 						break;
 					if (col > 0)
 						ImGui::SameLine(0.0f, tilePadding);
-					//
-					// Look up deleted state and extracted tile index from precomputed mapping
-					//
 					bool isDeleted = (absToExtracted[absoluteIndex] == -1);
+					bool isSelected = std::find(m_selectedIndices.begin(), m_selectedIndices.end(), absoluteIndex) != m_selectedIndices.end();
+					bool isPrimary = (absoluteIndex == primaryIndex);
 					std::shared_ptr<RetrodevLib::Image> tileImage;
 					SDL_Texture* tileTexture = nullptr;
 					if (!isDeleted) {
 						tileImage = tileExtractor->GetTile(absToExtracted[absoluteIndex]);
 						if (tileImage)
 							tileTexture = tileImage->GetTexture(Application::GetRenderer());
+					} else {
+						tileImage = tileExtractor->GetTileAll(absoluteIndex);
+						if (tileImage)
+							tileTexture = tileImage->GetTexture(Application::GetRenderer());
 					}
-					//
-					// Push ID for this tile (use absolute index)
-					//
 					ImGui::PushID(absoluteIndex);
-					//
-					// Create a selectable frame for the tile
-					//
 					ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 					ImGui::BeginGroup();
 					//
 					// Draw tile image button or deleted placeholder
 					//
+					bool buttonClicked = false;
 					if (isDeleted) {
-						//
-						// Draw deleted tile placeholder (red box with X)
-						//
-						ImVec2 buttonSize = ImVec2(tileDisplaySize, tileDisplaySize);
-						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.0f, 0.0f, 1.0f));
-						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.0f, 0.0f, 1.0f));
-						ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.0f, 0.0f, 1.0f));
-						if (ImGui::Button("##deleted", buttonSize)) {
-							result.tileSelected = true;
-							result.selectedTileIndex = absoluteIndex;
+						if (tileTexture) {
+							ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+							ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.0f, 0.0f, 1.0f));
+							ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.0f, 0.0f, 1.0f));
+							buttonClicked = ImGui::ImageButton("##tile", (ImTextureID)tileTexture, ImVec2(tileDisplaySize, tileDisplaySize), ImVec2(0, 0), ImVec2(1, 1),
+															   ImVec4(0, 0, 0, 1), ImVec4(0.55f, 0.55f, 0.55f, 1.0f));
+							ImGui::PopStyleColor(3);
+						} else {
+							ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.0f, 0.0f, 1.0f));
+							ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.0f, 0.0f, 1.0f));
+							ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.25f, 0.0f, 0.0f, 1.0f));
+							buttonClicked = ImGui::Button("##deleted", ImVec2(tileCellSize, tileCellSize));
+							ImGui::PopStyleColor(3);
 						}
-						ImGui::PopStyleColor(3);
 						//
-						// Draw red X overlay
+						// Draw red border over the full button area
 						//
 						ImDrawList* drawList = ImGui::GetWindowDrawList();
 						ImVec2 pMin = cursorPos;
-						ImVec2 pMax = ImVec2(cursorPos.x + tileDisplaySize, cursorPos.y + tileDisplaySize);
-						drawList->AddLine(pMin, pMax, IM_COL32(255, 0, 0, 255), 3.0f);
-						drawList->AddLine(ImVec2(pMin.x, pMax.y), ImVec2(pMax.x, pMin.y), IM_COL32(255, 0, 0, 255), 3.0f);
+						ImVec2 pMax = ImVec2(cursorPos.x + tileCellSize, cursorPos.y + tileCellSize);
+						drawList->AddRect(pMin, pMax, IM_COL32(220, 30, 30, 255), 0.0f, 0, 2.5f);
 					} else if (tileTexture) {
-						//
-						// Draw normal tile image button
-						//
-						if (ImGui::ImageButton("##tile", (ImTextureID)tileTexture, ImVec2(tileDisplaySize, tileDisplaySize))) {
-							result.tileSelected = true;
-							result.selectedTileIndex = absoluteIndex;
-						}
+						buttonClicked = ImGui::ImageButton("##tile", (ImTextureID)tileTexture, ImVec2(tileDisplaySize, tileDisplaySize));
 					}
 					//
-					// Context menu for tile operations
+					// Draw selection border overlay: gold for primary, white for other selected
 					//
-					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
-					if (ImGui::BeginPopupContextItem("TileContextMenu")) {
-						ImGui::Text("Tile #%d", absoluteIndex);
-						if (isDeleted) {
-							ImGui::Text("(Deleted)");
-						}
-						ImGui::Separator();
-						//
-						// Show Delete or Undelete based on state
-						//
-						if (isDeleted) {
-							if (ImGui::MenuItem("Undelete")) {
-								result.tileDeleted = true;
-								result.deletedTileIndex = absoluteIndex;
+					if (isPrimary || isSelected) {
+						ImDrawList* drawList = ImGui::GetWindowDrawList();
+						ImVec2 pMin = cursorPos;
+						ImVec2 pMax = ImVec2(cursorPos.x + tileCellSize, cursorPos.y + tileCellSize);
+						ImU32 borderCol = isPrimary ? IM_COL32(255, 210, 60, 220) : IM_COL32(255, 255, 255, 200);
+						drawList->AddRect(pMin, pMax, borderCol, 0.0f, 0, 2.5f);
+					}
+					//
+					// Click handling: Ctrl toggles, Shift range-selects, plain click sets single selection
+					//
+					if (buttonClicked) {
+						bool ctrlHeld = ImGui::GetIO().KeyCtrl;
+						bool shiftHeld = ImGui::GetIO().KeyShift;
+						if (ctrlHeld) {
+							auto it = std::find(m_selectedIndices.begin(), m_selectedIndices.end(), absoluteIndex);
+							if (it != m_selectedIndices.end())
+								m_selectedIndices.erase(it);
+							else
+								m_selectedIndices.push_back(absoluteIndex);
+							m_lastClickedIndex = absoluteIndex;
+						} else if (shiftHeld && m_lastClickedIndex >= 0) {
+							int lo = std::min(m_lastClickedIndex, absoluteIndex);
+							int hi = std::max(m_lastClickedIndex, absoluteIndex);
+							for (int k = lo; k <= hi; k++) {
+								if (std::find(m_selectedIndices.begin(), m_selectedIndices.end(), k) == m_selectedIndices.end())
+									m_selectedIndices.push_back(k);
 							}
 						} else {
-							if (ImGui::MenuItem("Delete")) {
-								result.tileDeleted = true;
-								result.deletedTileIndex = absoluteIndex;
-							}
+							m_selectedIndices.clear();
+							m_selectedIndices.push_back(absoluteIndex);
+							m_lastClickedIndex = absoluteIndex;
 						}
-						ImGui::EndPopup();
+						result.selectionChanged = true;
+						result.newSelection = m_selectedIndices;
+						result.primaryIndex = absoluteIndex;
 					}
-					ImGui::PopStyleVar();
 					//
-					// Tooltip with tile info
+					// Right-click: select item if not already selected, then request popup
 					//
-					if (ImGui::IsItemHovered()) {
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+						if (std::find(m_selectedIndices.begin(), m_selectedIndices.end(), absoluteIndex) == m_selectedIndices.end()) {
+							m_selectedIndices.clear();
+							m_selectedIndices.push_back(absoluteIndex);
+							m_lastClickedIndex = absoluteIndex;
+							result.selectionChanged = true;
+							result.newSelection = m_selectedIndices;
+							result.primaryIndex = absoluteIndex;
+						}
+						openContextMenu = true;
+					}
+					//
+					// Tooltip with tile info (suppressed while context menu is open)
+					//
+					if (ImGui::IsItemHovered() && !anyContextMenuOpen) {
 						ImGui::BeginTooltip();
 						ImGui::Text("Tile #%d", absoluteIndex);
 						if (isDeleted) {
@@ -195,13 +212,15 @@ namespace RetrodevGui {
 						} else if (tileImage) {
 							ImGui::Text("Size: %dx%d", tileImage->GetWidth(), tileImage->GetHeight());
 						}
+						if (m_selectedIndices.size() > 1)
+							ImGui::Text("%d tiles selected", (int)m_selectedIndices.size());
 						ImGui::EndTooltip();
 					}
 					//
-					// Draw tile index below the image
+					// Draw tile index below the image, centred under the full button width
 					//
 					ImVec2 textSize = ImGui::CalcTextSize(std::to_string(absoluteIndex).c_str());
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (tileDisplaySize - textSize.x) * 0.5f);
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (tileCellSize - textSize.x) * 0.5f);
 					if (isDeleted) {
 						ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "%d", absoluteIndex);
 					} else {
@@ -213,6 +232,65 @@ namespace RetrodevGui {
 			}
 		}
 		clipper.End();
+		//
+		// Open context menu outside all PushID scopes so the popup ID resolves correctly
+		//
+		if (openContextMenu)
+			ImGui::OpenPopup("##tilectx");
+		//
+		// Context menu: rendered once, operates on the full selection
+		//
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+		if (ImGui::BeginPopup("##tilectx")) {
+			int selCount = static_cast<int>(m_selectedIndices.size());
+			if (selCount > 1) {
+				ImGui::TextDisabled("%d tiles selected", selCount);
+				ImGui::Separator();
+			}
+			//
+			// Determine if the selection is a mixed, all-deleted or all-active set
+			//
+			int deletedInSelection = 0;
+			for (int idx : m_selectedIndices) {
+				if (tileParams && std::find(tileParams->DeletedTiles.begin(), tileParams->DeletedTiles.end(), idx) != tileParams->DeletedTiles.end())
+					deletedInSelection++;
+			}
+			bool allDeleted = (deletedInSelection == selCount);
+			bool allActive = (deletedInSelection == 0);
+			if (allDeleted) {
+				if (ImGui::MenuItem(selCount > 1 ? "Undelete All" : "Undelete")) {
+					result.tileToggled = true;
+					result.toggleIndices = m_selectedIndices;
+				}
+			} else if (allActive) {
+				if (ImGui::MenuItem(selCount > 1 ? "Delete All" : "Delete")) {
+					result.tileToggled = true;
+					result.toggleIndices = m_selectedIndices;
+				}
+			} else {
+				//
+				// Mixed selection: offer both options explicitly
+				//
+				if (ImGui::MenuItem("Delete Active")) {
+					result.tileToggled = true;
+					for (int idx : m_selectedIndices) {
+						bool del = tileParams && std::find(tileParams->DeletedTiles.begin(), tileParams->DeletedTiles.end(), idx) != tileParams->DeletedTiles.end();
+						if (!del)
+							result.toggleIndices.push_back(idx);
+					}
+				}
+				if (ImGui::MenuItem("Undelete Deleted")) {
+					result.tileToggled = true;
+					for (int idx : m_selectedIndices) {
+						bool del = tileParams && std::find(tileParams->DeletedTiles.begin(), tileParams->DeletedTiles.end(), idx) != tileParams->DeletedTiles.end();
+						if (del)
+							result.toggleIndices.push_back(idx);
+					}
+				}
+			}
+			ImGui::EndPopup();
+		}
+		ImGui::PopStyleVar();
 		return result;
 	}
-} // namespace RetrodevGui
+}

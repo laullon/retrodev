@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Bitmap conversion document -- editor for bitmap conversion build items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -325,7 +328,7 @@ namespace RetrodevGui {
 			}
 			ImGui::Separator();
 			//
-			// Export section — script-driven bitmap export
+			// Export section -- script-driven bitmap export
 			//
 			m_exportWidget.Render(RetrodevLib::ProjectBuildType::Bitmap, m_name, params, m_converter);
 			//
@@ -335,4 +338,4 @@ namespace RetrodevGui {
 		}
 		ImGui::EndChild();
 	}
-} // namespace RetrodevGui
+}

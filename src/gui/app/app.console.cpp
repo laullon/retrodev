@@ -1,12 +1,12 @@
-﻿//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Console output panel -- captures and displays build/script/find log messages.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "app.console.h"
 #include <views/text/document.text.h>
@@ -23,6 +23,7 @@ namespace RetrodevGui {
 	bool AppConsole::m_revealPending = false;
 	AppConsole::Channel AppConsole::m_revealChannel = AppConsole::Channel::Output;
 	bool AppConsole::m_pendingChannelSwitch = false;
+	bool AppConsole::m_autoHide = true;
 
 	void AppConsole::Render() {
 		// Clear button
@@ -32,7 +33,10 @@ namespace RetrodevGui {
 		// Auto-scroll checkbox
 		ImGui::Checkbox("Auto-scroll", &m_autoScroll);
 		ImGui::SameLine();
-		// Filter level combo — shows messages at the selected level and above
+		// Auto-hide checkbox -- collapses the panel when clicking outside it
+		ImGui::Checkbox("Auto-hide", &m_autoHide);
+		ImGui::SameLine();
+		// Filter level combo -- shows messages at the selected level and above
 		const char* kLevelNames[] = {"Info", "Warning", "Error"};
 		int currentLevel = static_cast<int>(m_filterLevel);
 		ImGui::SetNextItemWidth(90.0f);
@@ -42,7 +46,7 @@ namespace RetrodevGui {
 		// Reserve space at the bottom for the tab bar before rendering content
 		// Tab bar height = one frame height + tab bar border
 		const float tabBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().TabBarBorderSize;
-		// Log content area — shrunk vertically to leave room for the tab bar below
+		// Log content area -- shrunk vertically to leave room for the tab bar below
 		RenderChannel(m_activeChannel);
 		// Tab bar sits below the content area
 		const char* kTabNames[] = {"Output", "Find", "Script", "Build"};
@@ -59,7 +63,7 @@ namespace RetrodevGui {
 				}
 				//
 				// Only update m_activeChannel on an explicit user click, detected as
-				// the item being hovered and mouse released — not on programmatic selection
+				// the item being hovered and mouse released -- not on programmatic selection
 				//
 				if (ImGui::IsItemActivated())
 					m_activeChannel = static_cast<Channel>(i);
@@ -106,6 +110,10 @@ namespace RetrodevGui {
 							std::string filepath = token.substr(0, colon);
 							std::string absPath = projectFolder.empty() ? filepath : (std::filesystem::path(projectFolder) / filepath).string();
 							if (std::filesystem::exists(absPath)) {
+								std::error_code ec;
+								std::filesystem::path canonical = std::filesystem::canonical(absPath, ec);
+								if (!ec)
+									absPath = canonical.string();
 								DocumentText::OpenAtLine(absPath, line);
 								return;
 							}
@@ -143,6 +151,13 @@ namespace RetrodevGui {
 		ImGui::EndChild();
 	}
 
+	bool AppConsole::GetAutoHide() {
+		return m_autoHide;
+	}
+	void AppConsole::SetAutoHide(bool value) {
+		m_autoHide = value;
+	}
+
 	bool AppConsole::ShouldReveal(Channel channel, LogLevel level) {
 		// Warnings and errors always reveal, regardless of channel
 		// Non-output channels (Find, Script, Build) always reveal on any message
@@ -150,7 +165,7 @@ namespace RetrodevGui {
 	}
 
 	void AppConsole::AddLog(LogLevel level, const char* message) {
-		// Shorthand overload — always targets the Output channel
+		// Shorthand overload -- always targets the Output channel
 		m_channels[static_cast<int>(Channel::Output)].emplace_back(message, level);
 		if (ShouldReveal(Channel::Output, level)) {
 			m_revealPending = true;
@@ -159,7 +174,7 @@ namespace RetrodevGui {
 	}
 
 	void AppConsole::AddLogF(LogLevel level, const char* format, ...) {
-		// Shorthand formatted overload — always targets the Output channel
+		// Shorthand formatted overload -- always targets the Output channel
 		char buffer[4096];
 		va_list args;
 		va_start(args, format);
@@ -174,7 +189,7 @@ namespace RetrodevGui {
 	}
 
 	void AppConsole::AddLog(Channel channel, LogLevel level, const char* message) {
-		// Full overload — targets the specified channel
+		// Full overload -- targets the specified channel
 		m_channels[static_cast<int>(channel)].emplace_back(message, level);
 		if (ShouldReveal(channel, level)) {
 			m_revealPending = true;
@@ -183,7 +198,7 @@ namespace RetrodevGui {
 	}
 
 	void AppConsole::AddLogF(Channel channel, LogLevel level, const char* format, ...) {
-		// Full formatted overload — targets the specified channel
+		// Full formatted overload -- targets the specified channel
 		char buffer[4096];
 		va_list args;
 		va_start(args, format);

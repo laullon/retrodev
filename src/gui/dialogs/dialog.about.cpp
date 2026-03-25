@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// About dialog -- version and credits popup.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -97,7 +100,7 @@ namespace RetrodevGui {
 			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 220, 0, 255));
 			ImGui::Text("RetroDev");
 			ImGui::PopStyleColor();
-			ImGui::TextDisabled("Version %s  —  Built with love for retro machines", RetrodevLib::GetVersion().c_str());
+			ImGui::TextDisabled("Version %s  --  Built with love for retro machines", RetrodevLib::GetVersion().c_str());
 			ImGui::Spacing();
 			ImGui::TextWrapped("A modern development toolchain for classic home computers. "
 							   "Convert, edit and export graphics, sprites and other assets "
@@ -140,13 +143,13 @@ namespace RetrodevGui {
 					if (ImGui::IsItemClicked())
 						SDL_OpenURL(url);
 				};
-				renderLib("Dear ImGui", "— Bloat-free Immediate Mode GUI for C++", "https://github.com/ocornut/imgui");
-				renderLib("SDL3", "— Simple DirectMedia Layer", "https://libsdl.org");
-				renderLib("SDL3_image", "— Image loading library for SDL3", "https://github.com/libsdl-org/SDL_image");
-				renderLib("Glaze", "— Extremely fast JSON/binary serializer for C++", "https://github.com/stephenberry/glaze");
-				renderLib("FreeType", "— Font rendering engine", "https://freetype.org");
-				renderLib("AngelScript", "— Embedded scripting language for C++", "https://www.angelcode.com/angelscript");
-				renderLib("RASM", "— Z80 cross-assembler for Amstrad CPC", "https://github.com/EdouardBERGE/rasm");
+				renderLib("Dear ImGui", "-- Bloat-free Immediate Mode GUI for C++", "https://github.com/ocornut/imgui");
+				renderLib("SDL3", "-- Simple DirectMedia Layer", "https://libsdl.org");
+				renderLib("SDL3_image", "-- Image loading library for SDL3", "https://github.com/libsdl-org/SDL_image");
+				renderLib("Glaze", "-- Extremely fast JSON/binary serializer for C++", "https://github.com/stephenberry/glaze");
+				renderLib("FreeType", "-- Font rendering engine", "https://freetype.org");
+				renderLib("AngelScript", "-- Embedded scripting language for C++", "https://www.angelcode.com/angelscript");
+				renderLib("RASM", "-- Z80 cross-assembler for Amstrad CPC", "https://github.com/EdouardBERGE/rasm");
 			}
 			ImGui::EndChild();
 			ImGui::Spacing();
@@ -160,11 +163,10 @@ namespace RetrodevGui {
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
 			if (ImGui::BeginChild("##thanks", ImVec2(avail.x - indent, ImGui::GetTextLineHeightWithSpacing() * 5.0f), ImGuiChildFlags_None)) {
 				ImGui::Spacing();
-				ImGui::TextWrapped(
-					"Special thanks to Roudoudou, DemoniakLudo, Mr.Capa, Bladerunner / TLOTB, Estrayk / Paradox and Mowgly "
-					"for their feedback, testing, information and ideas throughout development. "
-					"And to the Amstrad Power Telegram Channel \xe2\x80\x94 for the endless enthusiasm they "
-					"put on keeping alive Amstrad machines.");
+				ImGui::TextWrapped("Special thanks to Roudoudou, DemoniakLudo, Mr.Capa, Bladerunner / TLOTB, Estrayk / Paradox and Mowgly "
+								   "for their feedback, testing, information and ideas throughout development. "
+								   "And to the Amstrad Power Telegram Channel \xe2\x80\x94 for the endless enthusiasm they "
+								   "put on keeping alive Amstrad machines.");
 			}
 			ImGui::EndChild();
 			//
@@ -175,12 +177,11 @@ namespace RetrodevGui {
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
 			if (ImGui::BeginChild("##greetings", ImVec2(avail.x - indent, ImGui::GetTextLineHeightWithSpacing() * 6.0f), ImGuiChildFlags_None)) {
 				ImGui::Spacing();
-				ImGui::TextWrapped(
-					"Greetings fly out to the groups and projects that keep the Amstrad CPC scene alive and thriving: "
-					"4Mhz, Capasoft, CNG, The Mojon Twins, the CPCTelera authors, the 8BP authors, "
-					"Batman Group, ESP Soft, the CPCWiki team, Logon System "
-					"and all the groups who contributed with information or public source code "
-					"to keep retro development alive.");
+				ImGui::TextWrapped("Greetings fly out to the groups and projects that keep the Amstrad CPC scene alive and thriving: "
+								   "4Mhz, Capasoft, CNG, The Mojon Twins, the CPCTelera authors, the 8BP authors, "
+								   "Batman Group, ESP Soft, the CPCWiki team, Logon System "
+								   "and all the groups who contributed with information or public source code "
+								   "to keep retro development alive.");
 			}
 			ImGui::EndChild();
 			ImGui::Separator();
@@ -197,4 +198,4 @@ namespace RetrodevGui {
 		ImGui::PopStyleVar();
 	}
 
-} 
+}

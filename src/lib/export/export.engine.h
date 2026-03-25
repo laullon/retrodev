@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Export engine -- AngelScript VM setup and script execution.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -18,7 +21,7 @@ namespace RetrodevLib {
 	namespace ExportImpl {
 
 		//
-		// Shared error collection — written to by MessageCallback and all helpers
+		// Shared error collection -- written to by MessageCallback and all helpers
 		//
 		extern std::vector<std::string> g_errors;
 		extern bool g_hasError;
@@ -32,13 +35,13 @@ namespace RetrodevLib {
 		//
 		bool EnsureOutputDirectory(const std::string& outputPath);
 		//
-		// AngelScript message callback — routes compiler and runtime messages
+		// AngelScript message callback -- routes compiler and runtime messages
 		// to g_errors and the Log facility
 		//
 		void MessageCallback(const asSMessageInfo* msg, void* param);
 
 		// -------------------------------------------------------------- //
-		// ScriptEngine — AngelScript engine lifecycle and module building //
+		// ScriptEngine -- AngelScript engine lifecycle and module building //
 		// -------------------------------------------------------------- //
 
 		class ScriptEngine {
@@ -47,7 +50,7 @@ namespace RetrodevLib {
 			CScriptBuilder builder;
 			bool initialized = false;
 			//
-			// Per-binding registration flags — each resets to false on Shutdown
+			// Per-binding registration flags -- each resets to false on Shutdown
 			//
 			bool rgbColorRegistered = false;
 			bool imageRegistered = false;
@@ -89,7 +92,7 @@ namespace RetrodevLib {
 			static std::string GetScriptDescription(const std::string& scriptPath);
 			//
 			// Scan a script file for all recognised // @tag metadata lines in a single pass.
-			// Never touches the AngelScript engine — safe to call before Initialize().
+			// Never touches the AngelScript engine -- safe to call before Initialize().
 			//
 			static ScriptMetadata GetScriptMetadata(const std::string& scriptPath);
 		};
@@ -117,5 +120,5 @@ namespace RetrodevLib {
 		//
 		void RegisterAddons(asIScriptEngine* engine);
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

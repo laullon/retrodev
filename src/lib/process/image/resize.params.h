@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image processing -- resize parameter types.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
@@ -80,6 +80,13 @@ namespace RetrodevLib {
 		int TransparentColorG;
 		int TransparentColorB;
 		int TransparentColorTolerance;
+		//
+		// Pen index reserved for transparency in raw-data exports (-1 = none).
+		// When set, the palette solver will not count any color assigned to this pen
+		// slot for this asset toward the zone's pen budget; other assets may freely
+		// use that slot.  Exporters should map transparent pixels to this pen index.
+		//
+		int TransparentPen;
 
 		// Default constructor
 		ResizeParams();
@@ -92,4 +99,4 @@ namespace RetrodevLib {
 	// List of all available interpolation modes
 	//
 	static const std::vector<std::string> InterpolationModeNames = {"Nearest Neighbor", "Low", "Bicubic", "Bilinear", "High", "High Bicubic", "High Bilinear"};
-} // namespace RetrodevLib
+}

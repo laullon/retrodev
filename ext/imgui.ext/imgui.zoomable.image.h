@@ -111,6 +111,11 @@ namespace ImGui {
 		ImVec2 textureSize = ImVec2(0.0f, 0.0f);
 		std::string name;
 		ImTextureRef backgroundTexture = nullptr;
+		//
+		// Optional solid color drawn over the full background area before the image.
+		// Alpha = 0 disables it. Useful for darkening the checkerboard on transparent-heavy images.
+		//
+		ImVec4 backgroundOverlayColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 		ZoomableWrapMode wrapMode = ZoomableWrapMode::Clamp;
 		//
 		// Logical size for pixel grid and coordinates

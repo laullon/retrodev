@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Version constants.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -11,13 +14,14 @@
 namespace RetrodevLib {
 
 	//
-	// Version numbers — Major and Minor are updated manually.
+	// Version numbers -- Major and Minor are updated manually.
 	// Build is replaced by the release build script; the token below is
 	// the placeholder that gets restored after each release build.
 	//
 	static constexpr int k_versionMajor = 0;
 	static constexpr int k_versionMinor = 9;
-	static constexpr const char* k_versionBuild = "@BUILD@""BETA";
+	static constexpr const char* k_versionBuild = "@BUILD@"
+												  "BETA";
 	//
 	inline std::string GetVersion() {
 		return std::to_string(k_versionMajor) + "." + std::to_string(k_versionMinor) + "." + k_versionBuild;

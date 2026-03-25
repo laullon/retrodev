@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Project -- load, save and manage the .retrodev project file.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -29,7 +32,7 @@ namespace RetrodevLib {
 		Audio,
 		// Source / code file tracked in the project (not yet used, placeholder for future features)
 		Source,
-		// AngelScript file tracked in the project — opened in the text editor with AS syntax
+		// AngelScript file tracked in the project -- opened in the text editor with AS syntax
 		Script,
 		// Generic data file tracked in the project (not yet used, placeholder for future features)
 		Data
@@ -61,7 +64,7 @@ namespace RetrodevLib {
 		//
 		Palette,
 		//
-		// Virtual folder — a logical grouping node in the build section, not a real filesystem directory
+		// Virtual folder -- a logical grouping node in the build section, not a real filesystem directory
 		//
 		VirtualFolder
 	};
@@ -214,6 +217,12 @@ namespace RetrodevLib {
 	// Holds the project data including all tracked files
 	//
 	struct ProjectFile {
+		//
+		// Project file format version. Written on every save, checked on open.
+		// Version 0 means the field is absent (pre-versioning files).
+		// Current supported version is 1.
+		//
+		int version = 1;
 		std::string ProjectName;
 		std::vector<ProjectImageEntry> images;
 		std::vector<ProjectAudioEntry> audio;
@@ -272,11 +281,25 @@ namespace RetrodevLib {
 		static bool New(const std::string& path);
 
 		//
-		// Open an existing project from the given path (.retrodev file).
-		// Reads and parses the JSON project file. Returns false if the file
-		// does not exist or cannot be parsed.
+		// Result codes returned by Project::Open.
 		//
-		static bool Open(const std::string& path);
+		enum class OpenResult {
+			// File opened and parsed successfully.
+			Ok,
+			// File does not exist on disk.
+			NotFound,
+			// File format is outdated or from a future version -- cannot be loaded.
+			UnsupportedVersion,
+			// File exists but could not be parsed (corrupt or unrecognised format).
+			ParseFailed
+		};
+
+		//
+		// Open an existing project from the given path (.retrodev file).
+		// Reads and parses the JSON project file.
+		// Returns OpenResult::Ok on success, or a specific failure code.
+		//
+		static OpenResult Open(const std::string& path);
 
 		//
 		// Save the current project to the given path (.retrodev file).
@@ -609,7 +632,7 @@ namespace RetrodevLib {
 		// Each dependency is a build item name (bitmap, tileset, sprite, map, palette) that
 		// must be converted before the build executes.
 		// Returns true if all dependencies were dispatched successfully, false on the first failure.
-		// This is a stub — actual conversion dispatch is not yet implemented.
+		// This is a stub -- actual conversion dispatch is not yet implemented.
 		//
 		static bool BuildProcessDependencies(const std::string& name);
 		//
@@ -644,4 +667,4 @@ namespace RetrodevLib {
 		static void SetSelectedBuildItem(const std::string& name);
 	};
 
-} // namespace RetrodevLib
+}

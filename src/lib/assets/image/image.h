@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image asset -- pixel buffer and colour access.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
@@ -91,7 +91,7 @@ namespace RetrodevLib {
 		//
 		void SetPixelColor(int x, int y, RgbColor c);
 		//
-		// Scoped pixel access — returned by LockPixels().
+		// Scoped pixel access -- returned by LockPixels().
 		// Locks the surface on construction and unlocks automatically on destruction.
 		// Exposes Pixels (raw pointer) and Pitch (row stride in bytes) together so
 		// callers never compute stride independently and cannot forget to unlock.
@@ -180,4 +180,4 @@ namespace RetrodevLib {
 		bool m_modified;
 	};
 
-} // namespace RetrodevLib
+}

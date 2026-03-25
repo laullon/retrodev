@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Sprite extraction widget -- region selector and sprite list management.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -48,7 +51,7 @@ namespace RetrodevGui {
 		m_constraintW = newConstraintW;
 		m_constraintH = newConstraintH;
 		//
-		// Encoding alignment constraint checkbox — disabled when the active mode imposes no constraint (1x1)
+		// Encoding alignment constraint checkbox -- disabled when the active mode imposes no constraint (1x1)
 		//
 		bool hasConstraint = (m_constraintW > 1 || m_constraintH > 1);
 		ImGui::BeginDisabled(!hasConstraint);
@@ -57,7 +60,9 @@ namespace RetrodevGui {
 		ImGui::Checkbox(constrainLabel, &m_constrainToGrid);
 		ImGui::EndDisabled();
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-			ImGui::SetTooltip("When enabled, sprite width and height are snapped to multiples\nof the platform's encoding unit (%d x %d pixels).\nThis ensures each sprite dimension fits whole bytes\nin the target system's native pixel format.", m_constraintW, m_constraintH);
+			ImGui::SetTooltip("When enabled, sprite width and height are snapped to multiples\nof the platform's encoding unit (%d x %d pixels).\nThis ensures each sprite "
+							  "dimension fits whole bytes\nin the target system's native pixel format.",
+							  m_constraintW, m_constraintH);
 		}
 		if (!hasConstraint)
 			m_constrainToGrid = false;
@@ -284,4 +289,4 @@ namespace RetrodevGui {
 	int SpriteExtractionWidget::GetConstraintH() {
 		return m_constraintH;
 	}
-} // namespace RetrodevGui
+}

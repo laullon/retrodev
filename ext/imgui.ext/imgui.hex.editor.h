@@ -19,7 +19,7 @@ namespace ImGui::HexEditor {
 		HighlightFlags_Apply = 1 << 0,
 		HighlightFlags_TextAutomaticContrast = 1 << 1,
 		HighlightFlags_FullSized = 1 << 2, // Highlight entire byte space including its container, has no effect on ascii
-		HighlightFlags_Ascii = 1 << 3,     // Highlight ascii (doesn't affect single byte highlighting)
+		HighlightFlags_Ascii = 1 << 3,	   // Highlight ascii (doesn't affect single byte highlighting)
 		HighlightFlags_Border = 1 << 4,
 		HighlightFlags_OverrideBorderColor = 1 << 5,
 		HighlightFlags_BorderAutomaticContrast = 1 << 6,

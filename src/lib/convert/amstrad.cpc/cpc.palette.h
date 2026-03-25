@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Amstrad CPC palette converter -- hardware colour mapping and pen assignment.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
@@ -26,7 +26,7 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		const std::string EuclideanDistance = "Euclidean Distance (Balanced)";
 		const std::string EuclideanPerceptual = "Euclidean Distance (Perceptual)";
 		const std::string RGBClamping = "RGB Clamping";
-	} // namespace CPCColorSelectionModes
+	}
 	//
 	// Amstrad CPC Palette implementation
 	// Supports both Hardware palette (27 colors) and Plus palette (4096 colors)
@@ -186,7 +186,7 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		//
 		static const std::array<std::string, 3> ColorSelectionModesList;
 		//
-		// Active palette (maps pen index → system color index)
+		// Active palette (maps pen index -> system color index)
 		// Size: 17 (max 16 colors + 1 for border in some modes)
 		//
 		std::array<int, 17> m_palette;
@@ -219,4 +219,4 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		//
 		std::string m_colorSelectionMode;
 	};
-} // namespace RetrodevLib::ConverterAmstradCPC
+}

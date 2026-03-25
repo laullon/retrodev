@@ -98,6 +98,8 @@ int sysIdx   = palette.PenGetColorIndex(pen);      // firmware colour index (0-2
 | `GetNativeWidth()` | Converted image width in native pixels. |
 | `GetNativeHeight()` | Converted image height in native pixels. |
 | `GetPalette()` | Returns the `Palette@` for this bitmap. |
+| `GetUseTransparentColor()` | Returns `true` when transparent colour handling is enabled. |
+| `GetTransparentPen()` | Returns the pen index reserved for transparent pixels, or `-1` if none is configured. |
 | `GetParam(key)` | Value of a declared `@param`. |
 | `GetTargetSystem()` | Target system identifier string. |
 | `GetTargetMode()` | Target mode string (e.g. `"Mode 0"`). |
@@ -108,6 +110,16 @@ The `Image@` passed as the first argument provides per-pixel colour access:
 RgbColor c = image.GetPixelColor(x, y);
 ```
 
+`RgbColor` is a value type with the following members:
+
+| Member | Description |
+|---|---|
+| `r`, `g`, `b`, `a` | Per-channel byte values (0–255). |
+| `IsTransparent()` | Returns `true` when `a == 0`. |
+| `IsOpaque()` | Returns `true` when `a == 255`. |
+
+Use `IsTransparent()` to skip fully transparent pixels when building output buffers, for example to avoid writing data for pixels that should remain invisible at runtime.
+
 ### Tileset context (`TilesetExportContext`)
 
 | Method | Description |
@@ -117,6 +129,8 @@ RgbColor c = image.GetPixelColor(x, y);
 | `GetTileHeight()` | Height of each tile in pixels. |
 | `GetTile(tileIdx)` | Returns an `Image@` for tile `tileIdx`. |
 | `GetPalette()` | Returns the `Palette@` for this tileset. |
+| `GetUseTransparentColor()` | Returns `true` when transparent colour handling is enabled. |
+| `GetTransparentPen()` | Returns the pen index reserved for transparent pixels, or `-1` if none is configured. |
 | `GetParam(key)` | Value of a declared `@param`. |
 | `GetTargetSystem()` | Target system identifier string. |
 | `GetTargetMode()` | Target mode string. |
@@ -131,6 +145,8 @@ RgbColor c = image.GetPixelColor(x, y);
 | `GetSpriteName(idx)` | Name of sprite `idx`. |
 | `GetSprite(idx)` | Returns an `Image@` for sprite `idx`. |
 | `GetPalette()` | Returns the `Palette@` for this sprite sheet. |
+| `GetUseTransparentColor()` | Returns `true` when transparent colour handling is enabled. |
+| `GetTransparentPen()` | Returns the pen index reserved for transparent pixels, or `-1` if none is configured. |
 | `GetParam(key)` | Value of a declared `@param`. |
 | `GetTargetSystem()` | Target system identifier string. |
 | `GetTargetMode()` | Target mode string. |
@@ -170,15 +186,28 @@ The SDK ships ready-to-use export scripts under `sdk/amstrad.cpc/exporters/`. Th
 ### Resolving pen indices from pixels (bitmap / tile / sprite)
 
 ```angelscript
-Palette@ palette = ctx.GetPalette();
+Palette@ palette  = ctx.GetPalette();
+bool useTransp    = ctx.GetUseTransparentColor();
+int  transpPen    = ctx.GetTransparentPen();
+bool warnedNoTranspPen = false;
+bool warnedNoPen       = false;
 array<int> penMap(w * h);
 for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
         RgbColor c = image.GetPixelColor(x, y);
-        int pen = palette.PenGetIndex(c);
-        if (pen < 0) {
-            Log_Warning("No matching pen at " + x + "," + y + " — using pen 0.");
-            pen = 0;
+        int pen;
+        if (useTransp && c.IsTransparent()) {
+            pen = transpPen;
+            if (pen < 0) {
+                if (!warnedNoTranspPen) { Log_Warning("No transparent pen configured -- using pen 0."); warnedNoTranspPen = true; }
+                pen = 0;
+            }
+        } else {
+            pen = palette.PenGetIndex(c);
+            if (pen < 0) {
+                if (!warnedNoPen) { Log_Warning("No matching pen -- using pen 0."); warnedNoPen = true; }
+                pen = 0;
+            }
         }
         penMap[y * w + x] = pen;
     }

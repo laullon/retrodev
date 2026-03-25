@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Palette asset parameters -- pen count and colour definitions.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -25,13 +27,13 @@ namespace RetrodevLib {
 		//
 		// Present only during a specific game level (swapped in when that level loads)
 		//
-			Level,
+		Level,
 		//
 		// Always present within this zone across all levels (zone-scoped permanent participant).
-		// Unlike Always, colors are not shared across zones — they are added on top of the
+		// Unlike Always, colors are not shared across zones -- they are added on top of the
 		// global Always base for this zone only.
 		//
-			ZoneAlways
+		ZoneAlways
 	};
 	//
 	// One graphics item that participates in a palette zone.
@@ -52,7 +54,7 @@ namespace RetrodevLib {
 		//
 		PaletteParticipantRole role = PaletteParticipantRole::Always;
 		//
-		// Level tag — only used when role is Level.
+		// Level tag -- only used when role is Level.
 		// Groups Level participants that appear together (e.g. "Level1", "World2").
 		// Ignored for Always and ZoneAlways roles.
 		//
@@ -77,7 +79,7 @@ namespace RetrodevLib {
 		//
 		int lineEnd = 199;
 		//
-		// Target video mode for this zone (e.g. "Mode 0") — allows different zones
+		// Target video mode for this zone (e.g. "Mode 0") -- allows different zones
 		// to use different screen modes (e.g. Mode 0 gameplay area + Mode 1 status bar).
 		//
 		std::string targetMode;
@@ -125,11 +127,11 @@ namespace RetrodevLib {
 	//
 	struct PaletteParams {
 		//
-		// Target system identifier (e.g. "Amstrad CPC") — mirrors ConvertParams::TargetSystem
+		// Target system identifier (e.g. "Amstrad CPC") -- mirrors ConvertParams::TargetSystem
 		//
 		std::string targetSystem;
 		//
-		// Target palette type (e.g. "Hardware", "Plus") — mirrors ConvertParams::PaletteType
+		// Target palette type (e.g. "Hardware", "Plus") -- mirrors ConvertParams::PaletteType
 		//
 		std::string targetPaletteType;
 		//
@@ -140,5 +142,25 @@ namespace RetrodevLib {
 		// Screen zones (at least one is always present)
 		//
 		std::vector<PaletteZone> zones;
+		//
+		// Pre-loaded pen slots: system color indices the user has manually assigned and locked
+		// before solving. Index i gives the system color index for pen slot i (-1 = unassigned).
+		// Only locked, assigned slots are injected at the head of the global Always union so
+		// they always occupy the first pen slots in every solved palette.
+		//
+		std::vector<int> preloadedColors;
+		//
+		// Per-slot lock flag for pre-loaded slots.
+		// Only slots where preloadedLocked[i] == true and preloadedColors[i] >= 0 are injected
+		// into the solver as immutable colors.
+		//
+		std::vector<bool> preloadedLocked;
+		//
+		// Set to true when the user explicitly clicks Validate after reviewing the solution.
+		// When true the build pipeline applies the palette assignments even if the solution
+		// is imperfect (e.g. colors were remapped due to pen overflow).
+		// Cleared automatically when any participant or palette type changes.
+		//
+		bool userValidated = false;
 	};
-} // namespace RetrodevLib
+}

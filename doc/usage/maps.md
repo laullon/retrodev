@@ -29,7 +29,7 @@ Per-layer properties:
 |---|---|
 | Name | Label shown in the Layers panel. Press Enter in the name field to apply. |
 | Width / Height | Layer dimensions in tiles. Set in the Dimensions panel and applied with the **Apply** button. |
-| Speed | Scroll speed in tiles per camera step. `1.0` = one tile per step (foreground). Values below `1.0` scroll slower (background parallax). A value ≥ viewport width means the layer never scrolls (fixed/room). |
+| Speed | Scroll speed in tiles per camera step. `1.0` = one tile per step (typical foreground layer). **Parallax scroller:** assign a different speed to each layer — for example `0.25` for a sky, `0.5` for a background and `1.0` for the foreground — to control how fast each plane moves relative to the camera. **Screen-by-screen (non-scroller):** set the speed equal to the viewport width (for horizontal) or viewport height (for vertical) so that each camera step advances exactly one full screen, producing a clean room-to-room transition. |
 | Offset X / Y | Positional offset in tiles (fractional values allowed). Shifts the layer origin independently of scroll, useful for aligning layers of different sizes. |
 | Visible | Toggle layer visibility on the canvas. Hidden layers are not painted on but their data is preserved. |
 
@@ -117,7 +117,7 @@ The map name field at the top of the tooling panel allows renaming the map. Pres
 - **Move Up / Move Down** — reorder layers. The editing layer follows the swap.
 - **Remove Layer** — removes the selected layer and its data.
 - **Name field** — editable name for the selected layer. Press Enter to apply.
-- **Speed** — scroll speed for the selected layer (float, minimum 0.01). Use the step buttons or type directly.
+- **Speed** — scroll speed for the selected layer (float, minimum 0.01). Use the step buttons or type directly. `1.0` moves one tile per camera step (typical foreground). For a **parallax scroller**, give each layer a different speed (e.g. `0.25` sky, `0.5` background, `1.0` foreground) so that the planes drift at different rates, creating the illusion of depth. For a **screen-by-screen game** (no scrolling between positions), set the speed equal to the viewport width or height so that each camera step equals exactly one full-screen transition.
 - **Offset X / Y** — positional offset in tiles for the selected layer (float, fractional values allowed).
 
 ### Dimensions section

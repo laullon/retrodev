@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Image viewer and pixel paint editor document.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -49,7 +52,7 @@ namespace RetrodevGui {
 		std::vector<int> m_stampBuffer;
 		ImVec4 m_stampRect = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 		bool m_hasStamp = false;
-		// Undo/redo stacks — each entry is a full pixel snapshot
+		// Undo/redo stacks -- each entry is a full pixel snapshot
 		// Paletized: palette indices; RGBA: packed 0xRRGGBB per pixel
 		static constexpr int k_maxUndoSteps = 50;
 		std::vector<std::vector<int>> m_undoStack;
@@ -70,4 +73,4 @@ namespace RetrodevGui {
 		void ApplySnapshot(const std::vector<int>& snapshot);
 	};
 
-} 
+}

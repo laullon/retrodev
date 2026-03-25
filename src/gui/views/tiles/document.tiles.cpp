@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Tile extraction document -- grid slicing and pack-to-grid tools.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -16,6 +19,7 @@
 #include <views/main.view.project.h>
 #include <views/main.view.documents.h>
 #include <convert/amstrad.cpc/cpc.tileset.h>
+#include <process/image/tile.pack.h>
 #include "document.tiles.h"
 #include <algorithm>
 
@@ -108,6 +112,7 @@ namespace RetrodevGui {
 			return;
 		m_converter.reset();
 		m_previousPreview.reset();
+		m_packedImagePreview = nullptr;
 	}
 	//
 	// Performs the rendering of the tiles document
@@ -390,10 +395,69 @@ namespace RetrodevGui {
 			return;
 		}
 		//
-		// Get the preview image (left panel) - same as conversion tab
+		// Build absolute-to-extracted index mapping once per frame
+		// Deleted tiles map to -1; non-deleted tiles map to their sequential extractor index
+		//
+		int totalGridTiles = 0;
+		std::vector<int> absToExtracted;
+		{
+			//
+			// When a packed image is active use its dimensions for grid calculation
+			//
+			auto gridSourceImage = m_packedImage ? m_packedImage : (m_converter ? m_converter->GetConverted(params) : nullptr);
+			if (gridSourceImage && tileParams) {
+				int availW = gridSourceImage->GetWidth() - tileParams->OffsetX;
+				int availH = gridSourceImage->GetHeight() - tileParams->OffsetY;
+				if (availW >= tileParams->TileWidth && availH >= tileParams->TileHeight) {
+					int tilesX = 1 + ((availW - tileParams->TileWidth) / (tileParams->TileWidth + tileParams->PaddingX));
+					int tilesY = 1 + ((availH - tileParams->TileHeight) / (tileParams->TileHeight + tileParams->PaddingY));
+					totalGridTiles = tilesX * tilesY;
+				}
+			}
+		}
+		absToExtracted.assign(totalGridTiles, -1);
+		{
+			int extIdx = 0;
+			for (int ai = 0; ai < totalGridTiles; ai++) {
+				bool del = std::find(tileParams->DeletedTiles.begin(), tileParams->DeletedTiles.end(), ai) != tileParams->DeletedTiles.end();
+				if (!del)
+					absToExtracted[ai] = extIdx++;
+			}
+		}
+		//
+		// Clear selection if the selected tile has since been deleted
+		//
+		if (m_selectedTileIndex >= 0 && (m_selectedTileIndex >= totalGridTiles || absToExtracted[m_selectedTileIndex] == -1))
+			m_selectedTileIndex = -1;
+		//
+		// Get the preview image (left panel)
+		// When a packed image is active, display it directly; otherwise use the converter preview.
 		//
 		SDL_Texture* texturePreview = nullptr;
-		if (m_converter) {
+		if (m_packedImage) {
+			//
+			// Regenerate aspect-corrected preview of the packed image when settings change
+			//
+			if (!m_packedImagePreview || m_cachedPackedAspect != m_previewAspectCorrection || m_cachedPackedScanlines != m_previewScanlines) {
+				if (m_converter && m_previewAspectCorrection) {
+					m_packedImagePreview = m_converter->GeneratePreview(m_packedImage, m_previewAspectCorrection, m_previewScanlines);
+					if (!m_packedImagePreview)
+						m_packedImagePreview = m_packedImage;
+				} else {
+					m_packedImagePreview = m_packedImage;
+				}
+				m_cachedPackedAspect = m_previewAspectCorrection;
+				m_cachedPackedScanlines = m_previewScanlines;
+			}
+			texturePreview = m_packedImagePreview->GetTexture(Application::GetRenderer());
+			if (texturePreview) {
+				m_extractionZoomStateLeft.textureSize = ImVec2((float)m_packedImagePreview->GetWidth(), (float)m_packedImagePreview->GetHeight());
+				m_extractionZoomStateLeft.logicalSize = ImVec2((float)m_packedImage->GetWidth(), (float)m_packedImage->GetHeight());
+				m_extractionZoomStateLeft.name = m_name + " (packed)";
+				m_extractionZoomStateLeft.showInfo = true;
+				m_extractionZoomStateLeft.showPixelGrid = true;
+			}
+		} else if (m_converter) {
 			auto previewImage = m_converter->GetPreview(params);
 			//
 			// Use double-buffering: only update previous preview when new one is ready
@@ -425,8 +489,9 @@ namespace RetrodevGui {
 		// Right panel: selected tile preview (cached)
 		SDL_Texture* textureTilePreview = nullptr;
 		if (m_selectedTileIndex >= 0 && m_tileExtractor) {
-			// Get the selected tile image
-			m_selectedTileImage = m_tileExtractor->GetTile(m_selectedTileIndex);
+			// Map absolute index to extracted index and fetch the tile
+			int extractedIdx = absToExtracted[m_selectedTileIndex];
+			m_selectedTileImage = (extractedIdx >= 0) ? m_tileExtractor->GetTile(extractedIdx) : nullptr;
 			if (m_selectedTileImage) {
 				// Determine if we need to regenerate the preview
 				bool needRegen = false;
@@ -452,6 +517,27 @@ namespace RetrodevGui {
 					m_cachedTilePreviewIndex = m_selectedTileIndex;
 					m_cachedTilePreviewAspect = m_tilePreviewAspectCorrection;
 					m_cachedTilePreviewScanlines = m_tilePreviewScanlines;
+					//
+					// Scan source tile pixels for transparency (once per regen, not every frame)
+					//
+					m_cachedTileHasTransparency = false;
+					SDL_Surface* surf = m_selectedTileImage->GetSurface();
+					if (surf && surf->format == SDL_PIXELFORMAT_RGBA32 && SDL_LockSurface(surf) == true) {
+						const uint8_t* pixels = static_cast<const uint8_t*>(surf->pixels);
+						const int w = m_selectedTileImage->GetWidth();
+						const int h = m_selectedTileImage->GetHeight();
+						for (int py = 0; py < h && !m_cachedTileHasTransparency; py++) {
+							const uint8_t* row = pixels + py * surf->pitch;
+							for (int px = 0; px < w && !m_cachedTileHasTransparency; px++) {
+								//
+								// RGBA32: alpha is byte 3 of each 4-byte pixel
+								//
+								if (row[px * 4 + 3] < 255)
+									m_cachedTileHasTransparency = true;
+							}
+						}
+						SDL_UnlockSurface(surf);
+					}
 				}
 
 				// Use cached preview image to create texture
@@ -471,14 +557,19 @@ namespace RetrodevGui {
 					m_extractionZoomStateRight.showInfo = true;
 					m_extractionZoomStateRight.showPixelGrid = true;
 					m_extractionZoomStateRight.maintainAspectRatio = true;
+					//
+					// Apply cached transparency result -- darkens checkerboard when tile has transparent pixels
+					// so the tile boundary is clearly visible against the background pattern
+					//
+					m_extractionZoomStateRight.backgroundOverlayColor = m_cachedTileHasTransparency ? ImVec4(0.0f, 0.0f, 0.0f, 0.45f) : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 				}
 			}
 			// Calculate tile position in the preview image to highlight it on the left panel
-			if (m_converter) {
-				auto convertedImage = m_converter->GetConverted(params);
-				if (convertedImage && tileParams) {
-					int imageWidth = convertedImage->GetWidth();
-					int imageHeight = convertedImage->GetHeight();
+			{
+				auto highlightImage = m_packedImage ? m_packedImage : (m_converter ? m_converter->GetConverted(params) : nullptr);
+				if (highlightImage && tileParams) {
+					int imageWidth = highlightImage->GetWidth();
+					int imageHeight = highlightImage->GetHeight();
 					//
 					// Calculate grid dimensions
 					//
@@ -504,7 +595,6 @@ namespace RetrodevGui {
 					}
 				}
 			}
-		} else {
 			//
 			// Clear selection when no tile is selected
 			//
@@ -591,70 +681,55 @@ namespace RetrodevGui {
 				//
 				int imageWidth = 0;
 				int imageHeight = 0;
-				if (m_converter) {
-					auto convertedImage = m_converter->GetConverted(params);
-					if (convertedImage) {
-						imageWidth = convertedImage->GetWidth();
-						imageHeight = convertedImage->GetHeight();
+				{
+					auto dimImage = m_packedImage ? m_packedImage : (m_converter ? m_converter->GetConverted(params) : nullptr);
+					if (dimImage) {
+						imageWidth = dimImage->GetWidth();
+						imageHeight = dimImage->GetHeight();
 					}
 				}
-				auto tileListResult = TileListWidget::Render(m_tileExtractor, tileParams, imageWidth, imageHeight);
-				//
-				// Handle tile selection
-				//
-				if (tileListResult.tileSelected) {
+				auto tileListResult = TileListWidget::Render(m_tileExtractor, tileParams, m_tileSelection, m_tilePrimaryIndex, imageWidth, imageHeight);
 					//
-					// Store the selected tile index to display in right panel
+					// Handle selection change
 					//
-					m_selectedTileIndex = tileListResult.selectedTileIndex;
-					AppConsole::AddLogF(AppConsole::LogLevel::Info, "Tile selected: %d", m_selectedTileIndex);
-				}
-				//
-				// Handle tile deletion/undeletion
-				//
-				if (tileListResult.tileDeleted) {
-					//
-					// Check if tile is currently deleted
-					//
-					auto it = std::find(tileParams->DeletedTiles.begin(), tileParams->DeletedTiles.end(), tileListResult.deletedTileIndex);
-					bool wasDeleted = (it != tileParams->DeletedTiles.end());
-					if (wasDeleted) {
-						//
-						// Undelete: remove from deleted list
-						//
-						tileParams->DeletedTiles.erase(it);
-						AppConsole::AddLogF(AppConsole::LogLevel::Info, "Tile #%d restored", tileListResult.deletedTileIndex);
-					} else {
-						//
-						// Delete: add to deleted list
-						//
-						tileParams->DeletedTiles.push_back(tileListResult.deletedTileIndex);
-						AppConsole::AddLogF(AppConsole::LogLevel::Info, "Tile #%d deleted", tileListResult.deletedTileIndex);
+					if (tileListResult.selectionChanged) {
+						m_tileSelection = tileListResult.newSelection;
+						m_tilePrimaryIndex = tileListResult.primaryIndex;
+						m_selectedTileIndex = m_tilePrimaryIndex;
+						AppConsole::AddLogF(AppConsole::LogLevel::Info, "Tile selected: %d", m_selectedTileIndex);
 					}
 					//
-					// Mark document and project as modified
+					// Handle tile deletion/undeletion for all toggled indices
 					//
-					SetModified(true);
-					RetrodevLib::Project::MarkAsModified();
-					//
-					// Re-extract tiles to update the list
-					//
-					if (m_converter) {
-						m_converter->Convert(params);
-						auto convertedImage = m_converter->GetConverted(params);
-						if (m_tileExtractor && convertedImage) {
-							if (m_tileExtractor->Extract(convertedImage, tileParams)) {
+					if (tileListResult.tileToggled && !tileListResult.toggleIndices.empty()) {
+						for (int toggleIdx : tileListResult.toggleIndices) {
+							auto it = std::find(tileParams->DeletedTiles.begin(), tileParams->DeletedTiles.end(), toggleIdx);
+							if (it != tileParams->DeletedTiles.end()) {
+								tileParams->DeletedTiles.erase(it);
+								AppConsole::AddLogF(AppConsole::LogLevel::Info, "Tile #%d restored", toggleIdx);
+							} else {
+								tileParams->DeletedTiles.push_back(toggleIdx);
+								AppConsole::AddLogF(AppConsole::LogLevel::Info, "Tile #%d deleted", toggleIdx);
+							}
+						}
+						SetModified(true);
+						RetrodevLib::Project::MarkAsModified();
+						//
+						// Re-extract tiles to update the list
+						// Use the packed image when active so the list stays in sync
+						//
+						std::shared_ptr<RetrodevLib::Image> reextractImage = m_packedImage;
+						if (!reextractImage && m_converter) {
+							m_converter->Convert(params);
+							reextractImage = m_converter->GetConverted(params);
+						}
+						if (m_tileExtractor && reextractImage) {
+							if (m_tileExtractor->Extract(reextractImage, tileParams)) {
+								m_tileExtractor->ExtractAll(reextractImage, tileParams);
 								AppConsole::AddLogF(AppConsole::LogLevel::Info, "%d tiles available", m_tileExtractor->GetTileCount());
-								//
-								// Clear selection if deleted tile was selected
-								//
-								if (wasDeleted == false) {
-									m_selectedTileIndex = -1;
-								}
 							}
 						}
 					}
-				}
 			}
 			ImGui::EndChild();
 		}
@@ -689,18 +764,229 @@ namespace RetrodevGui {
 				RetrodevLib::Project::MarkAsModified();
 			}
 			//
-			// Handle extract button click
+			// Handle extract button click.
+			// When PackEnabled is set, run Pack-to-Grid first, then extract from packed image.
+			// When not set, clear any cached packed image and extract from the converter output.
 			//
 			if (extractionResult.extractRequested) {
 				if (m_converter) {
 					m_converter->Convert(params);
 					auto convertedImage = m_converter->GetConverted(params);
 					if (m_tileExtractor && convertedImage) {
-						if (m_tileExtractor->Extract(convertedImage, tileParams)) {
+						//
+						// Run Pack-to-Grid if enabled (this is the serialized build pipeline step)
+						//
+						if (tileParams->PackEnabled) {
+							//
+							// Sample bg colour directly from pixel (0,0) of the converted image
+							//
+							RetrodevLib::RgbColor bg = convertedImage->GetPixelColor(0, 0);
+							tileParams->PackBgR = bg.r / 255.0f;
+							tileParams->PackBgG = bg.g / 255.0f;
+							tileParams->PackBgB = bg.b / 255.0f;
+							TileExtractionWidget::SetPackBg(tileParams->PackBgR, tileParams->PackBgG, tileParams->PackBgB);
+							auto packResult = RetrodevLib::PackToGrid(convertedImage, bg, tileParams->PackBgTolerance, tileParams->PackMergeGap, tileParams->PackCellPadding,
+																	  tileParams->PackColumns);
+							if (packResult.packedImage) {
+								m_packedImage = packResult.packedImage;
+								m_packedImagePreview = nullptr;
+								tileParams->TileWidth = packResult.cellWidth;
+								tileParams->TileHeight = packResult.cellHeight;
+								tileParams->OffsetX = 0;
+								tileParams->OffsetY = 0;
+								tileParams->PaddingX = packResult.cellPadding;
+								tileParams->PaddingY = packResult.cellPadding;
+								tileParams->DeletedTiles.clear();
+								AppConsole::AddLogF(AppConsole::LogLevel::Info, "Pack-to-Grid: %d region(s), cell %dx%d, output %dx%d.", packResult.regionCount,
+													packResult.cellWidth, packResult.cellHeight, packResult.packedImage->GetWidth(), packResult.packedImage->GetHeight());
+							} else {
+								m_packedImage = nullptr;
+								AppConsole::AddLog(AppConsole::LogLevel::Warning, "Pack-to-Grid: no regions detected -- check background colour.");
+							}
+						} else {
+							//
+							// PackEnabled is off: clear any previously packed image
+							//
+							m_packedImage = nullptr;
+						}
+						//
+						// Extract from packed image if available, otherwise from converter output
+						//
+						auto sourceImage = m_packedImage ? m_packedImage : convertedImage;
+						if (m_tileExtractor->Extract(sourceImage, tileParams)) {
+							m_tileExtractor->ExtractAll(sourceImage, tileParams);
 							AppConsole::AddLogF(AppConsole::LogLevel::Info, "Extracted %d tiles", m_tileExtractor->GetTileCount());
 						} else {
 							AppConsole::AddLog(AppConsole::LogLevel::Warning, "Failed to extract tiles");
 						}
+					}
+				}
+			}
+			//
+			// Handle remove duplicates button click
+			// Compare raw pixel data of every non-deleted tile pair; mark later duplicates as deleted
+			//
+			if (extractionResult.removeDuplicatesRequested && m_tileExtractor) {
+				//
+				// Track which absolute indices are still active in this pass
+				// (deleted before this pass, or marked during this pass)
+				//
+				std::vector<bool> active(totalGridTiles, false);
+				for (int ai = 0; ai < totalGridTiles; ai++)
+					active[ai] = (absToExtracted[ai] != -1);
+				//
+				// Compare each active tile against all earlier active tiles using absolute indices
+				// GetTileAll() is stable: it always returns the tile at absolute grid position
+				// regardless of how many tiles have been deleted, so indices never shift
+				//
+				int removedCount = 0;
+				for (int ai = 0; ai < totalGridTiles; ai++) {
+					if (!active[ai])
+						continue;
+					auto imgA = m_tileExtractor->GetTileAll(ai);
+					if (!imgA)
+						continue;
+					for (int bi = 0; bi < ai; bi++) {
+						if (!active[bi])
+							continue;
+						auto imgB = m_tileExtractor->GetTileAll(bi);
+						if (!imgB)
+							continue;
+						//
+						// Different dimensions cannot be duplicates
+						//
+						if (imgA->GetWidth() != imgB->GetWidth() || imgA->GetHeight() != imgB->GetHeight())
+							continue;
+						//
+						// Compare pixel data row by row; byte width depends on pixel format
+						//
+						auto pixA = imgA->LockPixels();
+						auto pixB = imgB->LockPixels();
+						int rowBytes = imgA->GetWidth() * (imgA->IsPaletized() ? 1 : 4);
+						bool identical = true;
+						for (int y = 0; y < imgA->GetHeight() && identical; y++) {
+							if (memcmp(pixA.Pixels + y * pixA.Pitch, pixB.Pixels + y * pixB.Pitch, rowBytes) != 0)
+								identical = false;
+						}
+						if (identical) {
+							tileParams->DeletedTiles.push_back(ai);
+							active[ai] = false;
+							removedCount++;
+							break;
+						}
+					}
+				}
+				if (removedCount > 0) {
+					AppConsole::AddLogF(AppConsole::LogLevel::Info, "Removed %d duplicate tile(s)", removedCount);
+					SetModified(true);
+					RetrodevLib::Project::MarkAsModified();
+					//
+					// Re-extract to sync the sequential tile list with the updated deleted set
+					//
+					{
+						std::shared_ptr<RetrodevLib::Image> reextractImage = m_packedImage;
+						if (!reextractImage && m_converter) {
+							m_converter->Convert(params);
+							reextractImage = m_converter->GetConverted(params);
+						}
+						if (reextractImage) {
+							m_tileExtractor->Extract(reextractImage, tileParams);
+							m_tileExtractor->ExtractAll(reextractImage, tileParams);
+						}
+					}
+				} else {
+					AppConsole::AddLog(AppConsole::LogLevel::Info, "No duplicate tiles found");
+				}
+			}
+			//
+			// Handle undelete all button click
+			//
+			if (extractionResult.undeleteAllRequested && tileParams && !tileParams->DeletedTiles.empty()) {
+				int restoredCount = (int)tileParams->DeletedTiles.size();
+				tileParams->DeletedTiles.clear();
+				AppConsole::AddLogF(AppConsole::LogLevel::Info, "Restored %d deleted tile(s)", restoredCount);
+				SetModified(true);
+				RetrodevLib::Project::MarkAsModified();
+				//
+				// Re-extract to sync the sequential tile list with the restored set
+				//
+				{
+					std::shared_ptr<RetrodevLib::Image> reextractImage = m_packedImage;
+					if (!reextractImage && m_converter) {
+						m_converter->Convert(params);
+						reextractImage = m_converter->GetConverted(params);
+					}
+					if (m_tileExtractor && reextractImage) {
+						m_tileExtractor->Extract(reextractImage, tileParams);
+						m_tileExtractor->ExtractAll(reextractImage, tileParams);
+					}
+				}
+			}
+			//
+			// Handle Pack-to-Grid background sample request:
+			// read pixel (0,0) from the converted image and persist it into tileParams
+			//
+			if (extractionResult.packSampleBg && m_converter) {
+				auto convertedImage = m_converter->GetConverted(params);
+				if (convertedImage) {
+					RetrodevLib::RgbColor px = convertedImage->GetPixelColor(0, 0);
+					float nr = px.r / 255.0f;
+					float ng = px.g / 255.0f;
+					float nb = px.b / 255.0f;
+					tileParams->PackBgR = nr;
+					tileParams->PackBgG = ng;
+					tileParams->PackBgB = nb;
+					TileExtractionWidget::SetPackBg(nr, ng, nb);
+					SetModified(true);
+					RetrodevLib::Project::MarkAsModified();
+					AppConsole::AddLogF(AppConsole::LogLevel::Info, "Pack-to-Grid: sampled background colour rgb(%d,%d,%d)", px.r, px.g, px.b);
+				}
+			}
+			//
+			// Handle Pack-to-Grid request:
+			// run the region detector on the converted image, build the packed image,
+			// apply the detected cell size back into tileParams and store the packed image
+			// as an override for the extraction viewer and extractor.
+			//
+			if (extractionResult.packToGridRequested && m_converter) {
+				auto convertedImage = m_converter->GetConverted(params);
+				if (convertedImage) {
+					//
+					// Sample bg colour directly from pixel (0,0) of the converted image
+					// and sync back into tileParams so the UI swatch stays accurate
+					//
+					RetrodevLib::RgbColor bg = convertedImage->GetPixelColor(0, 0);
+					tileParams->PackBgR = bg.r / 255.0f;
+					tileParams->PackBgG = bg.g / 255.0f;
+					tileParams->PackBgB = bg.b / 255.0f;
+					TileExtractionWidget::SetPackBg(tileParams->PackBgR, tileParams->PackBgG, tileParams->PackBgB);
+					auto packResult =
+						RetrodevLib::PackToGrid(convertedImage, bg, tileParams->PackBgTolerance, tileParams->PackMergeGap, tileParams->PackCellPadding, tileParams->PackColumns);
+					if (packResult.packedImage) {
+						m_packedImage = packResult.packedImage;
+						//
+						// Invalidate the packed image preview so it is regenerated next frame
+						//
+						m_packedImagePreview = nullptr;
+						//
+						// Apply detected cell size and layout into tileParams so the
+						// extraction grid stays in sync with the packed image
+						//
+						tileParams->TileWidth = packResult.cellWidth;
+						tileParams->TileHeight = packResult.cellHeight;
+						tileParams->OffsetX = 0;
+						tileParams->OffsetY = 0;
+						tileParams->PaddingX = packResult.cellPadding;
+						tileParams->PaddingY = packResult.cellPadding;
+						tileParams->DeletedTiles.clear();
+						SetModified(true);
+						RetrodevLib::Project::MarkAsModified();
+						AppConsole::AddLogF(AppConsole::LogLevel::Info, "Pack-to-Grid: %d region(s), cell %dx%d, output %dx%d. Press Extract Tiles to extract.",
+											packResult.regionCount, packResult.cellWidth, packResult.cellHeight, packResult.packedImage->GetWidth(),
+											packResult.packedImage->GetHeight());
+					} else {
+						m_packedImage = nullptr;
+						AppConsole::AddLog(AppConsole::LogLevel::Warning, "Pack-to-Grid: no regions detected -- check background colour.");
 					}
 				}
 			}
@@ -716,4 +1002,4 @@ namespace RetrodevGui {
 		}
 		ImGui::EndChild();
 	}
-} // namespace RetrodevGui
+}

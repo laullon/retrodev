@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Application entry point and main SDL/ImGui loop.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -171,6 +174,7 @@ namespace RetrodevGui {
 		// Register custom INI handlers before the first frame so they participate in ini load
 		//
 		MainView::RegisterSettingsHandler();
+		MainViewMenu::RegisterSettingsHandler();
 		EmulatorSettings::RegisterSettingsHandler();
 		//
 		// Disable ImGui's built-in Ctrl+Tab window-switching; document switching is handled by DocumentsView
@@ -178,7 +182,12 @@ namespace RetrodevGui {
 		imguiContext->ConfigNavWindowingKeyNext = ImGuiKey_None;
 		imguiContext->ConfigNavWindowingKeyPrev = ImGuiKey_None;
 		ImGuiIO& io = ImGui::GetIO();
-		io.IniFilename = "retrodev.ini";
+		// Build an absolute path for retrodev.ini next to the executable so that
+		// the file is always found regardless of the working directory at launch time
+		// (e.g. when the application is started via a shortcut).
+		const char* basePath = SDL_GetBasePath();
+		iniFilePath = (basePath != nullptr ? basePath : "") + std::string("retrodev.ini");
+		io.IniFilename = iniFilePath.c_str();
 		// Apply custom Amstrad CPC-inspired theme
 		SetupImGuiStyle(screenScale);
 		// Init the backend
@@ -186,7 +195,7 @@ namespace RetrodevGui {
 		ImGui_ImplSDLRenderer3_Init(renderer);
 		// Load Fonts
 		//
-		// Ubuntu Medium — default UI font
+		// Ubuntu Medium -- default UI font
 		Resource fontText = Resources::GetResource("gui.res.fonts.ubuntu-medium.ttf");
 		if (fontText._ptr != nullptr) {
 			ImFontConfig fontConfig;
@@ -201,7 +210,7 @@ namespace RetrodevGui {
 			fontConfig.MergeMode = true;
 			io.Fonts->AddFontFromMemoryTTF((void*)fontIcon._ptr, fontIcon._size, 14.0f, &fontConfig, nullptr);
 		}
-		// Fixedsys Excelsior Mono — monospaced font for the text editor
+		// Fixedsys Excelsior Mono -- monospaced font for the text editor
 		Resource fontEditor = Resources::GetResource("gui.res.fonts.fixedsys-excelsior-mono.ttf");
 		if (fontEditor._ptr != nullptr) {
 			ImFontConfig fontConfig;
@@ -350,4 +359,4 @@ namespace RetrodevGui {
 		SDL_Quit();
 	}
 
-} // namespace RetrodevGui
+}

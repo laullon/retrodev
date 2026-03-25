@@ -1,5 +1,15 @@
 ;-----------------------------------------------------------------------
 ;
+; Retrodev Examples
+;
+; screen -- demonstrates loading and displaying a converted bitmap on CPC.
+;
+; (c) TLOTB 2026
+;
+;-----------------------------------------------------------------------
+
+;-----------------------------------------------------------------------
+;
 ; Tiny test. Just loads a converted bitmap and show it on screen
 ;
 ; Disable system code and set palette taken from CPCTelera.

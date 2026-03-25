@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Image viewer and pixel paint editor document.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -481,7 +484,7 @@ namespace RetrodevGui {
 						ImVec2 s = ImageToScreen(m_dragStart.x, m_dragStart.y);
 						ImVec2 e = ImageToScreen((float)mx, (float)my);
 						//
-						// XOR-style: draw twice — white line on top of a slightly thicker black one
+						// XOR-style: draw twice -- white line on top of a slightly thicker black one
 						//
 						if (tool == PaintingTool::Line) {
 							dl->AddLine(s, e, IM_COL32(0, 0, 0, 200), 3.0f);
@@ -535,7 +538,7 @@ namespace RetrodevGui {
 				//
 				if (tool == PaintingTool::RegionSelect) {
 					//
-					// Phase 1: selection just completed — copy pixels into stamp buffer
+					// Phase 1: selection just completed -- copy pixels into stamp buffer
 					//
 					if (m_zoomState.selectionActive && !m_hasStamp && m_zoomState.selection.z > 0.0f && m_zoomState.selection.w > 0.0f) {
 						int sx = (int)m_zoomState.selection.x;
@@ -563,7 +566,7 @@ namespace RetrodevGui {
 						m_hasStamp = true;
 					}
 					//
-					// Phase 2: stamp is held — show preview overlay and paste on click
+					// Phase 2: stamp is held -- show preview overlay and paste on click
 					//
 					if (m_hasStamp) {
 						int sw = (int)m_stampRect.z;
@@ -657,7 +660,7 @@ namespace RetrodevGui {
 				SplitterSpace.y += Application::splitterThickness;
 				ImGui::SetCursorScreenPos(SplitterSpace);
 			}
-			// Bottom: operations panel (palette) — only for paletized images
+			// Bottom: operations panel (palette) -- only for paletized images
 			//
 			if (isPaletized) {
 				if (ImGui::BeginChild("OperationsPanel", ImVec2(-1, m_vSizeBottom), true)) {
@@ -670,7 +673,7 @@ namespace RetrodevGui {
 			}
 		}
 		ImGui::EndChild();
-		// Right area: tooling panel — only for paletized images
+		// Right area: tooling panel -- only for paletized images
 		//
 		if (isPaletized) {
 			ImGui::SameLine();
@@ -689,4 +692,4 @@ namespace RetrodevGui {
 			ImGui::EndChild();
 		}
 	}
-} // namespace RetrodevGui
+}

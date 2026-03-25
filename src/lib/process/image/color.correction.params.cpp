@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image processing -- colour correction parameter serialisation.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "color.correction.params.h"
 
@@ -23,4 +23,4 @@ namespace RetrodevLib {
 		PaletteReductionLower = PaletteReductionLimits::Lower_None;
 		PaletteReductionUpper = PaletteReductionLimits::Upper_None;
 	}
-} // namespace RetrodevLib
+}

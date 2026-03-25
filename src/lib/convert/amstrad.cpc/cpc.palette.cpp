@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Amstrad CPC palette converter -- hardware colour mapping and pen assignment.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "cpc.palette.h"
 #include <retrodev.lib.h>
@@ -209,9 +209,9 @@ namespace RetrodevLib::ConverterAmstradCPC {
 			if (colorSelectionMode == CPCColorSelectionModes::RGBClamping) {
 				//
 				// Calculate index based on RGB thresholds (85, 170)
-				// Red component: 0-85 → 0, 86-170 → 3, 171-255 → 6
-				// Blue component: 0-85 → 0, 86-170 → 1, 171-255 → 2
-				// Green component: 0-85 → 0, 86-170 → 9, 171-255 → 18
+				// Red component: 0-85 -> 0, 86-170 -> 3, 171-255 -> 6
+				// Blue component: 0-85 -> 0, 86-170 -> 1, 171-255 -> 2
+				// Green component: 0-85 -> 0, 86-170 -> 9, 171-255 -> 18
 				//
 				selectedIndex = (inputColor.r > cstR2	? 6
 								 : inputColor.r > cstR1 ? 3
@@ -509,4 +509,4 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		return m_paletteUsed[paletteIndex];
 	}
 
-} // namespace RetrodevLib::ConverterAmstradCPC
+}

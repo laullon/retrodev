@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Export engine -- AngelScript VM setup and script execution.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -200,7 +203,7 @@ namespace RetrodevLib {
 							return b->AddSectionFromFile(candidate.string().c_str());
 					}
 					//
-					// Not found — return negative so AngelScript reports the error
+					// Not found -- return negative so AngelScript reports the error
 					//
 					return -1;
 				},
@@ -234,7 +237,7 @@ namespace RetrodevLib {
 		RetrodevLib::ScriptMetadata ScriptEngine::GetScriptMetadata(const std::string& scriptPath) {
 			//
 			// Single-pass scan for all recognised // @tag lines.
-			// Never touches the AngelScript engine — safe before Initialize().
+			// Never touches the AngelScript engine -- safe before Initialize().
 			//
 			RetrodevLib::ScriptMetadata meta;
 			std::FILE* f = std::fopen(scriptPath.c_str(), "r");
@@ -291,7 +294,7 @@ namespace RetrodevLib {
 					while (*v && *v != ' ' && *v != '\t')
 						v++;
 					if (tok == v) {
-						Log::Warning(LogChannel::Script, "[Script] %s: @param tag has no key — line ignored", scriptPath.c_str());
+						Log::Warning(LogChannel::Script, "[Script] %s: @param tag has no key -- line ignored", scriptPath.c_str());
 						continue;
 					}
 					RetrodevLib::ScriptParamDef def;
@@ -305,12 +308,12 @@ namespace RetrodevLib {
 					while (*v && *v != ' ' && *v != '\t')
 						v++;
 					if (tok == v) {
-						Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' has no type — line ignored", scriptPath.c_str(), def.key.c_str());
+						Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' has no type -- line ignored", scriptPath.c_str(), def.key.c_str());
 						continue;
 					}
 					def.type.assign(tok, v);
 					if (def.type != "bool" && def.type != "int" && def.type != "string" && def.type != "combo") {
-						Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' has unknown type '%s' — line ignored", scriptPath.c_str(), def.key.c_str(), def.type.c_str());
+						Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' has unknown type '%s' -- line ignored", scriptPath.c_str(), def.key.c_str(), def.type.c_str());
 						continue;
 					}
 					while (*v == ' ' || *v == '\t')
@@ -322,7 +325,7 @@ namespace RetrodevLib {
 					while (*v && *v != ' ' && *v != '\t')
 						v++;
 					if (tok == v) {
-						Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' has no default value — line ignored", scriptPath.c_str(), def.key.c_str());
+						Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' has no default value -- line ignored", scriptPath.c_str(), def.key.c_str());
 						continue;
 					}
 					def.defaultValue.assign(tok, v);
@@ -337,7 +340,7 @@ namespace RetrodevLib {
 						while (*v && *v != ' ' && *v != '\t')
 							v++;
 						if (tok == v) {
-							Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' combo has no options list — line ignored", scriptPath.c_str(), def.key.c_str());
+							Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' combo has no options list -- line ignored", scriptPath.c_str(), def.key.c_str());
 							continue;
 						}
 						//
@@ -352,7 +355,7 @@ namespace RetrodevLib {
 							op = (pipe < v) ? pipe + 1 : v;
 						}
 						if (def.options.empty()) {
-							Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' combo options list is empty — line ignored", scriptPath.c_str(), def.key.c_str());
+							Log::Warning(LogChannel::Script, "[Script] %s: @param '%s' combo options list is empty -- line ignored", scriptPath.c_str(), def.key.c_str());
 							continue;
 						}
 						while (*v == ' ' || *v == '\t')
@@ -377,7 +380,7 @@ namespace RetrodevLib {
 		// -------------------------------------------------------------- //
 
 		//
-		// Generic wrappers for Image — required by AS_MAX_PORTABILITY builds
+		// Generic wrappers for Image -- required by AS_MAX_PORTABILITY builds
 		// (asCALL_GENERIC is the only calling convention always available)
 		//
 		static void Image_GetWidth_Generic(asIScriptGeneric* gen) {
@@ -393,11 +396,19 @@ namespace RetrodevLib {
 			*(RgbColor*)gen->GetAddressOfReturnLocation() = self->GetPixelColor(x, y);
 		}
 		//
+		//
+		static void RgbColor_IsTransparent_Generic(asIScriptGeneric* gen) {
+			gen->SetReturnByte((asBYTE) static_cast<RgbColor*>(gen->GetObject())->IsTransparent());
+		}
+		static void RgbColor_IsOpaque_Generic(asIScriptGeneric* gen) {
+			gen->SetReturnByte((asBYTE) static_cast<RgbColor*>(gen->GetObject())->IsOpaque());
+		}
+		//
 		void RegisterRgbColorBinding(asIScriptEngine* engine) {
 			if (g_engine.rgbColorRegistered)
 				return;
 			//
-			// RgbColor — 4-byte POD value type; asOBJ_APP_CLASS | asOBJ_APP_CLASS_ALLINTS
+			// RgbColor -- 4-byte POD value type; asOBJ_APP_CLASS | asOBJ_APP_CLASS_ALLINTS
 			// ensures AS uses the correct calling convention on all platforms
 			//
 			engine->RegisterObjectType("RgbColor", sizeof(RgbColor), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_CLASS | asOBJ_APP_CLASS_ALLINTS);
@@ -405,13 +416,15 @@ namespace RetrodevLib {
 			engine->RegisterObjectProperty("RgbColor", "uint8 g", asOFFSET(RgbColor, g));
 			engine->RegisterObjectProperty("RgbColor", "uint8 b", asOFFSET(RgbColor, b));
 			engine->RegisterObjectProperty("RgbColor", "uint8 a", asOFFSET(RgbColor, a));
+			engine->RegisterObjectMethod("RgbColor", "bool IsTransparent() const", asFUNCTION(RgbColor_IsTransparent_Generic), asCALL_GENERIC);
+			engine->RegisterObjectMethod("RgbColor", "bool IsOpaque() const", asFUNCTION(RgbColor_IsOpaque_Generic), asCALL_GENERIC);
 			g_engine.rgbColorRegistered = true;
 		}
 		void RegisterImageBinding(asIScriptEngine* engine) {
 			if (g_engine.imageRegistered)
 				return;
 			//
-			// Image — ref type, no script-side reference counting (C++ owns the lifetime)
+			// Image -- ref type, no script-side reference counting (C++ owns the lifetime)
 			//
 			engine->RegisterObjectType("Image", 0, asOBJ_REF | asOBJ_NOCOUNT);
 			engine->RegisterObjectMethod("Image", "int GetWidth() const", asFUNCTION(Image_GetWidth_Generic), asCALL_GENERIC);
@@ -463,7 +476,7 @@ namespace RetrodevLib {
 			if (g_engine.paletteRegistered)
 				return;
 			//
-			// IPaletteConverter — ref type, no script-side reference counting (C++ owns lifetime)
+			// IPaletteConverter -- ref type, no script-side reference counting (C++ owns lifetime)
 			//
 			engine->RegisterObjectType("Palette", 0, asOBJ_REF | asOBJ_NOCOUNT);
 			engine->RegisterObjectMethod("Palette", "int PaletteMaxColors() const", asFUNCTION(Palette_PaletteMaxColors_Generic), asCALL_GENERIC);
@@ -475,5 +488,5 @@ namespace RetrodevLib {
 			g_engine.paletteRegistered = true;
 		}
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

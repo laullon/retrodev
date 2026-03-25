@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Amstrad CPC converter -- system registration and shared constants.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
@@ -25,7 +25,7 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		const std::string Mode0 = "Mode 0";
 		const std::string Mode1 = "Mode 1";
 		const std::string Mode2 = "Mode 2";
-	} 
+	}
 	//
 	// List of all available modes
 	//
@@ -38,7 +38,7 @@ namespace RetrodevLib::ConverterAmstradCPC {
 		const std::string Overscan = "Overscan";
 		const std::string Custom = "Custom";
 		const std::string Original = "Original";
-	} 
+	}
 	//
 	// List of all available resolutions
 	//
@@ -49,10 +49,10 @@ namespace RetrodevLib::ConverterAmstradCPC {
 	namespace CPCPaletteTypes {
 		const std::string Hardware = "GA Palette";
 		const std::string Plus = "ASIC Palette";
-	} 
+	}
 	//
 	// List of all available palette types
 	//
 	static const std::vector<std::string> CPCPaletteTypesList = {CPCPaletteTypes::Hardware, CPCPaletteTypes::Plus};
 
-} 
+}

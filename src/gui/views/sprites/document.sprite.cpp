@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Sprite extraction document -- define and preview sprite regions.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -159,6 +162,19 @@ namespace RetrodevGui {
 			return;
 		}
 		//
+		// Rebuild converter if it was reset by OnProjectItemChanged
+		//
+		if (!m_converter) {
+			RetrodevLib::GFXParams* params = nullptr;
+			if (RetrodevLib::Project::SpriteGetCfg(m_name, &params) && params) {
+				m_converter = RetrodevLib::Converters::GetBitmapConverter(params);
+				if (m_converter) {
+					m_converter->SetOriginal(m_image);
+					m_converter->Convert(params);
+				}
+			}
+		}
+		//
 		// Show error state if converter failed to initialize
 		//
 		if (!m_converter) {
@@ -194,16 +210,6 @@ namespace RetrodevGui {
 		if (RetrodevLib::Project::SpriteGetCfg(m_name, &params) == false || params == nullptr) {
 			AppConsole::AddLogF(AppConsole::LogLevel::Error, "Failed fetching conversion parameters for: %s", m_name.c_str());
 			return;
-		}
-		//
-		// Rebuild converter if it was reset by OnProjectItemChanged
-		//
-		if (!m_converter) {
-			m_converter = RetrodevLib::Converters::GetBitmapConverter(params);
-			if (m_converter) {
-				m_converter->SetOriginal(m_image);
-				m_converter->Convert(params);
-			}
 		}
 		//
 		// Get the texture to be painted (original image)
@@ -501,6 +507,27 @@ namespace RetrodevGui {
 					m_cachedSpritePreviewIndex = m_selectedSpriteIndex;
 					m_cachedSpritePreviewAspect = m_spritePreviewAspectCorrection;
 					m_cachedSpritePreviewScanlines = m_spritePreviewScanlines;
+					//
+					// Scan source sprite pixels for transparency (once per regen, not every frame)
+					//
+					m_cachedSpriteHasTransparency = false;
+					SDL_Surface* surf = m_selectedSpriteImage->GetSurface();
+					if (surf && surf->format == SDL_PIXELFORMAT_RGBA32 && SDL_LockSurface(surf) == true) {
+						const uint8_t* pixels = static_cast<const uint8_t*>(surf->pixels);
+						const int w = m_selectedSpriteImage->GetWidth();
+						const int h = m_selectedSpriteImage->GetHeight();
+						for (int py = 0; py < h && !m_cachedSpriteHasTransparency; py++) {
+							const uint8_t* row = pixels + py * surf->pitch;
+							for (int px = 0; px < w && !m_cachedSpriteHasTransparency; px++) {
+								//
+								// RGBA32: alpha is byte 3 of each 4-byte pixel
+								//
+								if (row[px * 4 + 3] < 255)
+									m_cachedSpriteHasTransparency = true;
+							}
+						}
+						SDL_UnlockSurface(surf);
+					}
 				}
 
 				// Use cached preview image to create texture (keeps texture alive across frames)
@@ -520,6 +547,11 @@ namespace RetrodevGui {
 					m_extractionZoomStateRight.name = "Sprite #" + std::to_string(m_selectedSpriteIndex);
 					m_extractionZoomStateRight.showInfo = true;
 					m_extractionZoomStateRight.showPixelGrid = true;
+					//
+					// Apply cached transparency result -- darkens checkerboard when sprite has transparent pixels
+					// so the sprite boundary is clearly visible against the background pattern
+					//
+					m_extractionZoomStateRight.backgroundOverlayColor = m_cachedSpriteHasTransparency ? ImVec4(0.0f, 0.0f, 0.0f, 0.45f) : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 				}
 			}
 		}
@@ -615,7 +647,7 @@ namespace RetrodevGui {
 				//
 				if (SpriteExtractionWidget::IsSelectionModeActive()) {
 					//
-					// Round float logical coords to nearest integer — raw mouse coords are sub-pixel
+					// Round float logical coords to nearest integer -- raw mouse coords are sub-pixel
 					// fractional values; truncation would silently eat pixels (e.g. 2.7 -> 2)
 					//
 					int selX = static_cast<int>(std::lroundf(m_extractionZoomStateLeft.selection.x));
@@ -629,8 +661,10 @@ namespace RetrodevGui {
 					if (SpriteExtractionWidget::IsConstrainActive() && selW > 0 && selH > 0) {
 						int cw = SpriteExtractionWidget::GetConstraintW();
 						int ch = SpriteExtractionWidget::GetConstraintH();
-						if (cw > 1) selW = std::max(cw, ((selW + cw - 1) / cw) * cw);
-						if (ch > 1) selH = std::max(ch, ((selH + ch - 1) / ch) * ch);
+						if (cw > 1)
+							selW = std::max(cw, ((selW + cw - 1) / cw) * cw);
+						if (ch > 1)
+							selH = std::max(ch, ((selH + ch - 1) / ch) * ch);
 						m_extractionZoomStateLeft.selection.z = static_cast<float>(selW);
 						m_extractionZoomStateLeft.selection.w = static_cast<float>(selH);
 					}
@@ -648,11 +682,16 @@ namespace RetrodevGui {
 			// Bottom: sprite list panel
 			//
 			if (ImGui::BeginChild("SpriteListPanel", ImVec2(-1, m_extractionVSizeBottom), true)) {
-				auto spriteListResult = SpriteListWidget::Render(m_spriteExtractor, spriteParams, m_selectedSpriteIndex);
-				if (spriteListResult.spriteSelected) {
-					m_selectedSpriteIndex = spriteListResult.selectedSpriteIndex;
+				auto spriteListResult = SpriteListWidget::Render(m_spriteExtractor, spriteParams, m_spriteSelection, m_spritePrimaryIndex);
+				//
+				// Selection change: update primary index and the full selection set
+				//
+				if (spriteListResult.selectionChanged) {
+					m_spriteSelection = spriteListResult.newSelection;
+					m_spritePrimaryIndex = spriteListResult.primaryIndex;
+					m_selectedSpriteIndex = m_spritePrimaryIndex;
 					//
-					// When a sprite is selected, show its selection box on the converted image
+					// Show the primary sprite's region on the converted image
 					//
 					if (m_selectedSpriteIndex >= 0 && m_selectedSpriteIndex < static_cast<int>(spriteParams->Sprites.size())) {
 						const auto& spriteDef = spriteParams->Sprites[m_selectedSpriteIndex];
@@ -665,14 +704,47 @@ namespace RetrodevGui {
 						m_extractionZoomStateLeft.selectionActive = true;
 					}
 				}
-				if (spriteListResult.spriteDeleted && spriteListResult.deletedSpriteIndex >= 0
-					&& spriteListResult.deletedSpriteIndex < static_cast<int>(spriteParams->Sprites.size())) {
-					spriteParams->Sprites.erase(spriteParams->Sprites.begin() + spriteListResult.deletedSpriteIndex);
+				//
+				// Context menu operations -- all share the same re-extract + select pattern
+				//
+				auto reExtractAndSelect = [&](int selectIndex) {
+					if (m_spriteExtractor && m_converter) {
+						auto convertedImage = m_converter->GetConverted(params);
+						if (convertedImage)
+							m_spriteExtractor->Extract(convertedImage, spriteParams);
+					}
+					m_selectedSpriteIndex = selectIndex;
+					m_spritePrimaryIndex = selectIndex;
+					m_spriteSelection.clear();
+					if (selectIndex >= 0)
+						m_spriteSelection.push_back(selectIndex);
+					m_selectedSpritePreview = nullptr;
+					m_cachedSpritePreviewIndex = -1;
+					SetModified(true);
+					RetrodevLib::Project::MarkAsModified();
+				};
+				//
+				// Remove: erase all source indices in descending order to keep indices stable
+				//
+				if (spriteListResult.removeSprites && !spriteListResult.operationSourceIndices.empty()) {
+					std::vector<int> toRemove = spriteListResult.operationSourceIndices;
+					std::sort(toRemove.begin(), toRemove.end(), std::greater<int>());
+					int totalSprites = static_cast<int>(spriteParams->Sprites.size());
+					for (int idx : toRemove) {
+						if (idx >= 0 && idx < totalSprites) {
+							spriteParams->Sprites.erase(spriteParams->Sprites.begin() + idx);
+							totalSprites--;
+						}
+					}
 					//
-					// Clamp selection to valid range after removal
+					// Clamp primary selection to valid range
 					//
 					if (m_selectedSpriteIndex >= static_cast<int>(spriteParams->Sprites.size()))
 						m_selectedSpriteIndex = static_cast<int>(spriteParams->Sprites.size()) - 1;
+					m_spritePrimaryIndex = m_selectedSpriteIndex;
+					m_spriteSelection.clear();
+					if (m_selectedSpriteIndex >= 0)
+						m_spriteSelection.push_back(m_selectedSpriteIndex);
 					//
 					// Re-extract from converted image with updated sprite list
 					//
@@ -681,13 +753,100 @@ namespace RetrodevGui {
 						if (convertedImage)
 							m_spriteExtractor->Extract(convertedImage, spriteParams);
 					}
-					//
-					// Invalidate cached sprite preview
-					//
-					m_selectedSpritePreview    = nullptr;
+					m_selectedSpritePreview = nullptr;
 					m_cachedSpritePreviewIndex = -1;
 					SetModified(true);
 					RetrodevLib::Project::MarkAsModified();
+				}
+				//
+				// Duplicate (no transform): one copy per source sprite
+				//
+				if (spriteListResult.duplicate && !spriteListResult.operationSourceIndices.empty()) {
+					int totalSprites = static_cast<int>(spriteParams->Sprites.size());
+					for (int srcIdx : spriteListResult.operationSourceIndices) {
+						if (srcIdx < 0 || srcIdx >= totalSprites)
+							continue;
+						RetrodevLib::SpriteDefinition newDef = spriteParams->Sprites[srcIdx];
+						newDef.Name += "_copy";
+						spriteParams->Sprites.push_back(newDef);
+					}
+					reExtractAndSelect(static_cast<int>(spriteParams->Sprites.size()) - 1);
+				}
+				//
+				// Duplicate + flip: one copy per source sprite with the requested flip applied
+				//
+				if ((spriteListResult.duplicateFlipH || spriteListResult.duplicateFlipV) && !spriteListResult.operationSourceIndices.empty()) {
+					int totalSprites = static_cast<int>(spriteParams->Sprites.size());
+					for (int srcIdx : spriteListResult.operationSourceIndices) {
+						if (srcIdx < 0 || srcIdx >= totalSprites)
+							continue;
+						RetrodevLib::SpriteDefinition newDef = spriteParams->Sprites[srcIdx];
+						if (spriteListResult.duplicateFlipH) {
+							newDef.FlipH = !newDef.FlipH;
+							newDef.Name += "_fh";
+						}
+						if (spriteListResult.duplicateFlipV) {
+							newDef.FlipV = !newDef.FlipV;
+							newDef.Name += "_fv";
+						}
+						spriteParams->Sprites.push_back(newDef);
+					}
+					reExtractAndSelect(static_cast<int>(spriteParams->Sprites.size()) - 1);
+				}
+				//
+				// Duplicate + shift: one copy per source sprite shifted one pixel in the requested direction
+				//
+				if ((spriteListResult.duplicateShiftLeft || spriteListResult.duplicateShiftRight || spriteListResult.duplicateShiftUp || spriteListResult.duplicateShiftDown) &&
+					!spriteListResult.operationSourceIndices.empty()) {
+					int totalSprites = static_cast<int>(spriteParams->Sprites.size());
+					for (int srcIdx : spriteListResult.operationSourceIndices) {
+						if (srcIdx < 0 || srcIdx >= totalSprites)
+							continue;
+						RetrodevLib::SpriteDefinition newDef = spriteParams->Sprites[srcIdx];
+						if (spriteListResult.duplicateShiftLeft) { newDef.ShiftX -= 1; newDef.Name += "_sl"; }
+						if (spriteListResult.duplicateShiftRight) { newDef.ShiftX += 1; newDef.Name += "_sr"; }
+						if (spriteListResult.duplicateShiftUp) { newDef.ShiftY -= 1; newDef.Name += "_su"; }
+						if (spriteListResult.duplicateShiftDown) { newDef.ShiftY += 1; newDef.Name += "_sd"; }
+						spriteParams->Sprites.push_back(newDef);
+					}
+					reExtractAndSelect(static_cast<int>(spriteParams->Sprites.size()) - 1);
+				}
+				//
+				// In-place flip: toggle FlipH/V on each selected sprite
+				//
+				if ((spriteListResult.flipH || spriteListResult.flipV) && !spriteListResult.operationSourceIndices.empty()) {
+					int totalSprites = static_cast<int>(spriteParams->Sprites.size());
+					int lastIdx = -1;
+					for (int srcIdx : spriteListResult.operationSourceIndices) {
+						if (srcIdx < 0 || srcIdx >= totalSprites)
+							continue;
+						if (spriteListResult.flipH)
+							spriteParams->Sprites[srcIdx].FlipH = !spriteParams->Sprites[srcIdx].FlipH;
+						if (spriteListResult.flipV)
+							spriteParams->Sprites[srcIdx].FlipV = !spriteParams->Sprites[srcIdx].FlipV;
+						lastIdx = srcIdx;
+					}
+					if (lastIdx >= 0)
+						reExtractAndSelect(m_spritePrimaryIndex >= 0 ? m_spritePrimaryIndex : lastIdx);
+				}
+				//
+				// In-place shift: adjust ShiftX/Y on each selected sprite
+				//
+				if ((spriteListResult.shiftLeft || spriteListResult.shiftRight || spriteListResult.shiftUp || spriteListResult.shiftDown) &&
+					!spriteListResult.operationSourceIndices.empty()) {
+					int totalSprites = static_cast<int>(spriteParams->Sprites.size());
+					int lastIdx = -1;
+					for (int srcIdx : spriteListResult.operationSourceIndices) {
+						if (srcIdx < 0 || srcIdx >= totalSprites)
+							continue;
+						if (spriteListResult.shiftLeft) spriteParams->Sprites[srcIdx].ShiftX -= 1;
+						if (spriteListResult.shiftRight) spriteParams->Sprites[srcIdx].ShiftX += 1;
+						if (spriteListResult.shiftUp) spriteParams->Sprites[srcIdx].ShiftY -= 1;
+						if (spriteListResult.shiftDown) spriteParams->Sprites[srcIdx].ShiftY += 1;
+						lastIdx = srcIdx;
+					}
+					if (lastIdx >= 0)
+						reExtractAndSelect(m_spritePrimaryIndex >= 0 ? m_spritePrimaryIndex : lastIdx);
 				}
 			}
 			ImGui::EndChild();
@@ -812,7 +971,7 @@ namespace RetrodevGui {
 			}
 			ImGui::Separator();
 			//
-			// 2. Export section — script-driven sprite export
+			// 2. Export section -- script-driven sprite export
 			//
 			m_exportWidget.Render(RetrodevLib::ProjectBuildType::Sprite, m_name, params, m_converter, nullptr, nullptr, m_spriteExtractor, spriteParams);
 			//
@@ -822,4 +981,4 @@ namespace RetrodevGui {
 		}
 		ImGui::EndChild();
 	}
-} // namespace RetrodevGui
+}

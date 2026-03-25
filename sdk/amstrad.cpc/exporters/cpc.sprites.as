@@ -1,5 +1,13 @@
 // ---------------------------------------------------------------------------
 //
+// Retrodev SDK
+//
+// CPC sprites export script -- exports extracted sprites as raw byte data.
+//
+// (c) TLOTB 2026
+//
+// ---------------------------------------------------------------------------
+//
 // Script metadata
 //
 // @description Exports CPC sprites as raw byte data, one sprite after another.
@@ -13,9 +21,9 @@
 // Sprites can have arbitrary sizes; each row is encoded according to the
 // active CPC video mode pixel-per-byte count:
 //
-//   Mode 0 — 2 pixels per byte, 16 colours
-//   Mode 1 — 4 pixels per byte,  4 colours
-//   Mode 2 — 8 pixels per byte,  2 colours
+//   Mode 0 -- 2 pixels per byte, 16 colours
+//   Mode 1 -- 4 pixels per byte,  4 colours
+//   Mode 2 -- 8 pixels per byte,  2 colours
 //
 // Rows are emitted top-to-bottom.  Sprites with a width that is not a
 // multiple of the mode's pixels-per-byte count are rejected with an error.
@@ -47,7 +55,7 @@ void Export(const string& in outputPath, SpriteExportContext@ ctx)
     // Validate that we have sprites to export
     //
     if (spriteCount <= 0) {
-        Log_Error("Export failed: no sprites extracted — run extraction first.");
+        Log_Error("Export failed: no sprites extracted -- run extraction first.");
         return;
     }
     //
@@ -56,7 +64,7 @@ void Export(const string& in outputPath, SpriteExportContext@ ctx)
     int ppb = 2;
     if (mode == "Mode 1") ppb = 4;
     else if (mode == "Mode 2") ppb = 8;
-    Log_Info("Export started — system: " + system + "  mode: " + mode
+    Log_Info("Export started -- system: " + system + "  mode: " + mode
         + "  sprites: " + spriteCount
         + "  header: " + writeHeader
         + "  output: " + outputPath);
@@ -84,6 +92,10 @@ void Export(const string& in outputPath, SpriteExportContext@ ctx)
     //
     // Encode each sprite
     //
+    bool useTransp = ctx.GetUseTransparentColor();
+    int transpPen = ctx.GetTransparentPen();
+    bool warnedNoTranspPen = false;
+    bool warnedNoPen = false;
     for (int i = 0; i < spriteCount; i++) {
         Image@ img = ctx.GetSprite(i);
         if (img is null) {
@@ -104,16 +116,33 @@ void Export(const string& in outputPath, SpriteExportContext@ ctx)
         array<int> penRow(w);
         for (int row = 0; row < h; row++) {
             //
-            // Build a row of pen indices by looking up each pixel in the palette
+            // Build a row of pen indices, applying transparent pixel detection
             //
             for (int col = 0; col < w; col++) {
                 RgbColor px = img.GetPixelColor(col, row);
-                int pen = palette.PenGetIndex(px);
-                if (pen < 0) {
-                    Log_Warning("Sprite #" + i + " pixel " + col + "," + row
-                        + " rgb(" + px.r + "," + px.g + "," + px.b + ")"
-                        + " transparent has no matching pen — using pen 0.");
-                    pen = 0;
+                //
+                // Transparent pixel: alpha==0 (IsTransparent) or chroma-key enabled
+                //
+                bool isTransp = useTransp && px.IsTransparent();
+                int pen;
+                if (isTransp) {
+                    pen = transpPen;
+                    if (pen < 0) {
+                        if (!warnedNoTranspPen) {
+                            Log_Warning("Transparent pixels found but no transparent pen configured -- using pen 0.");
+                            warnedNoTranspPen = true;
+                        }
+                        pen = 0;
+                    }
+                } else {
+                    pen = palette.PenGetIndex(px);
+                    if (pen < 0) {
+                        if (!warnedNoPen) {
+                            Log_Warning("One or more pixels have no matching pen -- using pen 0.");
+                            warnedNoPen = true;
+                        }
+                        pen = 0;
+                    }
                 }
                 penRow[col] = pen;
             }
@@ -123,7 +152,7 @@ void Export(const string& in outputPath, SpriteExportContext@ ctx)
             EncodePixels(penRow, 0, w, mode, buf);
         }
         Log_Info("Sprite #" + i + " '" + ctx.GetSpriteName(i)
-            + "' — " + w + "x" + h + " → " + (h * bytesPerRow) + " bytes");
+            + "' -- " + w + "x" + h + " -> " + (h * bytesPerRow) + " bytes");
     }
     //
     // Write the buffer to disk
@@ -136,5 +165,5 @@ void Export(const string& in outputPath, SpriteExportContext@ ctx)
     for (uint k = 0; k < buf.length(); k++)
         f.writeUInt(buf[k], 1);
     f.close();
-    Log_Info("Export complete — " + buf.length() + " bytes written to: " + outputPath);
+    Log_Info("Export complete -- " + buf.length() + " bytes written to: " + outputPath);
 }

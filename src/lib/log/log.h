@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Log subsystem -- channel-based message routing to the console panel.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -17,11 +20,11 @@ namespace RetrodevLib {
 	//
 	enum class LogLevel { Info, Warning, Error };
 	//
-	// Log channel — identifies which subsystem emitted the message.
+	// Log channel -- identifies which subsystem emitted the message.
 	// The host can use this to route messages to separate console tabs.
-	//   General — general library messages (project, converters, etc.)
-	//   Build   — assembler / compiler output
-	//   Script  — AngelScript engine and export script output
+	//   General -- general library messages (project, converters, etc.)
+	//   Build   -- assembler / compiler output
+	//   Script  -- AngelScript engine and export script output
 	//
 	enum class LogChannel { General, Build, Script };
 	//
@@ -35,7 +38,7 @@ namespace RetrodevLib {
 	//
 	// Internal library logger
 	//
-	// Usage inside the library — General channel (default):
+	// Usage inside the library -- General channel (default):
 	//   Log::Info("Loaded %d sprites", count);
 	//   Log::Warning("Texture size %dx%d exceeds limit", w, h);
 	//   Log::Error("Failed to open file: %s", path);
@@ -83,7 +86,7 @@ namespace RetrodevLib {
 
 	private:
 		//
-		// Internal formatter — invokes the registered callback with the formatted message
+		// Internal formatter -- invokes the registered callback with the formatted message
 		//
 		static void Write(LogLevel level, LogChannel channel, const char* format, va_list args);
 		//
@@ -92,4 +95,4 @@ namespace RetrodevLib {
 		static inline LogCallback m_callback = nullptr;
 	};
 
-} // namespace RetrodevLib
+}

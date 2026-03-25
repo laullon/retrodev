@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Build document -- emulator launch settings panel.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -14,7 +17,7 @@ namespace RetrodevGui {
 	//
 	// Machine-local emulator executable paths.
 	// Stored in retrodev.ini (via ImGui settings handler) so they are NOT saved
-	// into the project file — the same project can be used on different machines
+	// into the project file -- the same project can be used on different machines
 	// where emulators may be installed in different locations.
 	//
 	class EmulatorSettings {
@@ -41,7 +44,7 @@ namespace RetrodevGui {
 
 	private:
 		//
-		// Stored paths — indexed by emulator name
+		// Stored paths -- indexed by emulator name
 		//
 		inline static std::string s_winapeExe;
 		inline static std::string s_rvmExe;
@@ -52,4 +55,4 @@ namespace RetrodevGui {
 		inline static std::string s_pendingEmulator;
 	};
 
-} // namespace RetrodevGui
+}

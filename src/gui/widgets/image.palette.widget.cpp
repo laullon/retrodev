@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Image palette widget -- displays and edits the hardware pen palette.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -25,7 +28,7 @@ namespace RetrodevGui {
 			return false;
 		}
 		//
-		// Ensure a valid pen is always selected — default to index 0
+		// Ensure a valid pen is always selected -- default to index 0
 		//
 		if (m_selectedPen < 0)
 			m_selectedPen = 0;
@@ -192,4 +195,4 @@ namespace RetrodevGui {
 		return changed;
 	}
 
-} // namespace RetrodevGui
+}

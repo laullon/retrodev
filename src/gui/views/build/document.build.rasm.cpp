@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Build document -- RASM assembler invocation and output parsing.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -207,6 +209,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Emit a warning for every symbol that is defined but never referenced");
 		//
@@ -272,6 +276,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Maxam-style floor truncation for floating-point expressions");
 		bool noampersand = HasFlag(opts, "-amper");
@@ -281,6 +287,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Accept & as a hexadecimal prefix (e.g. &1A2B) in addition to the default 0x and # notations");
 		bool freequote = HasFlag(opts, "-fq");
@@ -290,6 +298,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Treat all characters inside quotes literally");
 		bool utf8 = HasFlag(opts, "-utf8");
@@ -299,6 +309,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Translate UTF-8 multi-byte keyboard sequences to the corresponding CPC character codes");
 		//
@@ -306,8 +318,11 @@ namespace RetrodevGui {
 		//
 		std::string sepStr = GetFlagValue(opts, "-msep");
 		char sepBuf[2] = {sepStr.empty() ? '.' : sepStr[0], '\0'};
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Module separator (-msep)");
+		ImGui::SameLine();
 		ImGui::SetNextItemWidth(fontSize * 3.0f);
-		if (ImGui::InputText("Module separator (-msep)", sepBuf, sizeof(sepBuf))) {
+		if (ImGui::InputText("##msep", sepBuf, sizeof(sepBuf))) {
 			if (sepBuf[0] != '\0' && sepBuf[0] != '.') {
 				SetFlagValue(opts, "-msep", std::string(1, sepBuf[0]));
 				RetrodevLib::Project::MarkAsModified();
@@ -320,6 +335,8 @@ namespace RetrodevGui {
 					*m_docModified = true;
 			}
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Character between module name and symbol name (default '.')");
 		//
@@ -333,6 +350,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Accept macro calls without parameters even when parameters are declared");
 		bool mml = HasFlag(opts, "-mml");
@@ -342,6 +361,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Allow macro invocations to span multiple lines");
 		//
@@ -355,6 +376,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Print pass count, binary size and timings after a successful assembly");
 		bool verboseMap = HasFlag(opts, "-map");
@@ -364,6 +387,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Display detailed bank map and segment layout during early assembly stages");
 		bool cprinfo = HasFlag(opts, "-cprquiet");
@@ -373,6 +398,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Disable the detailed ROM/cartridge bank information printed in cartridge mode");
 		//
@@ -380,8 +407,10 @@ namespace RetrodevGui {
 		//
 		ImGui::Spacing();
 		ImGui::SeparatorText(ICON_CONSOLE_LINE " Generated options");
-		ImGui::SetNextItemWidth(-1.0f);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
 		ImGui::InputText("##RasmOptsPreview", const_cast<char*>(opts.c_str()), opts.size() + 1, ImGuiInputTextFlags_ReadOnly);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Command-line flags that will be passed to RASM");
 	}
@@ -401,6 +430,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Derive the output filename prefix from the input source filename");
 		ImGui::BeginDisabled(autoRadix);
@@ -447,9 +478,11 @@ namespace RetrodevGui {
 		if (ImGui::IsItemHovered()) {
 			bool osRasmAndSymConflict = HasFlag(opts, "-rasm") && (HasFlag(opts, "-s") || HasFlag(opts, "-sz") || HasFlag(opts, "-sw") || HasFlag(opts, "-sc"));
 			if (osRasmAndSymConflict)
-				ImGui::SetTooltip("-os cannot be used when both -rasm and a standard symbol format (-s/-sz/-sw/-sc) are active.\nBoth outputs share the same path slot.\nLeave -os empty and enable -oa so RASM auto-derives both .sym and .rasm filenames from the input filename.");
+				ImGui::SetTooltip("-os cannot be used when both -rasm and a standard symbol format (-s/-sz/-sw/-sc) are active.\nBoth outputs share the same path slot.\nLeave -os "
+								  "empty and enable -oa so RASM auto-derives both .sym and .rasm filenames from the input filename.");
 			else
-				ImGui::SetTooltip("Full output path for the symbol / label export file.\nNote: if -rasm and a standard symbol format (-s/-sz/-sw/-sc) are both enabled, -os cannot be used;\nleave it empty and use -oa so both .sym and .rasm files are derived from the input filename automatically.");
+				ImGui::SetTooltip("Full output path for the symbol / label export file.\nNote: if -rasm and a standard symbol format (-s/-sz/-sw/-sc) are both enabled, -os cannot "
+								  "be used;\nleave it empty and use -oa so both .sym and .rasm files are derived from the input filename automatically.");
 		}
 		RenderPathField("Breakpoint file (-ok)", "-ok", m_breakpointNameBuf, sizeof(m_breakpointNameBuf), opts, "out/program.brk");
 		if (ImGui::IsItemHovered())
@@ -475,10 +508,11 @@ namespace RetrodevGui {
 				break;
 			}
 		}
-		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 16.0f);
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("Select the format used when writing the symbol / label export file (-os).\nNone: no symbol file is written.\nDefault (-s): plain address=label pairs.\nPasmo (-sz): Pasmo-compatible format.\nWinape (-sw): WinAPE breakpoint/symbol format.\nCustom (-sc): user-defined printf-style format string.");
-		if (ImGui::BeginCombo("Symbol export format", k_symFormats[symFormat])) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Symbol export format");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+		if (ImGui::BeginCombo("##symFormat", k_symFormats[symFormat])) {
 			for (int i = 0; i < k_symCount; i++) {
 				bool sel = (symFormat == i);
 				if (ImGui::Selectable(k_symFormats[i], sel)) {
@@ -490,14 +524,20 @@ namespace RetrodevGui {
 					if (m_docModified)
 						*m_docModified = true;
 				}
-				if (sel)
-					ImGui::SetItemDefaultFocus();
-			}
-			ImGui::EndCombo();
-		}
-		//
-		// Custom format string: only shown when Custom is selected
-		//
+						if (sel)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::SameLine();
+				ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+				if (ImGui::IsItemHovered())
+					ImGui::SetTooltip(
+						"Select the format used when writing the symbol / label export file (-os).\nNone: no symbol file is written.\nDefault (-s): plain address=label pairs.\nPasmo "
+						"(-sz): Pasmo-compatible format.\nWinape (-sw): WinAPE breakpoint/symbol format.\nCustom (-sc): user-defined printf-style format string.");
+				//
+				// Custom format string: only shown when Custom is selected
+				//
 		if (symFormat == 4) {
 			RenderPathField("Custom format (-sc)", "-sc", m_flexibleExportBuf, sizeof(m_flexibleExportBuf), opts);
 			if (ImGui::IsItemHovered())
@@ -513,6 +553,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Include module-local labels (those prefixed with '@') in the exported symbol file");
 		bool exportVar = HasFlag(opts, "-sv");
@@ -522,6 +564,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Include symbols defined with DEFW/DEFB/DEFD variable directives in the exported symbol file");
 		bool exportEqu = HasFlag(opts, "-sq");
@@ -531,6 +575,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Include EQU constant definitions in the exported symbol file");
 		bool exportMulti = HasFlag(opts, "-sm");
@@ -540,6 +586,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Write one symbol file per memory bank instead of a single combined file");
 		bool enforceCase = HasFlag(opts, "-ec");
@@ -549,6 +597,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Keep original label capitalisation instead of normalising to upper case");
 		bool exportRasm = HasFlag(opts, "-rasm");
@@ -558,12 +608,18 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered()) {
 			bool rasmAndSymConflict = exportRasm && (symFormat > 0);
 			if (rasmAndSymConflict)
-				ImGui::SetTooltip("Exports a RASM super-symbol file (.rasm) for use with ACE-DL.\nACE-DL requires symbols in .rasm format — the Symbol file path (-os) must use a .rasm extension.\nWARNING: -rasm and a standard symbol format (-s/-sz/-sw/-sc) are both active.\n-os cannot be shared between both outputs. Leave -os empty and enable -oa so RASM\nauto-derives both .sym and .rasm filenames from the input filename.");
+				ImGui::SetTooltip("Exports a RASM super-symbol file (.rasm) for use with ACE-DL.\nACE-DL requires symbols in .rasm format -- the Symbol file path (-os) must use a "
+								  ".rasm extension.\nWARNING: -rasm and a standard symbol format (-s/-sz/-sw/-sc) are both active.\n-os cannot be shared between both outputs. "
+								  "Leave -os empty and enable -oa so RASM\nauto-derives both .sym and .rasm filenames from the input filename.");
 			else
-				ImGui::SetTooltip("Exports a RASM super-symbol file (.rasm) for use with ACE-DL.\nACE-DL requires symbols in .rasm format — the Symbol file path (-os) must use a .rasm extension.\nIf a standard symbol format (-s/-sz/-sw/-sc) is also enabled, do not set -os;\nleave it empty and use -oa so RASM auto-derives both .sym and .rasm files from the input filename.");
+				ImGui::SetTooltip("Exports a RASM super-symbol file (.rasm) for use with ACE-DL.\nACE-DL requires symbols in .rasm format -- the Symbol file path (-os) must use a "
+								  ".rasm extension.\nIf a standard symbol format (-s/-sz/-sw/-sc) is also enabled, do not set -os;\nleave it empty and use -oa so RASM "
+								  "auto-derives both .sym and .rasm files from the input filename.");
 		}
 		bool exportBrk = HasFlag(opts, "-eb");
 		if (ImGui::Checkbox("Export breakpoints to file (-eb)", &exportBrk)) {
@@ -572,6 +628,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Write breakpoints to the file specified by the breakpoint path above");
 		//
@@ -585,6 +643,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Overwrite a file on a DSK/EDSK disk image if a file with the same name already exists");
 		//
@@ -592,8 +652,10 @@ namespace RetrodevGui {
 		//
 		ImGui::Spacing();
 		ImGui::SeparatorText(ICON_CONSOLE_LINE " Generated options");
-		ImGui::SetNextItemWidth(-1.0f);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
 		ImGui::InputText("##RasmOutPreview", const_cast<char*>(opts.c_str()), opts.size() + 1, ImGuiInputTextFlags_ReadOnly);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Command-line flags that will be passed to RASM");
 	}
@@ -613,6 +675,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Embed exported symbols inside the snapshot file (SYMB chunk, ACE-compatible)");
 		bool exportSnabrk = HasFlag(opts, "-sb");
@@ -622,6 +686,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Embed breakpoints inside the snapshot file (BRKS/BRKC chunks)");
 		bool snapshotV2 = HasFlag(opts, "-v2");
@@ -631,6 +697,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Write a version 2 snapshot instead of the default version 3");
 		//
@@ -644,6 +712,8 @@ namespace RetrodevGui {
 			if (m_docModified)
 				*m_docModified = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Write ROM labels to the CPR info file (path set in the Output tab)");
 		//
@@ -651,8 +721,10 @@ namespace RetrodevGui {
 		//
 		ImGui::Spacing();
 		ImGui::SeparatorText(ICON_CONSOLE_LINE " Generated options");
-		ImGui::SetNextItemWidth(-1.0f);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
 		ImGui::InputText("##RasmDbgPreview", const_cast<char*>(opts.c_str()), opts.size() + 1, ImGuiInputTextFlags_ReadOnly);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Command-line flags that will be passed to RASM");
 	}

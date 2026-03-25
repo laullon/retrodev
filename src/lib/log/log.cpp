@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Log subsystem -- channel-based message routing to the console panel.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -14,7 +17,7 @@ namespace RetrodevLib {
 		m_callback = callback;
 	}
 	//
-	// Public logging methods — General channel variants start a va_list and delegate to Write
+	// Public logging methods -- General channel variants start a va_list and delegate to Write
 	//
 	void Log::Info(const char* format, ...) {
 		va_list args;
@@ -64,4 +67,4 @@ namespace RetrodevLib {
 		m_callback(level, channel, buf);
 	}
 
-} // namespace RetrodevLib
+}

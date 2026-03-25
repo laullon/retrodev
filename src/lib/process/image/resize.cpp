@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Image processing -- resize and resampling pipeline.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include <utils/utils.h>
 #include <SDL3/SDL.h>
@@ -198,12 +198,10 @@ namespace RetrodevLib {
 		//
 		auto tmp = Image::ImageCreate(values.TargetWidth, values.TargetHeight);
 		if (!tmp || !tmp->GetSurface() || !src || !src->GetSurface()) {
-			Log::Error(LogChannel::General, "[Resize] Failed to create target image (%dx%d) or source is null.",
-				values.TargetWidth, values.TargetHeight);
+			Log::Error(LogChannel::General, "[Resize] Failed to create target image (%dx%d) or source is null.", values.TargetWidth, values.TargetHeight);
 			return nullptr;
 		}
-		Log::Info(LogChannel::General, "[Resize] %dx%d -> %dx%d.",
-			src->GetWidth(), src->GetHeight(), values.TargetWidth, values.TargetHeight);
+		Log::Info(LogChannel::General, "[Resize] %dx%d -> %dx%d.", src->GetWidth(), src->GetHeight(), values.TargetWidth, values.TargetHeight);
 		//
 		// Resolve the source to RGBA32 before locking for raw pixel access.
 		// Paletized (INDEX8) images are blitted through their palette into a
@@ -335,6 +333,23 @@ namespace RetrodevLib {
 				break;
 		}
 		//
+		// Clamp source region to actual source image bounds to prevent OOB reads
+		// This is critical for Custom mode where the caller provides an arbitrary rect
+		// that may extend beyond the image dimensions
+		//
+		if (srcX < 0) {
+			srcW += srcX;
+			srcX = 0;
+		}
+		if (srcY < 0) {
+			srcH += srcY;
+			srcY = 0;
+		}
+		if (srcX + srcW > srcRgba->GetWidth())
+			srcW = srcRgba->GetWidth() - srcX;
+		if (srcY + srcH > srcRgba->GetHeight())
+			srcH = srcRgba->GetHeight() - srcY;
+		//
 		// Clamp destination region to ensure we don't write outside the allocated buffer
 		// This prevents buffer overruns when centering images (letterbox/pillarbox modes)
 		//
@@ -412,4 +427,4 @@ namespace RetrodevLib {
 		return InterpolationModeNames;
 	}
 
-} // namespace RetrodevLib
+}

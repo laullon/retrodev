@@ -1,12 +1,12 @@
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Converter registry -- maps target system IDs to converter implementations.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #pragma once
 #include <convert/convert.bitmap.h>
@@ -49,12 +49,10 @@ namespace RetrodevLib {
 		// and modes is returned empty.
 		// hScale and vScale follow the same normalisation as ScreenAspect: smaller axis = 1.0.
 		//
-		static void GetAspectData(const std::string& system, const std::string& mode,
-								  float& hScale, float& vScale,
-								  std::vector<std::string>& modes);
+		static void GetAspectData(const std::string& system, const std::string& mode, float& hScale, float& vScale, std::vector<std::string>& modes);
 		//
 		// Returns a converter for the given system and parameters
 		//
 		static std::shared_ptr<IBitmapConverter> GetBitmapConverter(GFXParams* params);
 	};
-} // namespace RetrodevLib
+}

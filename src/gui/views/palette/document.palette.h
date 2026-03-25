@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Palette solver document -- shared palette computation across build items.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -40,7 +42,7 @@ namespace RetrodevGui {
 
 	private:
 		//
-		// Splitter state — main horizontal (left | right), right vertical (editor | solve),
+		// Splitter state -- main horizontal (left | right), right vertical (editor | solve),
 		// and inner horizontal inside RenderRightPanel (participant list | palette preview)
 		//
 		float m_hSizeLeft = 0.0f;
@@ -59,7 +61,7 @@ namespace RetrodevGui {
 		//
 		int m_selectedParticipant = -1;
 		//
-		// Live IPaletteConverter for the current target — rebuilt when target changes
+		// Live IPaletteConverter for the current target -- rebuilt when target changes
 		//
 		std::shared_ptr<RetrodevLib::IBitmapConverter> m_converter;
 		//
@@ -100,7 +102,7 @@ namespace RetrodevGui {
 		//
 		void RenderThumbnails(RetrodevLib::PaletteParams* params);
 		//
-		// Last solve result — empty until the user triggers a solve
+		// Last solve result -- empty until the user triggers a solve
 		//
 		RetrodevLib::PaletteSolution m_solution;
 		//
@@ -122,7 +124,7 @@ namespace RetrodevGui {
 		std::shared_ptr<RetrodevLib::IBitmapConverter> m_displayConverter;
 		RetrodevLib::GFXParams m_displayGfx;
 		//
-		// Selection indices that were used to build m_displayConverter — used to detect changes
+		// Selection indices that were used to build m_displayConverter -- used to detect changes
 		//
 		int m_lastDisplayZone = -1;
 		int m_lastDisplayTag = -1;
@@ -144,10 +146,23 @@ namespace RetrodevGui {
 		int m_lastOriginalZone = -1;
 		int m_lastOriginalParticipant = -1;
 		//
-		// Per-thumbnail zoom/pan state — keyed by the preview key so each thumbnail
+		// Per-thumbnail zoom/pan state -- keyed by the preview key so each thumbnail
 		// retains its own zoom level and pan offset across selection changes.
 		//
 		std::unordered_map<std::string, ImGui::ZoomableState> m_previewZoomStates;
+		//
+		// GFXParams and persistent palette for pre-loaded pen slot assignments (lock/enable/color arrays).
+		// m_preloadPalette is a shared_ptr that must outlive all widget usage to avoid dangling pointers.
+		RetrodevLib::GFXParams m_preloadGfx;
+		std::shared_ptr<RetrodevLib::IBitmapConverter> m_preloadPalette;
+		//
+		// Whether the "Pre-loaded" root entry is selected in the solution list
+		//
+		bool m_preloadedSelected = false;
+		//
+		// Render the editable pre-loaded palette widget and sync changes back to params
+		//
+		void RenderPreloadPaletteWidget(RetrodevLib::PaletteParams* params);
 	};
 
-} // namespace RetrodevGui
+}

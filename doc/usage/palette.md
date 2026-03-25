@@ -80,6 +80,16 @@ To add a participant, click **+** in the Participants header inside the right pa
 
 When a participant is selected in the list, the right sub-panel inside the zone editor shows the participant's **original palette** — the palette that item's own conversion produced, before the solver overrides it. This is read-only and is provided as a reference so you can see how many colours the item uses independently.
 
+### Pre-loaded palette
+
+Before running the solver you can manually lock specific pen slots to fixed hardware colours. Locked slots are injected at the head of the global Always union in Pass 1, guaranteeing they occupy the same pen positions in every zone and every level solution regardless of what the quantizer would otherwise assign.
+
+The pre-loaded palette widget is shown in the right bottom panel whenever no solution exists yet, and also when the **Pre-loaded** entry at the top of the solution list is selected after a solve.
+
+To lock a slot, click its colour swatch in the pre-loaded palette widget — the same palette widget used in other build items. Locked slots appear with a padlock indicator. Changing any pre-loaded slot immediately invalidates the current solution and requires a new solve.
+
+Pre-loaded slots persist in the project file. They are cleared (along with all participants) only when the target system or palette type is changed.
+
 ### Thumbnails
 
 Below the zone list in the left panel, participant thumbnails are shown for the currently selected zone. Each thumbnail displays the participant's name, its role icon, and — after a successful solve — the image as it looks converted with the solved palette. Before solving, a "solve to preview" message is shown instead.
@@ -87,6 +97,20 @@ Below the zone list in the left panel, participant thumbnails are shown for the 
 A **Level tag** combo above the thumbnail area filters which Level participants are shown. Selecting a specific tag shows only participants with that tag. Selecting **(all)** shows every participant regardless of tag.
 
 Clicking a thumbnail selects it. The selected thumbnail is highlighted with a blue border and its solved preview is shown in the right bottom panel alongside the solved palette.
+
+### Transparent pen and the solver
+
+When a participating build item has a **Transparent pen** configured (see [Bitmap Conversion — Transparent pen](bitmaps.md)), the palette solver treats that pen slot specially across all three passes:
+
+**Colour collection (all passes):** the transparent pen slot is excluded when the quantizer freely picks colours for that asset. No image colour is ever assigned to the reserved slot, so the asset loses no useful colour from its own budget to the transparency key.
+
+**Final conversion (all passes):** after the fixed palette is applied to a participant, the transparent pen slot is disabled so the remapping pass never maps any pixel to it. The colour the solver placed in that slot (which may belong to another asset) is irrelevant to this participant's rendered output.
+
+**Transparent pen remap:** after each cap pass (Always, Zone base, Level) the solver checks whether the transparent slot holds a colour that transparency-using participants actually need. If it does, the solver swaps it with the first non-transparent slot whose colour those participants do not need, so that needed colour moves to an accessible slot. If no such swap is possible the layout is left as-is and the affected colour may be remapped at the pixel level.
+
+**Result display:** in the per-participant result line after solving, the pens-assigned count reflects only the slots actually used for image colours. The transparent slot is annotated separately — for example: `Hard Cap  ·  15 pen(s) assigned  ·  +1 transparent (pen 0)`.
+
+**Design recommendation:** all transparency-using participants in a project should share the same pen slot number. If they differ, the solver logs a warning in the solution summary listing the conflicting pen indices. Using a single shared slot simplifies the remap logic and guarantees consistent behaviour across all zones and levels.
 
 ## The solver
 
@@ -151,7 +175,18 @@ Once satisfied with the solution, click **Validate**. This writes the solved pal
 
 The project is marked as modified and must be saved to persist the changes. All open documents for affected build items are notified and refresh their previews immediately.
 
-Validate is only available after a successful solve. If any participating build items are changed after solving (e.g. their conversion parameters are modified), the solution is automatically invalidated and must be re-solved before validating again.
+**Validate is available after any solve**, including imperfect ones where colours were remapped due to pen overflow. Clicking Validate on an imperfect solution records a *user-validated* flag in the project. The build pipeline respects this flag: when a palette dependency is processed during a build it re-runs the solver and applies the assignments even when the solution is not perfect, provided the user has previously validated it. A warning is logged to the Build output channel to make the overflow visible.
+
+The user-validated flag is automatically cleared whenever anything that would change the solve outcome is modified:
+
+- A participant is added, removed, or its build item, role or tag is changed.
+- A zone is added or removed.
+- A zone's screen mode is changed.
+- The pre-loaded palette is changed.
+- A participating build item's conversion parameters are changed externally (e.g. from within its own document).
+- The target system or palette type is changed (this also clears all participants).
+
+In all these cases the solution is invalidated and a new solve + validate cycle is required before the build pipeline will apply palette assignments again.
 
 ## Workflow summary
 
@@ -159,7 +194,8 @@ Validate is only available after a successful solve. If any participating build 
 2. Select **Target System** and **Palette Type**.
 3. Add one or more **zones** with appropriate scanline ranges and screen modes.
 4. For each zone, add **participants** (bitmaps, tilesets, sprites) with their roles. Level participants also require a tag.
-5. Click **Solve** and inspect the result list. Check that all entries are green.
-6. If there are overflows, reduce the number of colours in the affected graphics (via their own conversion settings) or reorganise participants into different zones.
-7. Once the solve is clean, click **Validate** to write the assignments back.
-8. Save the project. Each participating build item now carries the solved palette and will use it in subsequent conversions and exports.
+5. Optionally, lock one or more **pre-loaded** pen slots to specific hardware colours before solving. Locked slots are guaranteed to occupy the same pen positions in every solution.
+6. Click **Solve** and inspect the result list. Green entries mean all participants fit within their pen budgets.
+7. If there are overflows, either reduce the number of colours in the affected graphics (via their own conversion settings), reorganise participants into different zones, or choose a different **Overflow** method and re-solve. Overflowed solutions can still be validated — the build pipeline will apply them with a warning.
+8. Once you are satisfied with the result (perfect or accepted-overflow), click **Validate** to write the assignments back.
+9. Save the project. Each participating build item now carries the solved palette and will use it in subsequent conversions and exports.

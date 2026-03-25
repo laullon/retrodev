@@ -1,5 +1,13 @@
 // ---------------------------------------------------------------------------
 //
+// Retrodev SDK
+//
+// Map binary export script -- exports map layers as raw binary data.
+//
+// (c) TLOTB 2026
+//
+// ---------------------------------------------------------------------------
+//
 // Script metadata
 //
 // @description Exports map layers as raw binary data, one file per layer.
@@ -20,8 +28,8 @@
 // Layers with all-zero data are skipped unless include_empty is true.
 //
 // When layer_header is true, each file begins with a 4-byte header:
-//   byte 0-1  — layer width  as a little-endian uint16
-//   byte 2-3  — layer height as a little-endian uint16
+//   byte 0-1  -- layer width  as a little-endian uint16
+//   byte 2-3  -- layer height as a little-endian uint16
 //
 // The tile data follows immediately.  Each cell is stored as a
 // little-endian uint16 (the raw cell word from the map):
@@ -58,7 +66,7 @@ void Export(const string& in outputPath, MapExportContext@ ctx)
         return;
     }
 
-    Log_Info("Export started — layers: " + layerCount
+    Log_Info("Export started -- layers: " + layerCount
         + "  include_empty: " + includeEmpty
         + "  layer_header: " + writeHeader
         + "  output: " + outputPath);
@@ -116,7 +124,7 @@ void Export(const string& in outputPath, MapExportContext@ ctx)
         for (uint i = 0; i < buf.length(); i++)
             f.writeUInt(buf[i], 1);
         f.close();
-        Log_Info("Layer " + li + " done — " + buf.length() + " bytes written.");
+        Log_Info("Layer " + li + " done -- " + buf.length() + " bytes written.");
     }
     Log_Info("Export complete.");
 }

@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Main view -- menu bar.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -16,9 +19,15 @@
 #include <dialogs/dialog.about.h>
 #include <dialogs/dialog.help.h>
 #include <dialogs/dialog.confirm.h>
+#include <imgui_internal.h>
 #include <filesystem>
 
 namespace RetrodevGui {
+
+	//
+	// Last directory used in a project open/save dialog -- persisted in retrodev.ini
+	//
+	static std::string s_lastProjectDir;
 
 	//
 	// Execute a build for the given build item name.
@@ -34,8 +43,10 @@ namespace RetrodevGui {
 		DocumentsView::SaveAllModified();
 		if (RetrodevLib::Project::IsModified()) {
 			std::string currentProjectPath = RetrodevLib::Project::GetPath();
-			if (RetrodevLib::Project::Save(currentProjectPath))
+			if (RetrodevLib::Project::Save(currentProjectPath)) {
+				RetrodevLib::Project::ClearModified();
 				RetrodevGui::DocumentsView::ClearAllModifiedFlags();
+			}
 		}
 		AppConsole::Clear(AppConsole::Channel::Build);
 		//
@@ -70,11 +81,38 @@ namespace RetrodevGui {
 		RetrodevLib::SourceEmulator::Launch(dbgParams);
 	}
 
+	//
+	// INI settings handler -- persists the last directory used in a project file dialog
+	//
+	static void* MenuHandler_ReadOpen(ImGuiContext*, ImGuiSettingsHandler*, const char*) {
+		return (void*)1;
+	}
+	static void MenuHandler_ReadLine(ImGuiContext*, ImGuiSettingsHandler*, void*, const char* line) {
+		char buf[1024];
+		if (sscanf(line, "LastProjectDir=%1023[^\n]", buf) == 1)
+			s_lastProjectDir = buf;
+	}
+	static void MenuHandler_WriteAll(ImGuiContext*, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf) {
+		buf->appendf("[%s][MainViewMenu]\n", handler->TypeName);
+		buf->appendf("LastProjectDir=%s\n", s_lastProjectDir.c_str());
+		buf->append("\n");
+	}
+
+	void MainViewMenu::RegisterSettingsHandler() {
+		ImGuiSettingsHandler handler;
+		handler.TypeName = "MenuState";
+		handler.TypeHash = ImHashStr("MenuState");
+		handler.ReadOpenFn = MenuHandler_ReadOpen;
+		handler.ReadLineFn = MenuHandler_ReadLine;
+		handler.WriteAllFn = MenuHandler_WriteAll;
+		ImGui::AddSettingsHandler(&handler);
+	}
+
 	void MainViewMenu::RequestQuit() {
-		if (RetrodevLib::Project::IsOpen() && RetrodevLib::Project::IsModified()) {
-			ConfirmDialog::Show("There are unsaved changes. Quit anyway?", []() {
-				m_quitPending = true;
-			});
+		bool projectModified = RetrodevLib::Project::IsOpen() && RetrodevLib::Project::IsModified();
+		bool docsModified = DocumentsView::HasAnyModifiedDocuments();
+		if (projectModified || docsModified) {
+			ConfirmDialog::Show("There are unsaved changes. Quit anyway?", []() { m_quitPending = true; });
 		} else {
 			m_quitPending = true;
 		}
@@ -133,7 +171,7 @@ namespace RetrodevGui {
 		if (cursorX > ImGui::GetCursorPosX())
 			ImGui::SetCursorPosX(cursorX);
 		//
-		// Save button — only rendered when there are unsaved changes
+		// Save button -- only rendered when there are unsaved changes
 		//
 		if (isModified) {
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.75f, 0.45f, 0.10f, 1.00f));
@@ -146,7 +184,7 @@ namespace RetrodevGui {
 			}
 			ImGui::PopStyleColor(3);
 			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("Unsaved changes — click to save project");
+				ImGui::SetTooltip("Unsaved changes -- click to save project");
 			ImGui::SameLine();
 		}
 		//
@@ -191,10 +229,10 @@ namespace RetrodevGui {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 10.0f));
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem(ICON_FILE " New Project", "Ctrl+N")) {
-					ImGui::FileDialog::Instance().Save("NewProjectDialog", "New Project", "RetroDev Project (*.retrodev){.retrodev}");
+					ImGui::FileDialog::Instance().Save("NewProjectDialog", "New Project", "RetroDev Project (*.retrodev){.retrodev}", s_lastProjectDir);
 				}
 				if (ImGui::MenuItem(ICON_FOLDER_OPEN " Open Project", "Ctrl+O")) {
-					ImGui::FileDialog::Instance().Open("OpenProjectDialog", "Open Project", "RetroDev Project (*.retrodev){.retrodev}");
+					ImGui::FileDialog::Instance().Open("OpenProjectDialog", "Open Project", "RetroDev Project (*.retrodev){.retrodev}", false, s_lastProjectDir);
 				}
 				ImGui::BeginDisabled(!RetrodevLib::Project::IsOpen());
 				if (ImGui::MenuItem(ICON_CONTENT_SAVE " Save Project", "Ctrl+S")) {
@@ -249,17 +287,38 @@ namespace RetrodevGui {
 		if (ImGui::FileDialog::Instance().IsDone("NewProjectDialog")) {
 			if (ImGui::FileDialog::Instance().HasResult()) {
 				std::string projectPath = ImGui::FileDialog::Instance().GetResult().string();
+				s_lastProjectDir = std::filesystem::path(projectPath).parent_path().string();
 				//
-				// If the target file already exists, ask for confirmation before overwriting
+				// Helper that performs the actual New, optionally asking to overwrite an existing file
 				//
-				if (std::filesystem::exists(projectPath)) {
-					ConfirmDialog::Show("A project already exists at this location.\nOverwrite it?", [projectPath]() {
+				auto doNew = [projectPath]() {
+					if (std::filesystem::exists(projectPath)) {
+						ConfirmDialog::Show("A project already exists at this location.\nOverwrite it?", [projectPath]() {
+							if (!RetrodevLib::Project::New(projectPath))
+								ErrorDialog::Show("Failed to create project:\n" + projectPath);
+							else
+								DocumentsView::CloseAllDocuments();
+						});
+					} else {
 						if (!RetrodevLib::Project::New(projectPath))
 							ErrorDialog::Show("Failed to create project:\n" + projectPath);
+						else
+							DocumentsView::CloseAllDocuments();
+					}
+				};
+				//
+				// If a project is already open, confirm closing it first
+				//
+				if (RetrodevLib::Project::IsOpen()) {
+					std::string closeMsg = RetrodevLib::Project::IsModified() ? "The current project has unsaved changes.\nClose it and create a new project?"
+																			  : "Close the current project and create a new one?";
+					ConfirmDialog::Show(closeMsg, [doNew]() {
+						RetrodevLib::Project::Close();
+						DocumentsView::CloseAllDocuments();
+						doNew();
 					});
 				} else {
-					if (!RetrodevLib::Project::New(projectPath))
-						ErrorDialog::Show("Failed to create project:\n" + projectPath);
+					doNew();
 				}
 			}
 			ImGui::FileDialog::Instance().Close();
@@ -267,8 +326,35 @@ namespace RetrodevGui {
 		if (ImGui::FileDialog::Instance().IsDone("OpenProjectDialog")) {
 			if (ImGui::FileDialog::Instance().HasResult()) {
 				std::string projectPath = ImGui::FileDialog::Instance().GetResult().string();
-				if (!RetrodevLib::Project::Open(projectPath)) {
-					ErrorDialog::Show("Failed to open project:\n" + projectPath);
+				s_lastProjectDir = std::filesystem::path(projectPath).parent_path().string();
+				//
+					// Helper that performs the actual Open
+					//
+					auto doOpen = [projectPath]() {
+						RetrodevLib::Project::OpenResult openResult = RetrodevLib::Project::Open(projectPath);
+						if (openResult == RetrodevLib::Project::OpenResult::Ok) {
+							DocumentsView::CloseAllDocuments();
+						} else if (openResult == RetrodevLib::Project::OpenResult::UnsupportedVersion) {
+							ErrorDialog::Show(
+								"The project file format is outdated or unsupported and cannot be loaded:\n" + projectPath +
+								"\n\nThis project was created with an incompatible version of RetroDev.\nPlease recreate the project.");
+						} else {
+							ErrorDialog::Show("Failed to open project:\n" + projectPath);
+						}
+					};
+				//
+				// If a project is already open, confirm closing it first
+				//
+				if (RetrodevLib::Project::IsOpen()) {
+					std::string closeMsg = RetrodevLib::Project::IsModified() ? "The current project has unsaved changes.\nClose it and open another project?"
+																			  : "Close the current project and open another one?";
+					ConfirmDialog::Show(closeMsg, [doOpen]() {
+						RetrodevLib::Project::Close();
+						DocumentsView::CloseAllDocuments();
+						doOpen();
+					});
+				} else {
+					doOpen();
 				}
 			}
 			ImGui::FileDialog::Instance().Close();
@@ -282,13 +368,12 @@ namespace RetrodevGui {
 		// Close Project confirmation modal: opened the frame after the menu item is clicked
 		//
 		if (m_closeProjectPending) {
-			//
-			// TODO: check for unsaved changes and ask to save
-			//
 			ImGui::OpenPopup("Close Project##Modal");
 			m_closeProjectPending = false;
 		}
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16.0f, 12.0f));
+		ImVec2 closeCenter = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(closeCenter, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 		if (ImGui::BeginPopupModal("Close Project##Modal", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			ImGui::Text("Are you sure you want to close the project?");
 			ImGui::Separator();

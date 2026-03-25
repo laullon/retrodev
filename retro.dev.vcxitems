@@ -15,14 +15,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory).clang-format" />
-    <None Include="$(MSBuildThisFileDirectory).github\copilot-instructions.md" />
     <None Include="$(MSBuildThisFileDirectory).gitignore" />
+    <None Include="$(MSBuildThisFileDirectory)bld\bin\mkb.dll" />
     <None Include="$(MSBuildThisFileDirectory)bld\csx\build.flags.csx" />
     <None Include="$(MSBuildThisFileDirectory)bld\csx\build.resources.csx" />
     <None Include="$(MSBuildThisFileDirectory)bld\ext\bin2obj.csx" />
     <None Include="$(MSBuildThisFileDirectory)bld\ext\clang.csx" />
     <None Include="$(MSBuildThisFileDirectory)bld\ext\clang.doc.csx" />
     <None Include="$(MSBuildThisFileDirectory)bld\ext\git.csx" />
+    <None Include="$(MSBuildThisFileDirectory)bld\ext\github.csx" />
     <None Include="$(MSBuildThisFileDirectory)doc\changelog.md" />
     <None Include="$(MSBuildThisFileDirectory)doc\tech\adding-systems.md" />
     <None Include="$(MSBuildThisFileDirectory)doc\tech\building.md" />
@@ -41,11 +42,6 @@
     <None Include="$(MSBuildThisFileDirectory)doc\usage\palette.md" />
     <None Include="$(MSBuildThisFileDirectory)doc\usage\sprites.md" />
     <None Include="$(MSBuildThisFileDirectory)doc\usage\tiles.md" />
-    <None Include="$(MSBuildThisFileDirectory)example\scripts\cpc.screen.as" />
-    <None Include="$(MSBuildThisFileDirectory)example\scripts\cpc.sprites.as" />
-    <None Include="$(MSBuildThisFileDirectory)example\scripts\cpc.tiles.as" />
-    <None Include="$(MSBuildThisFileDirectory)example\scripts\cpc.utils.as" />
-    <None Include="$(MSBuildThisFileDirectory)example\scripts\map.binary.as" />
     <None Include="$(MSBuildThisFileDirectory)ext\lib.ascript.csx" />
     <None Include="$(MSBuildThisFileDirectory)ext\lib.ctre.csx" />
     <None Include="$(MSBuildThisFileDirectory)ext\lib.freetype.csx" />
@@ -57,9 +53,36 @@
     <None Include="$(MSBuildThisFileDirectory)kombine.csx" />
     <None Include="$(MSBuildThisFileDirectory)license.md" />
     <None Include="$(MSBuildThisFileDirectory)readme.md" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\exporters\cpc.screen.as" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\exporters\cpc.sprites.as" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\exporters\cpc.tiles.as" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\exporters\cpc.utils.as" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\exporters\map.binary.as" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\disk\cpc.file.fdc.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\disk\cpc.file.rom.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\keyboard\cpc.keyboard.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\keyboard\cpc.keys.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\palette\cpc.palette.hwcolors.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\palette\cpc.palette.premixed.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\palette\cpc.palette.syscolors.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\system\cpc.detect.crtc.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\system\cpc.detect.drive.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\system\cpc.detect.ram.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\system\cpc.detect.type.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\system\cpc.interrupts.disable.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\system\cpc.interrupts.disable.sync.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\system\cpc.interrupts.im1.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\functions\system\cpc.interrupts.im1.sync.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\macros\crtc\macros.crtc.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\macros\fdc\macros.fdc.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\macros\firmware\macros.firmware.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\macros\gatearray\macros.debug.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\macros\gatearray\macros.ga.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\macros\keyboard\macros.keyboard.asm" />
+    <None Include="$(MSBuildThisFileDirectory)sdk\amstrad.cpc\macros\psg\macros.psg.asm" />
     <None Include="$(MSBuildThisFileDirectory)src\retro.dev.gui.csx" />
     <None Include="$(MSBuildThisFileDirectory)src\retro.dev.lib.csx" />
-    <None Include="$(MSBuildThisFileDirectory)tmp\rasm.bug.md" />
+    <None Include="$(MSBuildThisFileDirectory)tools\fix_banners.ps1" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ext\imgui.cfg\retrodev.imconfig.h" />
@@ -153,6 +176,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\quantization.params.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\resize.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\resize.params.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\process\image\tile.pack.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.build.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.color.correction.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\project\metadata\meta.dithering.h" />
@@ -259,6 +283,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\quantization.params.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\resize.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\resize.params.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\process\image\tile.pack.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\project\project.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\retrodev.lib.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\system\amstrad.cpc\devices\cpc.screen.cpp" />
@@ -278,6 +303,23 @@
     <ResourceCompile Include="$(MSBuildThisFileDirectory)src\gui\os\win\retrodev.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\as-editor.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\asm-editor.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\bitmap-build-item.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\build-item.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\codelens-editor.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\debugging.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\hex-editor.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\icon.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\map-editor.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\new-project-dialog.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\palette-solver.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\project-panel.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\project.-view.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\retrodev-logo.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\retrodev-overview.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\sprites-editor.png" />
+    <Image Include="$(MSBuildThisFileDirectory)doc\img\tiles-build-item.png" />
     <Image Include="$(MSBuildThisFileDirectory)src\gui\os\win\icon.ico" />
     <Image Include="$(MSBuildThisFileDirectory)src\gui\os\win\retrodev.ico" />
     <Image Include="$(MSBuildThisFileDirectory)src\gui\res\images\about-logo.png" />

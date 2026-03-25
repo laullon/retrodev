@@ -6,16 +6,60 @@
       }
    ],
    "audio": [],
-   "sources": [],
+   "sources": [
+      {
+         "filePath": "src/main.asm"
+      },
+      {
+         "filePath": "src/sprites.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/macros/gatearray/macros.ga.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/macros/gatearray/macros.debug.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/functions/palette/cpc.palette.hwcolors.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/functions/palette/cpc.palette.premixed.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/functions/palette/cpc.palette.syscolors.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/macros/keyboard/macros.keyboard.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/functions/keyboard/cpc.keys.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/functions/keyboard/cpc.keyboard.asm"
+      },
+      {
+         "filePath": "$(sdk)/amstrad.cpc/functions/system/cpc.interrupts.disable.asm"
+      },
+      {
+         "filePath": "out/sprites.asm"
+      }
+   ],
    "scripts": [
       {
          "filePath": "$(sdk)/amstrad.cpc/exporters/cpc.utils.as"
       },
       {
          "filePath": "$(sdk)/amstrad.cpc/exporters/cpc.sprites.as"
+      },
+      {
+         "filePath": "exp/example.sprites.as"
       }
    ],
-   "data": [],
+   "data": [
+      {
+         "filePath": "out/sprites.pal"
+      }
+   ],
    "buildBitmaps": [],
    "buildTiles": [],
    "buildSprites": [
@@ -220,19 +264,74 @@
                   "Width": 10,
                   "Height": 5,
                   "Name": "Acid2"
+               },
+               {
+                  "X": 10,
+                  "Y": 48,
+                  "Width": 8,
+                  "Height": 16,
+                  "Name": "Walk1_fh"
                }
             ]
          },
          "exportParams": {
-            "scriptPath": "$(sdk)/amstrad.cpc/exporters/cpc.sprites.as",
-            "outputName": "out/sprites.bin",
-            "scriptParams": "header=false"
+            "scriptPath": "exp/example.sprites.as",
+            "outputName": "out/sprites.asm",
+            "scriptParams": "header=false;exportPalette=true;paletteFormat=hardwarecmd"
          }
       }
    ],
    "buildMaps": [],
-   "buildBuilds": [],
+   "buildBuilds": [
+      {
+         "name": "sprites.build",
+         "sourceParams": {
+            "tool": "RASM",
+            "sources": [
+               "src/main.asm"
+            ],
+            "includeDirs": [
+               "$(sdk)/amstrad.cpc/macros/gatearray",
+               "$(sdk)/amstrad.cpc/functions/palette",
+               "$(sdk)/amstrad.cpc/macros/keyboard",
+               "$(sdk)/amstrad.cpc/functions/keyboard",
+               "$(sdk)/amstrad.cpc/functions/system"
+            ],
+            "defines": [],
+            "dependencies": [
+               "sprites"
+            ],
+            "toolOptions": {
+               "RASM": "-eo -rasm -oa -os out/sprites.rasm"
+            },
+            "emulatorParams": {
+               "emulator": "ACE-DL",
+               "common": {
+                  "mediaFile": "out/sprites.dsk",
+                  "snapshot": "",
+                  "symbolFile": "out/sprites.rasm",
+                  "command": "sprites.bin",
+                  "sendCPM": false,
+                  "machine": ""
+               },
+               "acedl": {
+                  "crtc": -1,
+                  "ram": 0,
+                  "firmware": "",
+                  "speed": 0,
+                  "alone": false,
+                  "skipConfigFile": false
+               }
+            }
+         },
+         "exportParams": {
+            "scriptPath": "",
+            "outputName": "",
+            "scriptParams": ""
+         }
+      }
+   ],
    "buildPalettes": [],
    "buildFolders": [],
-   "selectedBuildItem": ""
+   "selectedBuildItem": "sprites.build"
 }

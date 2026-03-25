@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Map editor document -- tile map painting with layers and parallax.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -105,10 +107,14 @@ namespace RetrodevGui {
 	//
 	void DocumentMap::RenderCanvasToolbar(RetrodevLib::MapParams* params) {
 		ImGui::Checkbox(ICON_EYE " Show viewable area", &m_showViewableArea);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Overlay a box on the canvas showing the viewable area size (set in Dimensions panel)");
 		ImGui::SameLine();
 		ImGui::Checkbox(ICON_GRID " Show grid", &m_showGrid);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Show or hide the tile grid lines on the canvas");
 		ImGui::SameLine();
@@ -139,6 +145,8 @@ namespace RetrodevGui {
 			}
 			ImGui::EndCombo();
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("Select a target system to preview the map with its pixel aspect ratio");
 		//
@@ -165,10 +173,12 @@ namespace RetrodevGui {
 						if (selected)
 							ImGui::SetItemDefaultFocus();
 					}
-					ImGui::EndCombo();
-				}
-				if (ImGui::IsItemHovered())
-					ImGui::SetTooltip("Select the screen mode to apply the correct pixel aspect ratio");
+						ImGui::EndCombo();
+					}
+					ImGui::SameLine();
+					ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+					if (ImGui::IsItemHovered())
+						ImGui::SetTooltip("Select the screen mode to apply the correct pixel aspect ratio");
 			}
 		}
 	}
@@ -204,7 +214,7 @@ namespace RetrodevGui {
 		m_viewScrollX = std::max(0, std::min(m_viewScrollX, maxStepsX));
 		m_viewScrollY = std::max(0, std::min(m_viewScrollY, maxStepsY));
 		//
-		// Horizontal scroll row: [←] [slider X] [→]
+		// Horizontal scroll row: [<-] [slider X] [->]
 		//
 		float arrowW = ImGui::GetFrameHeight();
 		float labelW = ImGui::CalcTextSize("X").x + ImGui::GetStyle().ItemSpacing.x;
@@ -227,7 +237,7 @@ namespace RetrodevGui {
 			m_viewScrollX = std::min(maxStepsX, m_viewScrollX + 1);
 		ImGui::EndDisabled();
 		//
-		// Vertical scroll row: [↑] [slider Y] [↓]
+		// Vertical scroll row: [^] [slider Y] [v]
 		//
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Y");
@@ -248,7 +258,7 @@ namespace RetrodevGui {
 		ImGui::EndDisabled();
 	}
 	//
-	// Render the map canvas (no ImGui scroll — layout is driven by scroll state)
+	// Render the map canvas (no ImGui scroll -- layout is driven by scroll state)
 	//
 	void DocumentMap::RenderMapCanvas(RetrodevLib::MapParams* params) {
 		if (params->layers.empty()) {
@@ -381,7 +391,7 @@ namespace RetrodevGui {
 			}
 		} else {
 			//
-			// Left click paints, right click erases — all operations on the editing layer
+			// Left click paints, right click erases -- all operations on the editing layer
 			//
 			if ((leftActive || rightClicked) && mouseOnCanvas) {
 				if (rightClicked) {
@@ -452,7 +462,7 @@ namespace RetrodevGui {
 			}
 		}
 		//
-		// Rendering: three passes — background, tiles (all visible layers), grid (editing layer)
+		// Rendering: three passes -- background, tiles (all visible layers), grid (editing layer)
 		//
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		//
@@ -640,7 +650,12 @@ namespace RetrodevGui {
 		// --- Dimensions section (operates on the editing layer) ---
 		//
 		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-		if (ImGui::CollapsingHeader("Dimensions")) {
+		bool dimensionsOpen = ImGui::CollapsingHeader("Dimensions");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Resize the editing layer. Enter the new dimensions and click Apply.\nRow and Col buttons add or remove single rows and columns at any edge.\nExisting tile data is preserved within the overlapping region.");
+		if (dimensionsOpen) {
 			if (params->layers.empty()) {
 				ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Add a layer first.");
 			} else {
@@ -677,6 +692,8 @@ namespace RetrodevGui {
 						RetrodevLib::Project::MarkAsModified();
 					}
 				}
+				if (ImGui::IsItemHovered())
+					ImGui::SetTooltip("Resize the editing layer to the pending Width and Height.\nExisting tile data is preserved within the overlapping area.");
 				ImGui::Separator();
 				//
 				// Row: [+Top] [+Bot] [-Top] [-Bot] all on one compact line
@@ -771,12 +788,19 @@ namespace RetrodevGui {
 		// --- Viewport section ---
 		//
 		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-		if (ImGui::CollapsingHeader("Viewport")) {
+		bool viewportOpen = ImGui::CollapsingHeader("Viewport");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("The visible tile area (width x height in tiles).\nUsed for the viewable-area canvas overlay and scroll range calculations.\nDoes not affect map data or tile layers.");
+		if (viewportOpen) {
 			//
 			// Viewable area size: number of tiles visible on screen at once (shared across all layers)
 			//
+			ImGui::AlignTextToFramePadding();
 			ImGui::Text("View Width:");
-			ImGui::SetNextItemWidth(-1.0f);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
 			if (ImGui::InputInt("##ViewWidth", &params->viewWidth)) {
 				if (params->viewWidth < 1)
 					params->viewWidth = 1;
@@ -785,8 +809,14 @@ namespace RetrodevGui {
 				SetModified(true);
 				RetrodevLib::Project::MarkAsModified();
 			}
+			ImGui::SameLine();
+			ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Width of the visible area in tiles. Used for the viewport overlay\nand to compute the horizontal scroll range.");
+			ImGui::AlignTextToFramePadding();
 			ImGui::Text("View Height:");
-			ImGui::SetNextItemWidth(-1.0f);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
 			if (ImGui::InputInt("##ViewHeight", &params->viewHeight)) {
 				if (params->viewHeight < 1)
 					params->viewHeight = 1;
@@ -795,17 +825,28 @@ namespace RetrodevGui {
 				SetModified(true);
 				RetrodevLib::Project::MarkAsModified();
 			}
+			ImGui::SameLine();
+			ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Height of the visible area in tiles. Used for the viewport overlay\nand to compute the vertical scroll range.");
 		}
 		//
 		// --- Tilesets section ---
 		//
 		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-		if (ImGui::CollapsingHeader("Tilesets")) {
+		bool tilesetsOpen = ImGui::CollapsingHeader("Tilesets");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Tile palettes used by this map. Each slot holds one or more tileset variants\nthat can be swapped without changing tile indices in the map.\nThe active variant is used on the canvas and in export scripts.");
+		if (tilesetsOpen) {
 			//
 			// Add Tileset button: creates a new slot with one initial variant
 			//
 			if (ImGui::Button(ICON_LAYERS_PLUS " Add Tileset...", ImVec2(-1.0f, 0.0f)))
 				ImGui::OpenPopup("##AddTilesetPopup");
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Add a tileset build item as a new slot in this map.");
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
 			if (ImGui::BeginPopup("##AddTilesetPopup")) {
 				std::vector<std::string> allTilesets = RetrodevLib::Project::GetBuildItemsByType(RetrodevLib::ProjectBuildType::Tilemap);
@@ -885,7 +926,7 @@ namespace RetrodevGui {
 				auto& slot = params->tilesets[m_selectedTilesetIdx];
 				int vi = std::max(0, std::min(slot.activeVariant, (int)slot.variants.size() - 1));
 				//
-				// Variant switcher row: [<] [combo] [>] — only shown when slot has more than one variant
+				// Variant switcher row: [<] [combo] [>] -- only shown when slot has more than one variant
 				//
 				if ((int)slot.variants.size() > 1) {
 					float arrowW = ImGui::GetFrameHeight();
@@ -984,6 +1025,8 @@ namespace RetrodevGui {
 			ImGui::BeginDisabled(!slotSelected);
 			if (ImGui::Button(ICON_DELETE " Remove##TilesetRemove", ImVec2(-1.0f, 0.0f)))
 				removeSlotIdx = m_selectedTilesetIdx;
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+				ImGui::SetTooltip("Remove the selected tileset slot and all its variants from the map.");
 			ImGui::EndDisabled();
 			if (removeSlotIdx >= 0) {
 				params->tilesets.erase(params->tilesets.begin() + removeSlotIdx);
@@ -999,7 +1042,12 @@ namespace RetrodevGui {
 		// --- Groups section ---
 		//
 		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-		if (ImGui::CollapsingHeader("Groups")) {
+		bool groupsOpen = ImGui::CollapsingHeader("Groups");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Named multi-tile stamps captured from the editing layer.\nClick Add Group, drag a rectangle on the canvas to define the region,\nthen select the group and left-click on the canvas to stamp it.");
+		if (groupsOpen) {
 			RenderGroupsSection(params);
 		}
 		//
@@ -1417,30 +1465,42 @@ namespace RetrodevGui {
 			}
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Press Enter to rename the layer");
+			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Speed:");
-			ImGui::SetNextItemWidth(-1.0f);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
 			if (ImGui::InputFloat("##LayerSpeed", &editLayer.mapSpeed, 0.1f, 1.0f, "%.2f")) {
 				if (editLayer.mapSpeed < 0.01f)
 					editLayer.mapSpeed = 0.01f;
 				SetModified(true);
 				RetrodevLib::Project::MarkAsModified();
 			}
+			ImGui::SameLine();
+			ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("Scroll speed in tiles per camera step (1.0 = one tile).\nValues < 1.0 create parallax; >= view size means fixed/room.");
+				ImGui::SetTooltip("Scroll speed in tiles per camera step.\n1.0 = moves one tile per step (typical foreground layer).\n\nParallax scroller: assign a different speed to each layer\n(e.g. 0.25 sky, 0.5 background, 1.0 foreground) to preview\nhow the planes move relative to each other on screen.\n\nScreen-by-screen game (non-scroller): set speed equal to\nthe viewable area width (or height) so that each camera step\nadvances a full screen, producing a clean room-to-room transition.");
+			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Offset X:");
-			ImGui::SetNextItemWidth(-1.0f);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
 			if (ImGui::InputFloat("##LayerOffsetX", &editLayer.offsetX, 0.5f, 1.0f, "%.2f")) {
 				SetModified(true);
 				RetrodevLib::Project::MarkAsModified();
 			}
+			ImGui::SameLine();
+			ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Horizontal position offset in tiles (fractional values allowed).");
+			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Offset Y:");
-			ImGui::SetNextItemWidth(-1.0f);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
 			if (ImGui::InputFloat("##LayerOffsetY", &editLayer.offsetY, 0.5f, 1.0f, "%.2f")) {
 				SetModified(true);
 				RetrodevLib::Project::MarkAsModified();
 			}
+			ImGui::SameLine();
+			ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Vertical position offset in tiles (fractional values allowed).");
 		}
@@ -1469,6 +1529,8 @@ namespace RetrodevGui {
 				m_selectedGroupIdx = -1;
 				m_selectedTileIdx = -1;
 			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Enter capture mode, then drag a rectangle on the canvas\nto define the tile region for this group stamp.");
 		}
 		//
 		// Group list box
@@ -1530,6 +1592,8 @@ namespace RetrodevGui {
 			SetModified(true);
 			RetrodevLib::Project::MarkAsModified();
 		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Remove the selected group stamp.");
 		ImGui::EndDisabled();
 	}
 	//
@@ -1565,4 +1629,4 @@ namespace RetrodevGui {
 		}
 	}
 
-} // namespace RetrodevGui
+}

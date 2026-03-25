@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Build document -- emulator launch settings panel.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -15,7 +18,7 @@ namespace RetrodevGui {
 	namespace EmulatorSettingsImpl {
 
 		//
-		// Dialog key prefix — each emulator gets its own unique key
+		// Dialog key prefix -- each emulator gets its own unique key
 		//
 		static constexpr const char* k_dialogKey = "EmulatorExeBrowse";
 		//
@@ -47,10 +50,10 @@ namespace RetrodevGui {
 			buf->append("\n");
 		}
 
-	} // namespace EmulatorSettingsImpl
+	}
 
 	//
-	// Register the INI handler — must be called before the first ImGui frame
+	// Register the INI handler -- must be called before the first ImGui frame
 	//
 	void EmulatorSettings::RegisterSettingsHandler() {
 		ImGuiSettingsHandler handler;
@@ -111,4 +114,4 @@ namespace RetrodevGui {
 		s_pendingEmulator.clear();
 	}
 
-} // namespace RetrodevGui
+}

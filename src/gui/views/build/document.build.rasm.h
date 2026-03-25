@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Build document -- RASM assembler invocation and output parsing.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -15,7 +17,7 @@ namespace RetrodevGui {
 
 	//
 	// RASM-specific UI panels for the Build document.
-	// Owns no project state — operates exclusively on the SourceParams pointer
+	// Owns no project state -- operates exclusively on the SourceParams pointer
 	// supplied by DocumentBuild on each Perform() call.
 	//
 	class DocumentBuildRasm {
@@ -84,4 +86,4 @@ namespace RetrodevGui {
 		bool* m_docModified = nullptr;
 	};
 
-} 
+}

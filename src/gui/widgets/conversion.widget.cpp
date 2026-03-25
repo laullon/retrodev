@@ -1,15 +1,16 @@
-﻿//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Gui
 //
+// Conversion widget -- shared bitmap conversion parameter UI.
 //
+// (c) TLOTB 2026
 //
-//
-//
-//
-//-----------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 
 #include "conversion.widget.h"
 #include <app/app.console.h>
+#include <app/app.icons.mdi.h>
 #include <convert/converters.h>
 
 namespace RetrodevGui {
@@ -34,7 +35,12 @@ namespace RetrodevGui {
 		// Target Conversion section
 		//
 		ImGui::SetNextItemOpen(m_targetOpen, ImGuiCond_Once);
-		if (ImGui::CollapsingHeader("Target Conversion")) {
+		bool targetOpen = ImGui::CollapsingHeader("Target Conversion");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Select the target hardware system, screen mode and palette type.\nThese three settings determine the available colours, resolution\npresets and pen count used during conversion.");
+		if (targetOpen) {
 			m_targetOpen = true;
 			auto targetResult = RenderTargetConversion(params, converter, buildItemName, buildType);
 			changed |= targetResult.parametersChanged;
@@ -49,7 +55,12 @@ namespace RetrodevGui {
 		// Resize section
 		//
 		ImGui::SetNextItemOpen(m_resizeOpen, ImGuiCond_Once);
-		if (ImGui::CollapsingHeader("Resize")) {
+		bool resizeOpen = ImGui::CollapsingHeader("Resize");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Scale the source image to the target resolution before palette matching.\nScale mode controls how the source maps to the target;\ninterpolation selects the resampling filter used when scaling.");
+		if (resizeOpen) {
 			m_resizeOpen = true;
 			changed |= RenderResize(params, converter);
 		} else {
@@ -59,7 +70,12 @@ namespace RetrodevGui {
 		// Quantization section
 		//
 		ImGui::SetNextItemOpen(m_quantizationOpen, ImGuiCond_Once);
-		if (ImGui::CollapsingHeader("Quantization")) {
+		bool quantizationOpen = ImGui::CollapsingHeader("Quantization");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Map each pixel to the closest hardware colour and build the frequency\nhistogram used by the colour reduction step.\nReduction fills pen slots from the histogram; dithering then distributes error.");
+		if (quantizationOpen) {
 			m_quantizationOpen = true;
 			changed |= RenderQuantization(params, converter);
 		} else {
@@ -69,7 +85,12 @@ namespace RetrodevGui {
 		// Dithering section
 		//
 		ImGui::SetNextItemOpen(m_ditheringOpen, ImGuiCond_Once);
-		if (ImGui::CollapsingHeader("Dithering")) {
+		bool ditheringOpen = ImGui::CollapsingHeader("Dithering");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Distribute quantization error across neighbouring pixels to simulate\ncolours not in the hardware palette.\nStrength, error diffusion and pattern mode are independent controls.");
+		if (ditheringOpen) {
 			m_ditheringOpen = true;
 			changed |= RenderDithering(params);
 		} else {
@@ -79,7 +100,12 @@ namespace RetrodevGui {
 		// Color Correction section
 		//
 		ImGui::SetNextItemOpen(m_colorCorrectionOpen, ImGuiCond_Once);
-		if (ImGui::CollapsingHeader("Color Correction")) {
+		bool colorCorrectionOpen = ImGui::CollapsingHeader("Color Correction");
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Per-channel and global adjustments applied after resizing\nbut before palette matching.\nRuns in order: bit depth reduction, channels, contrast, brightness, saturation.");
+		if (colorCorrectionOpen) {
 			m_colorCorrectionOpen = true;
 			changed |= RenderColorCorrection(params);
 		} else {
@@ -160,7 +186,11 @@ namespace RetrodevGui {
 			params->SParams.TargetSystem = systems[0];
 			changed = true;
 		}
-		if (ImGui::BeginCombo("Target System", params->SParams.TargetSystem.c_str())) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Target System");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::BeginCombo("##targetSystem", params->SParams.TargetSystem.c_str())) {
 			for (const auto& systemName : systems) {
 				bool isSelected = (params->SParams.TargetSystem == systemName);
 				if (ImGui::Selectable(systemName.c_str(), isSelected)) {
@@ -192,7 +222,11 @@ namespace RetrodevGui {
 					params->SParams.TargetMode = modes[0];
 					changed = true;
 				}
-				if (ImGui::BeginCombo("Target Mode", params->SParams.TargetMode.c_str())) {
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Target Mode");
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				if (ImGui::BeginCombo("##targetMode", params->SParams.TargetMode.c_str())) {
 					for (const auto& mode : modes) {
 						bool isSelected = (params->SParams.TargetMode == mode);
 						if (ImGui::Selectable(mode.c_str(), isSelected)) {
@@ -221,7 +255,11 @@ namespace RetrodevGui {
 					params->SParams.PaletteType = paletteTypes[0];
 					changed = true;
 				}
-				if (ImGui::BeginCombo("Target Palette", params->SParams.PaletteType.c_str())) {
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Target Palette");
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				if (ImGui::BeginCombo("##targetPalette", params->SParams.PaletteType.c_str())) {
 					for (const auto& palette : paletteTypes) {
 						bool isSelected = (params->SParams.PaletteType == palette);
 						if (ImGui::Selectable(palette.c_str(), isSelected)) {
@@ -246,7 +284,11 @@ namespace RetrodevGui {
 		//
 		std::vector<std::string> resizeModes = RetrodevLib::GFXResize::GetScaleModes();
 		int currentResizeMode = static_cast<int>(params->RParams.ResMode);
-		if (ImGui::BeginCombo("Scale Mode", resizeModes[currentResizeMode].c_str())) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Scale Mode");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+		if (ImGui::BeginCombo("##scaleMode", resizeModes[currentResizeMode].c_str())) {
 			for (int i = 0; i < (int)resizeModes.size(); i++) {
 				bool isSelected = (currentResizeMode == i);
 				if (ImGui::Selectable(resizeModes[i].c_str(), isSelected)) {
@@ -258,6 +300,10 @@ namespace RetrodevGui {
 			}
 			ImGui::EndCombo();
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Fit: stretch to fill target (no aspect preservation).\nSmallest: uniform scale to fit inside target (letterbox).\nLargest: uniform scale to fill target, cropping overflow.\nCustom: sample a defined source rectangle. Original: 1:1, no rescale.");
 		//
 		// Source Rectangle controls (only enabled when scale mode is Custom)
 		//
@@ -274,11 +320,23 @@ namespace RetrodevGui {
 		}
 		ImGui::Indent();
 		ImGui::BeginDisabled(!isCustomMode);
-		if (ImGui::InputInt("Source X", &params->RParams.SourceRect.X))
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Source X");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::InputInt("##sourceX", &params->RParams.SourceRect.X))
 			changed = true;
-		if (ImGui::InputInt("Source Y", &params->RParams.SourceRect.Y))
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Source Y");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::InputInt("##sourceY", &params->RParams.SourceRect.Y))
 			changed = true;
-		if (ImGui::InputInt("Source Width", &params->RParams.SourceRect.Width)) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Source Width");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::InputInt("##sourceWidth", &params->RParams.SourceRect.Width)) {
 			//
 			// Ensure width is not negative
 			//
@@ -286,7 +344,11 @@ namespace RetrodevGui {
 				params->RParams.SourceRect.Width = 0;
 			changed = true;
 		}
-		if (ImGui::InputInt("Source Height", &params->RParams.SourceRect.Height)) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Source Height");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::InputInt("##sourceHeight", &params->RParams.SourceRect.Height)) {
 			//
 			// Ensure height is not negative
 			//
@@ -301,7 +363,11 @@ namespace RetrodevGui {
 		//
 		std::vector<std::string> interpModes = RetrodevLib::GFXResize::GetInterpolationModes();
 		int currentInterpMode = static_cast<int>(params->RParams.InterpMode);
-		if (ImGui::BeginCombo("Interpolation", interpModes[currentInterpMode].c_str())) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Interpolation");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+		if (ImGui::BeginCombo("##interp", interpModes[currentInterpMode].c_str())) {
 			for (int i = 0; i < (int)interpModes.size(); i++) {
 				bool isSelected = (currentInterpMode == i);
 				if (ImGui::Selectable(interpModes[i].c_str(), isSelected)) {
@@ -313,6 +379,10 @@ namespace RetrodevGui {
 			}
 			ImGui::EndCombo();
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Filter used when pixels are resampled during scaling.\nNearest Neighbor: exact source pixels, no blending -- best for pixel art.\nBilinear / Bicubic / High: progressively smoother gradients at higher cost.");
 		if (converter) {
 			//
 			// Target Resolution selection (from converter if available)
@@ -346,7 +416,11 @@ namespace RetrodevGui {
 					params->RParams.TargetHeight = res.Height;
 					changed = true;
 				}
-				if (ImGui::BeginCombo("Target Resolution", resolutions[selectedResolution].c_str())) {
+				ImGui::AlignTextToFramePadding();
+					ImGui::Text("Target Resolution");
+					ImGui::SameLine();
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+					if (ImGui::BeginCombo("##targetRes", resolutions[selectedResolution].c_str())) {
 					for (int i = 0; i < (int)resolutions.size(); i++) {
 						bool isSelected = (selectedResolution == i);
 						if (ImGui::Selectable(resolutions[i].c_str(), isSelected)) {
@@ -362,6 +436,10 @@ namespace RetrodevGui {
 					}
 					ImGui::EndCombo();
 				}
+				ImGui::SameLine();
+				ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+				if (ImGui::IsItemHovered())
+					ImGui::SetTooltip("Normal: standard screen area for the selected mode.\nOverscan: extended hardware area beyond the standard boundary.\nCustom: arbitrary target dimensions (set Width / Height below).\nOriginal: use source image dimensions as the target.");
 				//
 				// Target dimensions (only enabled when Custom resolution is selected)
 				//
@@ -403,7 +481,7 @@ namespace RetrodevGui {
 					changed = true;
 				}
 				ImGui::SameLine();
-				if (ImGui::InputInt("Width", &params->RParams.TargetWidth)) {
+				if (ImGui::InputInt("##width", &params->RParams.TargetWidth)) {
 					//
 					// Ensure width is not negative
 					//
@@ -429,7 +507,7 @@ namespace RetrodevGui {
 					changed = true;
 				}
 				ImGui::SameLine();
-				if (ImGui::InputInt("Height", &params->RParams.TargetHeight)) {
+				if (ImGui::InputInt("##height", &params->RParams.TargetHeight)) {
 					//
 					// Ensure height is not negative
 					//
@@ -458,12 +536,18 @@ namespace RetrodevGui {
 		if (!sourcePaletized)
 			ImGui::BeginDisabled();
 		changed |= ImGui::Checkbox("Use Source Palette", &params->QParams.UseSourcePalette);
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Only active when the source image is a paletized PNG.\nCopies palette entries from the source file directly into pen slots,\nskipping the quantization fitting step entirely.");
 		if (!sourcePaletized)
 			ImGui::EndDisabled();
 		//
 		// Smoothness
 		//
 		changed |= ImGui::Checkbox("Smoothness", &params->QParams.Smoothness);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Blend each pixel with its 4 cardinal neighbours before palette matching.\nReduces high-frequency noise at the cost of softening hard edges.");
 		//
 		// Color selection mode (from palette if converter available)
 		//
@@ -486,7 +570,11 @@ namespace RetrodevGui {
 						params->SParams.ColorSelectionMode = colorModes[0];
 						changed = true;
 					}
-					if (ImGui::BeginCombo("Color Selection Mode", params->SParams.ColorSelectionMode.c_str())) {
+					ImGui::AlignTextToFramePadding();
+					ImGui::Text("Color Selection Mode");
+					ImGui::SameLine();
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+					if (ImGui::BeginCombo("##colorSelMode", params->SParams.ColorSelectionMode.c_str())) {
 						for (const auto& mode : colorModes) {
 							bool isSelected = (params->SParams.ColorSelectionMode == mode);
 							if (ImGui::Selectable(mode.c_str(), isSelected)) {
@@ -510,14 +598,26 @@ namespace RetrodevGui {
 		//
 		const char* reductionMethods[] = {"Higher Frequencies", "Higher Distances"};
 		int reductionMethod = static_cast<int>(params->QParams.ReductionType);
-		if (ImGui::Combo("Reduction Method", &reductionMethod, reductionMethods, IM_ARRAYSIZE(reductionMethods))) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Reduction Method");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+		if (ImGui::Combo("##reductionMethod", &reductionMethod, reductionMethods, IM_ARRAYSIZE(reductionMethods))) {
 			params->QParams.ReductionType = static_cast<RetrodevLib::QuantizationParams::ReductionMethod>(reductionMethod);
 			changed = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Higher Frequencies: fills each pen with the most-common colour in the histogram.\nHigher Distances: alternates between frequency and maximum colour distance,\nspreading pens across the colour space.");
 		//
 		// Reduction time
 		//
 		changed |= ImGui::Checkbox("Reduction Before Dithering", &params->QParams.ReductionTime);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("When on, colour reduction runs before dithering so the quantizer\ndistributes error against the already-reduced palette.\nWhen off, dithering runs first and reduction is applied to the dithered result.");
 		return changed;
 	}
 
@@ -542,7 +642,11 @@ namespace RetrodevGui {
 				params->DParams.Method = ditheringMethods[0];
 				changed = true;
 			}
-			if (ImGui::BeginCombo("Method", params->DParams.Method.c_str())) {
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Method");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+			if (ImGui::BeginCombo("##ditheringMethod", params->DParams.Method.c_str())) {
 				for (const auto& method : ditheringMethods) {
 					bool isSelected = (params->DParams.Method == method);
 					if (ImGui::Selectable(method.c_str(), isSelected)) {
@@ -554,22 +658,50 @@ namespace RetrodevGui {
 				}
 				ImGui::EndCombo();
 			}
+			ImGui::SameLine();
+			ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("None: sharpest, most colour banding.\nFloyd-Steinberg: error diffusion, best for photographs.\nBayer: regular dot pattern, good general-purpose ordered dither.\nZigZag: diagonal scatter, suits wide-pixel modes such as CPC Mode 0.");
 		}
 		//
 		// Dithering percentage
 		//
-		changed |= ImGui::SliderInt("Percentage", &params->DParams.Percentage, 0, 400);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Percentage");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+		changed |= ImGui::SliderInt("##pct", &params->DParams.Percentage, 0, 400);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Scales dithering strength. 0%% = no effect regardless of method.\n100%% = normal. Up to 400%% for an aggressive effect (may introduce noise).");
 		//
 		// Error diffusion
 		//
 		changed |= ImGui::Checkbox("Error Diffusion", &params->DParams.ErrorDiffusion);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Apply Floyd-Steinberg error propagation on top of the selected matrix method.\nHas no extra effect when Floyd-Steinberg is already the selected method.");
 		//
 		// Pattern dithering
 		//
 		changed |= ImGui::Checkbox("Pattern", &params->DParams.Pattern);
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Alternating scanline mode: pairs of scanlines are averaged and split into\ntwo colours, mimicking the interlaced palette mixing used in some CPC demos.\nPattern Low and High control the darker and lighter divisors.");
 		if (params->DParams.Pattern) {
-			changed |= ImGui::SliderFloat("Pattern Low", &params->DParams.PatternLow, 1.0f, 4.0f);
-			changed |= ImGui::SliderFloat("Pattern High", &params->DParams.PatternHigh, 1.0f, 4.0f);
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Pattern Low");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+			changed |= ImGui::SliderFloat("##patternLow", &params->DParams.PatternLow, 1.0f, 4.0f);
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Pattern High");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+			changed |= ImGui::SliderFloat("##patternHigh", &params->DParams.PatternHigh, 1.0f, 4.0f);
 		}
 		return changed;
 	}
@@ -579,21 +711,45 @@ namespace RetrodevGui {
 		//
 		// Color correction per channel
 		//
-		changed |= ImGui::SliderInt("Red Correction", &params->CParams.ColorCorrectionRed, -255, 255);
-		changed |= ImGui::SliderInt("Green Correction", &params->CParams.ColorCorrectionGreen, -255, 255);
-		changed |= ImGui::SliderInt("Blue Correction", &params->CParams.ColorCorrectionBlue, -255, 255);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Red Correction");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		changed |= ImGui::SliderInt("##redCorr", &params->CParams.ColorCorrectionRed, -255, 255);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Green Correction");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		changed |= ImGui::SliderInt("##greenCorr", &params->CParams.ColorCorrectionGreen, -255, 255);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Blue Correction");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		changed |= ImGui::SliderInt("##blueCorr", &params->CParams.ColorCorrectionBlue, -255, 255);
 		//
 		// Contrast
 		//
-		changed |= ImGui::SliderInt("Contrast", &params->CParams.Contrast, -100, 100);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Contrast");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		changed |= ImGui::SliderInt("##contrast", &params->CParams.Contrast, -100, 100);
 		//
 		// Saturation
 		//
-		changed |= ImGui::SliderInt("Saturation", &params->CParams.Saturation, -100, 100);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Saturation");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		changed |= ImGui::SliderInt("##saturation", &params->CParams.Saturation, -100, 100);
 		//
 		// Brightness
 		//
-		changed |= ImGui::SliderInt("Brightness", &params->CParams.Brightness, -100, 100);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Brightness");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		changed |= ImGui::SliderInt("##brightness", &params->CParams.Brightness, -100, 100);
 		//
 		// Color bits
 		//
@@ -607,7 +763,11 @@ namespace RetrodevGui {
 			colorBitsIndex = 2;
 		else if (params->CParams.ColorBits == 6)
 			colorBitsIndex = 3;
-		if (ImGui::Combo("Color Bits", &colorBitsIndex, colorBits, IM_ARRAYSIZE(colorBits))) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Color Bits");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+		if (ImGui::Combo("##colorBits", &colorBitsIndex, colorBits, IM_ARRAYSIZE(colorBits))) {
 			if (colorBitsIndex == 0)
 				params->CParams.ColorBits = 24;
 			else if (colorBitsIndex == 1)
@@ -618,6 +778,10 @@ namespace RetrodevGui {
 				params->CParams.ColorBits = 6;
 			changed = true;
 		}
+		ImGui::SameLine();
+		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Reduces bit depth per channel before quantization.\n24 = unchanged (8 bits/ch).  12 = 4.  9 = 3.  6 = 2 bits/ch.\nForces colours to a coarser grid, improving matching for hardware\npalettes with limited colour resolution.");
 		//
 		// Palette reduction limits (combo boxes)
 		//
@@ -637,7 +801,11 @@ namespace RetrodevGui {
 				params->CParams.PaletteReductionLower = lowerLimits[0];
 				changed = true;
 			}
-			if (ImGui::BeginCombo("Lower Limit", params->CParams.PaletteReductionLower.c_str())) {
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Lower Limit");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+			if (ImGui::BeginCombo("##lowerLimit", params->CParams.PaletteReductionLower.c_str())) {
 				for (const auto& limit : lowerLimits) {
 					bool isSelected = (params->CParams.PaletteReductionLower == limit);
 					if (ImGui::Selectable(limit.c_str(), isSelected)) {
@@ -649,6 +817,10 @@ namespace RetrodevGui {
 				}
 				ImGui::EndCombo();
 			}
+			ImGui::SameLine();
+			ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("OR mask raising the minimum per-channel value.\nPrevents very dark colours from quantizing to pure black.");
 		}
 		std::vector<std::string> upperLimits = RetrodevLib::GFXColor::GetPaletteReductionUpperLimits();
 		if (!upperLimits.empty()) {
@@ -666,7 +838,11 @@ namespace RetrodevGui {
 				params->CParams.PaletteReductionUpper = upperLimits[0];
 				changed = true;
 			}
-			if (ImGui::BeginCombo("Upper Limit", params->CParams.PaletteReductionUpper.c_str())) {
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Upper Limit");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+			if (ImGui::BeginCombo("##upperLimit", params->CParams.PaletteReductionUpper.c_str())) {
 				for (const auto& limit : upperLimits) {
 					bool isSelected = (params->CParams.PaletteReductionUpper == limit);
 					if (ImGui::Selectable(limit.c_str(), isSelected)) {
@@ -678,6 +854,10 @@ namespace RetrodevGui {
 				}
 				ImGui::EndCombo();
 			}
+			ImGui::SameLine();
+			ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("AND mask clipping the maximum per-channel value.\nPrevents very bright colours from reaching full white.");
 		}
 		//
 		// Reset button
@@ -694,4 +874,4 @@ namespace RetrodevGui {
 		return changed;
 	}
 
-} // namespace RetrodevGui
+}

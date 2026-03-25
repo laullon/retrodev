@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Bitmap export engine -- runs AngelScript export scripts for bitmap items.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -53,13 +56,19 @@ namespace RetrodevLib {
 		IPaletteConverter* BitmapExportContext::GetPalette() const {
 			return converter ? converter->GetPalette().get() : nullptr;
 		}
+		bool BitmapExportContext::GetUseTransparentColor() const {
+			return params ? params->RParams.UseTransparentColor : false;
+		}
+		int BitmapExportContext::GetTransparentPen() const {
+			return params ? params->RParams.TransparentPen : -1;
+		}
 
 		// -------------------------------------------------------------- //
 		// RegisterBitmapContextBinding                                     //
 		// -------------------------------------------------------------- //
 
 		//
-		// Generic wrappers — required by AS_MAX_PORTABILITY builds
+		// Generic wrappers -- required by AS_MAX_PORTABILITY builds
 		//
 		static void BitmapExportContext_GetNativeWidth_Generic(asIScriptGeneric* gen) {
 			gen->SetReturnDWord((asDWORD) static_cast<BitmapExportContext*>(gen->GetObject())->GetNativeWidth());
@@ -80,12 +89,18 @@ namespace RetrodevLib {
 		static void BitmapExportContext_GetPalette_Generic(asIScriptGeneric* gen) {
 			gen->SetReturnAddress(static_cast<BitmapExportContext*>(gen->GetObject())->GetPalette());
 		}
+		static void BitmapExportContext_GetUseTransparentColor_Generic(asIScriptGeneric* gen) {
+			gen->SetReturnByte(static_cast<BitmapExportContext*>(gen->GetObject())->GetUseTransparentColor() ? 1 : 0);
+		}
+		static void BitmapExportContext_GetTransparentPen_Generic(asIScriptGeneric* gen) {
+			gen->SetReturnDWord((asDWORD) static_cast<BitmapExportContext*>(gen->GetObject())->GetTransparentPen());
+		}
 		//
 		void RegisterBitmapContextBinding(asIScriptEngine* engine) {
 			if (g_engine.bitmapContextRegistered)
 				return;
 			//
-			// BitmapExportContext — ref type, no script-side reference counting
+			// BitmapExportContext -- ref type, no script-side reference counting
 			//
 			engine->RegisterObjectType("BitmapExportContext", 0, asOBJ_REF | asOBJ_NOCOUNT);
 			engine->RegisterObjectMethod("BitmapExportContext", "int GetNativeWidth() const", asFUNCTION(BitmapExportContext_GetNativeWidth_Generic), asCALL_GENERIC);
@@ -94,6 +109,8 @@ namespace RetrodevLib {
 			engine->RegisterObjectMethod("BitmapExportContext", "string GetTargetSystem() const", asFUNCTION(BitmapExportContext_GetTargetSystem_Generic), asCALL_GENERIC);
 			engine->RegisterObjectMethod("BitmapExportContext", "string GetParam(const string &in) const", asFUNCTION(BitmapExportContext_GetParam_Generic), asCALL_GENERIC);
 			engine->RegisterObjectMethod("BitmapExportContext", "Palette@ GetPalette() const", asFUNCTION(BitmapExportContext_GetPalette_Generic), asCALL_GENERIC);
+			engine->RegisterObjectMethod("BitmapExportContext", "bool GetUseTransparentColor() const", asFUNCTION(BitmapExportContext_GetUseTransparentColor_Generic), asCALL_GENERIC);
+			engine->RegisterObjectMethod("BitmapExportContext", "int GetTransparentPen() const", asFUNCTION(BitmapExportContext_GetTransparentPen_Generic), asCALL_GENERIC);
 			g_engine.bitmapContextRegistered = true;
 		}
 
@@ -104,7 +121,7 @@ namespace RetrodevLib {
 		bool RunBitmapExport(const std::string& scriptPath, const std::string& outputPath, const std::string& scriptParams, Image* image, IBitmapConverter* converter,
 							 const GFXParams* params) {
 			if (!g_engine.initialized) {
-				ReportError("[Script] ExportBitmap: engine not initialized — call ExportEngine::Initialize() first");
+				ReportError("[Script] ExportBitmap: engine not initialized -- call ExportEngine::Initialize() first");
 				return false;
 			}
 			if (!EnsureOutputDirectory(outputPath))
@@ -172,5 +189,5 @@ namespace RetrodevLib {
 			return true;
 		}
 
-	} // namespace ExportImpl
-} // namespace RetrodevLib
+	}
+}

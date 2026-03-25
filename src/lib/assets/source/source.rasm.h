@@ -1,7 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Source asset -- RASM assembler invocation.
 //
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -25,5 +28,5 @@ namespace RetrodevLib {
 		bool Build(const std::string& source, const std::vector<std::string>& includeDirs, const std::vector<std::string>& defines, const std::string& toolOpts,
 				   const std::string& projectDir);
 
-	} // namespace RasmImpl
-} // namespace RetrodevLib
+	}
+}

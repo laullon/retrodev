@@ -1,8 +1,10 @@
 // --------------------------------------------------------------------------------------------------------------
 //
+// Retrodev Lib
 //
+// Palette asset -- hardware pen assignment and colour lookup.
 //
-//
+// (c) TLOTB 2026
 //
 // --------------------------------------------------------------------------------------------------------------
 
@@ -35,7 +37,7 @@ namespace RetrodevLib {
 		//
 		ImageLoadFailed,
 		//
-		// The participant's colors could not all fit — the zone ran out of free pen slots
+		// The participant's colors could not all fit -- the zone ran out of free pen slots
 		//
 		PenOverflow,
 		//
@@ -72,12 +74,12 @@ namespace RetrodevLib {
 		std::string message;
 		//
 		// Overflow method that was applied when producing the fixed palette this participant
-		// was mapped against. Transient — not serialised.
+		// was mapped against. Transient -- not serialised.
 		//
 		PaletteOverflowMethod overflowMethodApplied = PaletteOverflowMethod::HardCap;
 		//
 		// Colors actually used by this participant in the final fixed palette.
-		// Populated only when status == OK. Transient — not serialised.
+		// Populated only when status == OK. Transient -- not serialised.
 		//
 		struct ColorSwatch {
 			int slot = 0;
@@ -122,7 +124,7 @@ namespace RetrodevLib {
 		//
 		int pensUsed = 0;
 		//
-		// Target system and mode strings — needed by the UI to recreate a display converter
+		// Target system and mode strings -- needed by the UI to recreate a display converter
 		//
 		std::string targetSystem;
 		std::string targetMode;
@@ -149,7 +151,7 @@ namespace RetrodevLib {
 		//
 		// Per-overflow-color remap decisions made during the cap step for this solution.
 		// One entry for each color in the union that exceeded the pen budget.
-		// Transient — not serialised.
+		// Transient -- not serialised.
 		//
 		struct OverflowRemap {
 			//
@@ -277,4 +279,4 @@ namespace RetrodevLib {
 		//
 		static void Validate(const PaletteSolution& solution, const PaletteParams* params);
 	};
-} // namespace RetrodevLib
+}
