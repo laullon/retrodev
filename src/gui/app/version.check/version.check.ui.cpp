@@ -42,8 +42,9 @@ namespace RetrodevGui {
         //
         // Transition to pending notification exactly once when update is found
         //
-        if (s_cachedResult.state == VersionCheckState::UpdateAvailable && !m_pendingNotification) {
+        if (s_cachedResult.state == VersionCheckState::UpdateAvailable && !m_notificationShown) {
             m_pendingNotification = true;
+            m_notificationShown = true;
             m_popupOpen = true;
         }
     }

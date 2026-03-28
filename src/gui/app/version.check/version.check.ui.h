@@ -58,6 +58,11 @@ namespace RetrodevGui {
         // True when an update is available and not yet dismissed by the user
         //
         static inline bool m_pendingNotification = false;
+        //
+        // True once the initial auto-open notification has been shown, so Tick
+        // never re-triggers it after the user dismisses the popup
+        //
+        static inline bool m_notificationShown = false;
     };
 
 }
