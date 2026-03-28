@@ -64,7 +64,7 @@ namespace RetrodevLib {
 			//
 			int GetCellTilesetIndex(int cellVal) const;
 			//
-			// Decode the tile index (0-based) from a cell word.
+			// Decode the compact tile index (0-based) from a cell word (bottom 12 bits).
 			//
 			int GetCellTileIndex(int cellVal) const;
 			//

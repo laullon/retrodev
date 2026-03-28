@@ -1283,6 +1283,8 @@ namespace ImGui {
 					Move(lineIndex, charIndex);
 					int oneStepRightColumn = GetCharacterColumn(lineIndex, charIndex);
 					if (aWordMode) {
+						aCoords.mLine = lineIndex;
+						aCoords.mColumn = oneStepRightColumn;
 						aCoords = FindWordEnd(aCoords);
 						aCoords.mColumn = std::max(aCoords.mColumn, oneStepRightColumn);
 					} else
@@ -1297,6 +1299,7 @@ namespace ImGui {
 					}
 				} else {
 					Move(lineIndex, charIndex, true);
+					aCoords.mLine = lineIndex;
 					aCoords.mColumn = GetCharacterColumn(lineIndex, charIndex);
 					if (aWordMode)
 						aCoords = FindWordStart(aCoords);
@@ -2415,40 +2418,44 @@ namespace ImGui {
 		//
 		// Cursor movement
 		//
-		else if (!alt && !ctrl && !super && ImGui::IsKeyPressed(ImGuiKey_UpArrow)) {
+		else if (!alt && !ctrl && !super && (ImGui::IsKeyPressed(ImGuiKey_UpArrow) || ImGui::IsKeyPressed(ImGuiKey_Keypad8))) {
 			mAutocompleteEnabled = true;
 			MoveUp(1, shift);
-		} else if (!alt && !ctrl && !super && ImGui::IsKeyPressed(ImGuiKey_DownArrow)) {
+		} else if (!alt && !ctrl && !super && (ImGui::IsKeyPressed(ImGuiKey_DownArrow) || ImGui::IsKeyPressed(ImGuiKey_Keypad2))) {
 			mAutocompleteEnabled = true;
 			MoveDown(1, shift);
-		} else if ((isOSX ? !ctrl : !alt) && !super && ImGui::IsKeyPressed(ImGuiKey_LeftArrow)) {
+		} else if ((isOSX ? !ctrl : !alt) && !super && (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_Keypad4))) {
 			mAutocompleteEnabled = true;
 			MoveLeft(shift, isWordmoveKey);
-		} else if ((isOSX ? !ctrl : !alt) && !super && ImGui::IsKeyPressed(ImGuiKey_RightArrow)) {
+		} else if ((isOSX ? !ctrl : !alt) && !super && (ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_Keypad6))) {
 			mAutocompleteEnabled = true;
 			MoveRight(shift, isWordmoveKey);
-		} else if (!alt && !ctrl && !super && ImGui::IsKeyPressed(ImGuiKey_PageUp)) {
+		} else if (!alt && !ctrl && !super && (ImGui::IsKeyPressed(ImGuiKey_PageUp) || ImGui::IsKeyPressed(ImGuiKey_Keypad9))) {
+			int pageAmount = std::max(1, mVisibleLineCount - 2);
 			mAutocompleteEnabled = true;
-			MoveUp(mVisibleLineCount - 2, shift);
-		} else if (!alt && !ctrl && !super && ImGui::IsKeyPressed(ImGuiKey_PageDown)) {
+			ImGui::SetScrollY(std::max(0.0f, mScrollY - pageAmount * mCharAdvance.y));
+			MoveUp(pageAmount, shift);
+		} else if (!alt && !ctrl && !super && (ImGui::IsKeyPressed(ImGuiKey_PageDown) || ImGui::IsKeyPressed(ImGuiKey_Keypad3))) {
+			int pageAmount = std::max(1, mVisibleLineCount - 2);
 			mAutocompleteEnabled = true;
-			MoveDown(mVisibleLineCount - 2, shift);
-		} else if (ctrl && !alt && !super && ImGui::IsKeyPressed(ImGuiKey_Home)) {
+			ImGui::SetScrollY(mScrollY + pageAmount * mCharAdvance.y);
+			MoveDown(pageAmount, shift);
+		} else if (ctrl && !alt && !super && (ImGui::IsKeyPressed(ImGuiKey_Home) || ImGui::IsKeyPressed(ImGuiKey_Keypad7))) {
 			mAutocompleteEnabled = true;
 			MoveTop(shift);
-		} else if (ctrl && !alt && !super && ImGui::IsKeyPressed(ImGuiKey_End)) {
+		} else if (ctrl && !alt && !super && (ImGui::IsKeyPressed(ImGuiKey_End) || ImGui::IsKeyPressed(ImGuiKey_Keypad1))) {
 			mAutocompleteEnabled = true;
 			MoveBottom(shift);
-		} else if (!alt && !ctrl && !super && ImGui::IsKeyPressed(ImGuiKey_Home)) {
+		} else if (!alt && !ctrl && !super && (ImGui::IsKeyPressed(ImGuiKey_Home) || ImGui::IsKeyPressed(ImGuiKey_Keypad7))) {
 			mAutocompleteEnabled = true;
 			MoveHome(shift);
-		} else if (!alt && !ctrl && !super && ImGui::IsKeyPressed(ImGuiKey_End)) {
+		} else if (!alt && !ctrl && !super && (ImGui::IsKeyPressed(ImGuiKey_End) || ImGui::IsKeyPressed(ImGuiKey_Keypad1))) {
 			mAutocompleteEnabled = true;
 			MoveEnd(shift);
 			//
 			// Delete / Backspace
 			//
-		} else if (!mReadOnly && !alt && !shift && !super && ImGui::IsKeyPressed(ImGuiKey_Delete)) {
+		} else if (!mReadOnly && !alt && !shift && !super && (ImGui::IsKeyPressed(ImGuiKey_Delete) || ImGui::IsKeyPressed(ImGuiKey_KeypadDecimal))) {
 			mAutocompleteEnabled = true;
 			Delete(ctrl);
 		} else if (!mReadOnly && !alt && !shift && !super && ImGui::IsKeyPressed(ImGuiKey_Backspace)) {

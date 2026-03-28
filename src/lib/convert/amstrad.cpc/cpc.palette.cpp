@@ -304,12 +304,16 @@ namespace RetrodevLib::ConverterAmstradCPC {
 	}
 	//
 	// Returns the pen index whose assigned color matches the given RGB, or -1 if absent.
-	// Only searches within the active pen count for the current mode so disabled or
-	// out-of-range slots are never considered.
+	// Only searches within the active pen count for the current mode.
+	// Disabled pens are skipped: a disabled pen is explicitly excluded from use
+	// (e.g. pen 0 reserved as the transparent pen) and must never be returned
+	// as a match for a non-transparent pixel, even if its color happens to match.
 	//
 	int CPCPalette::PenGetIndex(const RgbColor& color) {
 		int penCount = PaletteMaxColors();
 		for (int pen = 0; pen < penCount; pen++) {
+			if (!PenGetEnabled(pen))
+				continue;
 			RgbColor pc = PenGetColor(pen);
 			if (pc.r == color.r && pc.g == color.g && pc.b == color.b)
 				return pen;

@@ -23,3 +23,4 @@
     * This is something that may be true (graphics participating two zones but is unsolved)
 * Optimizations
   * Palette solver can be optimized
+

@@ -39,7 +39,12 @@ On the road to the version 1.0 this is the first bulk and massive update to cove
 * Added: Project version number to migrate to newer formats if the project format receives breaking changes
 * Added: Improved sprite operations so you can preshift, duplicate and flip in any way
 * Added: Multiselection on tiles and sprites for bulk operations
-
+* Fixed: Editor sizing and keyboard issues
+* Added: Improved Map usability (fixup against tiles marked as deleted)
+* Added: Sync between deleted tiles across variants in map editor
+* Added: Detection and dialog if a file has been modified externally
+* Added: It version checks against github to notify if a new release is made
+* Added: If a dependency fails on build, build is stopped.
 
 ## Version 0.9.24114562
 

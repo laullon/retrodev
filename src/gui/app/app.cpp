@@ -16,6 +16,8 @@
 #include <views/build/document.build.settings.h>
 #include <app/app.resources.h>
 #include <app/app.icons.mdi.h>
+#include <app/version.check/version.check.h>
+#include <app/version.check/version.check.ui.h>
 #include <system/version.h>
 
 namespace RetrodevGui {
@@ -330,9 +332,13 @@ namespace RetrodevGui {
 			ImGui_ImplSDL3_NewFrame();
 			ImGui::NewFrame();
 
+			// Drive the version check state machine
+			VersionCheckUi::Tick();
 			// Perform the main view
 			//
 			MainView::Perform();
+			// Render the update-available popup (overlays the main view)
+			VersionCheckUi::RenderPopup();
 			// Paint UI
 			// ImGui::ShowDemoWindow();
 
@@ -350,6 +356,7 @@ namespace RetrodevGui {
 	//
 	//
 	void Application::Shutdown() {
+		VersionCheck::Shutdown();
 		ImGui_ImplSDLRenderer3_Shutdown();
 		ImGui_ImplSDL3_Shutdown();
 		ImGui::DestroyContext();

@@ -12,6 +12,8 @@
 #include "main.view.documents.h"
 #include <app/app.icons.mdi.h>
 #include <app/app.console.h>
+#include <app/version.check/version.check.h>
+#include <app/version.check/version.check.ui.h>
 #include <assets/source/source.h>
 #include <assets/source/source.emulator.h>
 #include <views/build/document.build.settings.h>
@@ -57,13 +59,19 @@ namespace RetrodevGui {
 		std::filesystem::path projectDir = std::filesystem::path(RetrodevLib::Project::GetPath()).parent_path();
 		std::filesystem::current_path(projectDir);
 		//
+		// Mirror script log output to the Build channel for the duration of the build
+		//
+		AppConsole::SetScriptMirrorToBuild(true);
+		//
 		// Process all declared dependencies before invoking the assembler
 		//
 		if (!RetrodevLib::Project::BuildProcessDependencies(buildItemName)) {
+			AppConsole::SetScriptMirrorToBuild(false);
 			std::filesystem::current_path(prevCwd);
 			return false;
 		}
 		bool ok = RetrodevLib::SourceBuild::Build(params);
+		AppConsole::SetScriptMirrorToBuild(false);
 		std::filesystem::current_path(prevCwd);
 		// Clear any modified flags that the build process may have set on project data.
 		RetrodevLib::Project::ClearModified();
@@ -262,13 +270,24 @@ namespace RetrodevGui {
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Help")) {
-				if (ImGui::MenuItem(ICON_BOOK_OPEN_VARIANT " Documentation"))
-					HelpDialog::Show();
-				ImGui::Separator();
-				if (ImGui::MenuItem(ICON_INFORMATION " About RetroDev"))
-					AboutDialog::Show();
-				ImGui::EndMenu();
-			}
+					if (ImGui::MenuItem(ICON_BOOK_OPEN_VARIANT " Documentation"))
+						HelpDialog::Show();
+					ImGui::Separator();
+					//
+					// Update badge -- shown next to the menu item when a new version is available
+					//
+					if (VersionCheckUi::HasPendingNotification()) {
+						if (ImGui::MenuItem(ICON_UPDATE " Check for Updates  " ICON_CIRCLE_MEDIUM))
+							VersionCheckUi::ShowPopup();
+					} else {
+						if (ImGui::MenuItem(ICON_UPDATE " Check for Updates"))
+							VersionCheckUi::ShowPopup();
+					}
+					ImGui::Separator();
+					if (ImGui::MenuItem(ICON_INFORMATION " About RetroDev"))
+						AboutDialog::Show();
+					ImGui::EndMenu();
+				}
 			ImGui::PopStyleVar();
 			ImGui::PopStyleColor();
 			//

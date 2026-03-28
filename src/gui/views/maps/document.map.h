@@ -31,6 +31,10 @@ namespace RetrodevGui {
 		//
 		void Perform() override;
 		//
+		// Flush UI absolute data back to lib compact params before project save.
+		//
+		bool Save() override;
+		//
 		// Get the build type this document represents
 		//
 		RetrodevLib::ProjectBuildType GetBuildType() const override { return RetrodevLib::ProjectBuildType::Map; }
@@ -52,6 +56,12 @@ namespace RetrodevGui {
 			std::shared_ptr<RetrodevLib::Image> sourceImage;
 			std::shared_ptr<RetrodevLib::IBitmapConverter> converter;
 			std::shared_ptr<RetrodevLib::ITileExtractor> extractor;
+			//
+			// Sorted absolute indices of deleted tiles in this tileset's extraction grid.
+			// Populated from TileExtractionParams::DeletedTiles after LoadTileset().
+			// Used to skip deleted slots in the tile palette and to validate cell values.
+			//
+			std::vector<int> deletedTiles;
 			bool loaded = false;
 		};
 		//
@@ -153,8 +163,25 @@ namespace RetrodevGui {
 		char m_groupRenameBuffer[256] = {};
 		int m_groupRenameIdx = -1;
 		//
+		// UI-side absolute-index layer and group data.
+		// The lib (MapParams) always stores compact indices.
+		// On open: compact->absolute loaded here. On save: absolute->compact flushed to params.
+		//
+		bool m_absDataLoaded = false;
+		std::vector<RetrodevLib::MapLayer> m_absLayers;
+		std::vector<RetrodevLib::TileGroup> m_absGroups;
+		//
+		// Convert compact params->layers/groups into m_absLayers/m_absGroups (compact->absolute).
+		//
+		void LoadAbsData(RetrodevLib::MapParams* params);
+		//
+		// Convert m_absLayers/m_absGroups back into params->layers/groups (absolute->compact).
+		//
+		void FlushAbsData(RetrodevLib::MapParams* params);
+		//
 		// Synchronise m_loadedTilesets to match the given slot list,
-		// reusing already-loaded entries and reloading when the active variant changes
+		// reusing already-loaded entries and reloading when the active variant changes.
+		// Warns and auto-fixes DeletedTiles discrepancies across variants in each slot.
 		//
 		void SyncLoadedTilesets(const std::vector<RetrodevLib::TilesetSlot>& slots);
 		//

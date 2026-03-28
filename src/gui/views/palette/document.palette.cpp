@@ -436,6 +436,7 @@ namespace RetrodevGui {
 								if (sts.converters.find(pi) != sts.converters.end()) {
 									m_selectedSolutionZone = szi;
 									m_selectedSolutionTag = sti;
+									m_preloadedSelected = false;
 									found = true;
 								}
 							}
@@ -1067,6 +1068,14 @@ namespace RetrodevGui {
 			for (int i = 0; i < penCount; i++) {
 				params->preloadedColors[i] = m_preloadGfx.SParams.PaletteColors[i];
 				params->preloadedLocked[i] = m_preloadGfx.SParams.PaletteLocked[i];
+				//
+				// Keep PaletteEnabled in sync: a locked+assigned pen is enabled,
+				// anything else is disabled so the solver sees the correct active set.
+				//
+				bool shouldEnable = m_preloadGfx.SParams.PaletteLocked[i] && (m_preloadGfx.SParams.PaletteColors[i] >= 0);
+				if (i < (int)m_preloadGfx.SParams.PaletteEnabled.size())
+					m_preloadGfx.SParams.PaletteEnabled[i] = shouldEnable;
+				pal->PenEnable(i, shouldEnable);
 			}
 			//
 			// Any change to the pre-loaded palette invalidates the current solution
@@ -1721,18 +1730,18 @@ namespace RetrodevGui {
 		//
 		if (ImGui::BeginChild("##PalRight", ImVec2(m_hSizeRight, -1), true)) {
 			float rightAvailY = ImGui::GetContentRegionAvail().y;
-			float vMinTop = fontSize * 8.0f;
-			float vMinBottom = fontSize * 8.0f;
-			//
-			// Derive top height from available space so the splitter stays coherent on resize
-			//
-			m_vSizeTop = rightAvailY - m_vSizeBottom - Application::splitterThickness - ImGui::GetStyle().ItemSpacing.y;
-			if (m_vSizeTop < vMinTop) {
-				m_vSizeTop = vMinTop;
+				float vMinTop = fontSize * 8.0f;
+				float vMinBottom = fontSize * 8.0f;
+				//
+				// Derive bottom height from available space so new space goes to the bottom panel
+				//
 				m_vSizeBottom = rightAvailY - m_vSizeTop - Application::splitterThickness - ImGui::GetStyle().ItemSpacing.y;
-				if (m_vSizeBottom < vMinBottom)
+				if (m_vSizeBottom < vMinBottom) {
 					m_vSizeBottom = vMinBottom;
-			}
+					m_vSizeTop = rightAvailY - m_vSizeBottom - Application::splitterThickness - ImGui::GetStyle().ItemSpacing.y;
+					if (m_vSizeTop < vMinTop)
+						m_vSizeTop = vMinTop;
+				}
 			//
 			// Vertical splitter between zone/participant editor and solve panel
 			//

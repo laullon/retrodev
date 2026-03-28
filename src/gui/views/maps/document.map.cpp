@@ -19,11 +19,131 @@
 
 namespace RetrodevGui {
 	//
+	// Return sorted unique deleted-tile absolute indices for the slot's active variant
+	//
+	static std::vector<int> GetSlotDeletedTiles(const RetrodevLib::TilesetSlot& slot) {
+		std::vector<int> deleted;
+		if (slot.variants.empty())
+			return deleted;
+		int vi = std::max(0, std::min(slot.activeVariant, (int)slot.variants.size() - 1));
+		RetrodevLib::TileExtractionParams* tileParams = nullptr;
+		if (!RetrodevLib::Project::TilesetGetTileParams(slot.variants[vi], &tileParams) || tileParams == nullptr)
+			return deleted;
+		deleted = tileParams->DeletedTiles;
+		std::sort(deleted.begin(), deleted.end());
+		deleted.erase(std::unique(deleted.begin(), deleted.end()), deleted.end());
+		return deleted;
+	}
+	//
+	// Translate a tile index from compact space to absolute space using deleted slots
+	//
+	static int TranslateTileCompactToAbsolute(int compactIdx, const std::vector<int>& deleted) {
+		int absIdx = compactIdx;
+		for (int del : deleted) {
+			if (del <= absIdx)
+				absIdx++;
+			else
+				break;
+		}
+		return absIdx;
+	}
+	//
+	// Translate a tile index from absolute space to compact space using deleted slots
+	// Returns -1 when the absolute index points to a deleted slot (no compact representation)
+	//
+	static int TranslateTileAbsoluteToCompact(int absIdx, const std::vector<int>& deleted) {
+		if (std::binary_search(deleted.begin(), deleted.end(), absIdx))
+			return -1;
+		int removedBefore = (int)(std::lower_bound(deleted.begin(), deleted.end(), absIdx) - deleted.begin());
+		return absIdx - removedBefore;
+	}
+	//
+	// Translate one map cell between compact and absolute tile index spaces
+	//
+	static uint16_t TranslateMapCell(uint16_t cellVal, const std::vector<int>& deleted, bool compactToAbsolute) {
+		if (cellVal == 0)
+			return 0;
+		int slotBits = (int)(cellVal >> 12);
+		int tileIdx = (int)(cellVal & 0x0FFF);
+		int translatedIdx = compactToAbsolute ? TranslateTileCompactToAbsolute(tileIdx, deleted) : TranslateTileAbsoluteToCompact(tileIdx, deleted);
+		if (translatedIdx < 0 || translatedIdx > 0x0FFF)
+			return 0;
+		return (uint16_t)((slotBits << 12) | translatedIdx);
+	}
+	//
+	// Translate every map/group cell for all slot indices between compact and absolute spaces
+	//
+	static void TranslateMapParamsCells(RetrodevLib::MapParams* params, bool compactToAbsolute) {
+		if (params == nullptr)
+			return;
+		for (int si = 0; si < (int)params->tilesets.size(); si++) {
+			const std::vector<int> deleted = GetSlotDeletedTiles(params->tilesets[si]);
+			if (deleted.empty())
+				continue;
+			int slotBit = si + 1;
+			for (auto& layer : params->layers) {
+				for (auto& cell : layer.data) {
+					if (cell == 0 || (int)(cell >> 12) != slotBit)
+						continue;
+					cell = TranslateMapCell(cell, deleted, compactToAbsolute);
+				}
+			}
+			for (auto& group : params->groups) {
+				for (auto& cell : group.tiles) {
+					if (cell == 0 || (int)(cell >> 12) != slotBit)
+						continue;
+					cell = TranslateMapCell(cell, deleted, compactToAbsolute);
+				}
+			}
+		}
+	}
+
+	//
 	// Constructor: name only, maps have no source file
 	//
 	DocumentMap::DocumentMap(const std::string& name) : DocumentView(name, "") {}
 
 	DocumentMap::~DocumentMap() {}
+	//
+	// Load abs data from compact params (compact->absolute) on first open
+	//
+	void DocumentMap::LoadAbsData(RetrodevLib::MapParams* params) {
+		m_absLayers = params->layers;
+		m_absGroups = params->groups;
+		//
+		// Retrieve tileset deleted-tile lists and translate every cell compact->absolute
+		//
+        RetrodevLib::MapParams absParams = *params;
+		absParams.layers = m_absLayers;
+		absParams.groups = m_absGroups;
+		TranslateMapParamsCells(&absParams, true);
+		m_absLayers = std::move(absParams.layers);
+		m_absGroups = std::move(absParams.groups);
+		m_absDataLoaded = true;
+	}
+	//
+	// Flush abs data back to compact params (absolute->compact) before project save
+	//
+	void DocumentMap::FlushAbsData(RetrodevLib::MapParams* params) {
+		params->layers = m_absLayers;
+		params->groups = m_absGroups;
+		//
+		// Translate every cell absolute->compact
+		//
+        TranslateMapParamsCells(params, false);
+	}
+	//
+	// Flush absolute UI data back to compact lib params before project save
+	//
+	bool DocumentMap::Save() {
+		if (!m_absDataLoaded)
+			return true;
+		RetrodevLib::MapParams* params = nullptr;
+		if (!RetrodevLib::Project::MapGetParams(m_name, &params) || params == nullptr)
+			return false;
+		FlushAbsData(params);
+		return true;
+	}
 	//
 	// Main render entry point
 	//
@@ -37,22 +157,52 @@ namespace RetrodevGui {
 			return;
 		}
 		//
-		// Ensure every layer's data vector is sized to its width * height
+		// Load UI-side absolute data from compact lib params on first open
 		//
-		for (auto& layer : params->layers) {
-			int expectedSize = layer.width * layer.height;
-			if ((int)layer.data.size() != expectedSize)
-				layer.data.assign(expectedSize, 0);
+		if (!m_absDataLoaded)
+			LoadAbsData(params);
+		//
+		// Ensure abs layer data vectors are sized to each layer's width * height
+		//
+		for (int li = 0; li < (int)params->layers.size() && li < (int)m_absLayers.size(); li++) {
+			RetrodevLib::MapLayer& absL = m_absLayers[li];
+			const RetrodevLib::MapLayer& pL = params->layers[li];
+			if (absL.width != pL.width || absL.height != pL.height) {
+				absL.width = pL.width;
+				absL.height = pL.height;
+			}
+			int expectedSize = absL.width * absL.height;
+			if ((int)absL.data.size() != expectedSize)
+				absL.data.resize(expectedSize, 0);
 		}
+      //
+		// Ensure abs group tile vectors are sized to each group's width * height
+		//
+		for (int gi = 0; gi < (int)m_absGroups.size(); gi++) {
+			RetrodevLib::TileGroup& absG = m_absGroups[gi];
+			int expectedSize = absG.width * absG.height;
+			if (expectedSize < 0)
+				expectedSize = 0;
+			if ((int)absG.tiles.size() != expectedSize)
+				absG.tiles.resize(expectedSize, 0);
+		}
+		//
+		// Build a working MapParams that uses abs layer/group data for all UI operations.
+		// Metadata (tilesets, viewWidth/Height) comes from the lib params unchanged.
+		//
+		RetrodevLib::MapParams workingParams = *params;
+		workingParams.layers = m_absLayers;
+		workingParams.groups = m_absGroups;
+		RetrodevLib::MapParams* wp = &workingParams;
 		//
 		// Clamp editing layer index to the valid range every frame
 		//
-		if (!params->layers.empty())
-			m_editingLayerIdx = std::max(0, std::min(m_editingLayerIdx, (int)params->layers.size() - 1));
+		if (!wp->layers.empty())
+			m_editingLayerIdx = std::max(0, std::min(m_editingLayerIdx, (int)wp->layers.size() - 1));
 		//
 		// Synchronise loaded tilesets with the project's tileset slot list
 		//
-		SyncLoadedTilesets(params->tilesets);
+		SyncLoadedTilesets(wp->tilesets);
 		//
 		// One-time splitter and pending-dimension initialisation
 		//
@@ -61,10 +211,10 @@ namespace RetrodevGui {
 		if (!m_sizesInitialized) {
 			m_hSizeRight = fontSize * 22.0f;
 			m_hSizeLeft = avail.x - (m_hSizeRight + Application::splitterThickness + ImGui::GetStyle().ItemSpacing.x);
-			if (!params->layers.empty()) {
-				int li = std::max(0, std::min(m_editingLayerIdx, (int)params->layers.size() - 1));
-				m_pendingWidth = params->layers[li].width;
-				m_pendingHeight = params->layers[li].height;
+			if (!wp->layers.empty()) {
+				int li = std::max(0, std::min(m_editingLayerIdx, (int)wp->layers.size() - 1));
+				m_pendingWidth = wp->layers[li].width;
+				m_pendingHeight = wp->layers[li].height;
 			}
 			m_sizesInitialized = true;
 		}
@@ -82,13 +232,13 @@ namespace RetrodevGui {
 		// Left panel: top toolbar, canvas (no ImGui scroll), bottom scrollbar toolbar
 		//
 		if (ImGui::BeginChild("MapCanvasArea", ImVec2(m_hSizeLeft, 0), false, ImGuiWindowFlags_NoScrollbar)) {
-			RenderCanvasToolbar(params);
+			RenderCanvasToolbar(wp);
 			float bottomH = ImGui::GetFrameHeightWithSpacing() * 2.0f + ImGui::GetStyle().ItemSpacing.y;
 			if (ImGui::BeginChild("MapCanvasPanel", ImVec2(0, -bottomH), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
-				RenderMapCanvas(params);
+				RenderMapCanvas(wp);
 			}
 			ImGui::EndChild();
-			RenderCanvasScrollbars(params);
+			RenderCanvasScrollbars(wp);
 		}
 		ImGui::EndChild();
 		ImGui::SameLine();
@@ -97,10 +247,58 @@ namespace RetrodevGui {
 		//
 		if (ImGui::BeginChild("MapToolingPanel", ImVec2(m_hSizeRight, 0), true)) {
 			ImGui::Indent(8.0f);
-			RenderToolingPanel(params);
+			RenderToolingPanel(wp);
 			ImGui::Unindent(8.0f);
 		}
 		ImGui::EndChild();
+		//
+		// Write working layers/groups back to the UI abs arrays after any modifications
+		//
+		m_absLayers = std::move(workingParams.layers);
+		m_absGroups = std::move(workingParams.groups);
+		//
+		// Sync non-cell metadata (widths, heights, speeds, offsets, visibility) back to lib params.
+		// Cell data stays compact in lib; only structural fields are mirrored.
+		//
+		params->viewWidth = wp->viewWidth;
+		params->viewHeight = wp->viewHeight;
+		for (int li = 0; li < (int)m_absLayers.size() && li < (int)params->layers.size(); li++) {
+			params->layers[li].name = m_absLayers[li].name;
+			params->layers[li].width = m_absLayers[li].width;
+			params->layers[li].height = m_absLayers[li].height;
+			params->layers[li].mapSpeed = m_absLayers[li].mapSpeed;
+			params->layers[li].offsetX = m_absLayers[li].offsetX;
+			params->layers[li].offsetY = m_absLayers[li].offsetY;
+			params->layers[li].visible = m_absLayers[li].visible;
+		}
+		//
+		// Sync added/removed layers: adjust params->layers count to match abs
+		//
+		if (params->layers.size() != m_absLayers.size()) {
+			params->layers.resize(m_absLayers.size());
+			for (int li = 0; li < (int)m_absLayers.size(); li++) {
+				params->layers[li].name = m_absLayers[li].name;
+				params->layers[li].width = m_absLayers[li].width;
+				params->layers[li].height = m_absLayers[li].height;
+				params->layers[li].mapSpeed = m_absLayers[li].mapSpeed;
+				params->layers[li].offsetX = m_absLayers[li].offsetX;
+				params->layers[li].offsetY = m_absLayers[li].offsetY;
+				params->layers[li].visible = m_absLayers[li].visible;
+			}
+		}
+		//
+		// Sync group names/dimensions (not cell data) back to lib params
+		//
+		params->groups.resize(m_absGroups.size());
+		for (int gi = 0; gi < (int)m_absGroups.size(); gi++) {
+			params->groups[gi].name = m_absGroups[gi].name;
+			params->groups[gi].width = m_absGroups[gi].width;
+			params->groups[gi].height = m_absGroups[gi].height;
+		}
+       //
+		// Keep lib map params in compact index space while editing
+		//
+		FlushAbsData(params);
 	}
 	//
 	// Render the toolbar strip above the map canvas
@@ -637,19 +835,19 @@ namespace RetrodevGui {
 		//
 		// --- Export section ---
 		//
-		m_exportWidget.RenderMap(m_name, params);
+        RetrodevLib::MapParams compactExportParams = *params;
+		TranslateMapParamsCells(&compactExportParams, false);
+		m_exportWidget.RenderMap(m_name, &compactExportParams);
 		ImGui::Separator();
 		//
 		// --- Layers section ---
 		//
-		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 		if (ImGui::CollapsingHeader("Layers")) {
 			RenderLayersSection(params);
 		}
 		//
 		// --- Dimensions section (operates on the editing layer) ---
 		//
-		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 		bool dimensionsOpen = ImGui::CollapsingHeader("Dimensions");
 		ImGui::SameLine();
 		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
@@ -787,7 +985,6 @@ namespace RetrodevGui {
 		//
 		// --- Viewport section ---
 		//
-		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 		bool viewportOpen = ImGui::CollapsingHeader("Viewport");
 		ImGui::SameLine();
 		ImGui::TextDisabled(ICON_INFORMATION_OUTLINE);
@@ -1065,72 +1262,92 @@ namespace RetrodevGui {
 					ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Tileset has no extracted tiles.");
 				} else {
 					//
-					// Display tile grid: wrap tiles across the available panel width
-					// Contained in its own child window so it scrolls independently
-					//
-					if (ImGui::BeginChild("##TilePalette", ImVec2(-1.0f, std::max(ImGui::GetFontSize() * 10.0f, ImGui::GetContentRegionAvail().y)), true)) {
-						int tileCount = ts.extractor->GetTileCount();
-						const float displaySize = 32.0f;
-						const float tilePad = 4.0f;
+						// Display tile grid: wrap tiles across the available panel width.
+						// Iterates absolute grid indices (GetTileAllCount/GetTileAll) so that
+						// m_selectedTileIdx always holds a stable absolute index.
+						// Deleted tile slots are rendered as disabled/unselectable placeholders.
+						// Contained in its own child window so it scrolls independently
 						//
-						// ImageButton adds FramePadding on each side; use the correct axis for each
-						// dimension to avoid over-packing columns or under-counting visible rows.
-						//
-						float framePadX = ImGui::GetStyle().FramePadding.x;
-						float framePadY = ImGui::GetStyle().FramePadding.y;
-						float buttonWidth = displaySize + 2.0f * framePadX;
-						float availWidth = ImGui::GetContentRegionAvail().x;
-						int tilesPerRow = std::max(1, (int)((availWidth + tilePad) / (buttonWidth + tilePad)));
-						int numRows = (tileCount + tilesPerRow - 1) / tilesPerRow;
-						float itemHeight = displaySize + 2.0f * framePadY + ImGui::GetStyle().ItemSpacing.y;
-						//
-						// Render visible rows only using list clipper
-						//
-						ImGuiListClipper clipper;
-						clipper.Begin(numRows, itemHeight);
-						while (clipper.Step()) {
-							for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
-								for (int col = 0; col < tilesPerRow; col++) {
-									int i = row * tilesPerRow + col;
-									if (i >= tileCount)
-										break;
-									if (col > 0)
-										ImGui::SameLine(0.0f, tilePad);
-									//
-									// Highlight the currently selected tile with a different button colour
-									//
-									bool selected = (m_selectedTileIdx == i);
-									if (selected)
-										ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-									ImGui::PushID(i);
-									auto tileImage = ts.extractor->GetTile(i);
-									SDL_Texture* tex = tileImage ? tileImage->GetTexture(Application::GetRenderer()) : nullptr;
-									if (tex) {
-										if (ImGui::ImageButton("##Tile", (ImTextureID)(intptr_t)tex, ImVec2(displaySize, displaySize))) {
-											m_selectedTileIdx = i;
-											m_selectedGroupIdx = -1;
+						if (ImGui::BeginChild("##TilePalette", ImVec2(-1.0f, std::max(ImGui::GetFontSize() * 10.0f, ImGui::GetContentRegionAvail().y)), true)) {
+							int tileCount = ts.extractor->GetTileAllCount();
+							const float displaySize = 32.0f;
+							const float tilePad = 4.0f;
+							//
+							// ImageButton adds FramePadding on each side; use the correct axis for each
+							// dimension to avoid over-packing columns or under-counting visible rows.
+							//
+							float framePadX = ImGui::GetStyle().FramePadding.x;
+							float framePadY = ImGui::GetStyle().FramePadding.y;
+							float buttonWidth = displaySize + 2.0f * framePadX;
+							float availWidth = ImGui::GetContentRegionAvail().x;
+							int tilesPerRow = std::max(1, (int)((availWidth + tilePad) / (buttonWidth + tilePad)));
+							int numRows = (tileCount + tilesPerRow - 1) / tilesPerRow;
+							float itemHeight = displaySize + 2.0f * framePadY + ImGui::GetStyle().ItemSpacing.y;
+							//
+							// Render visible rows only using list clipper
+							//
+							ImGuiListClipper clipper;
+							clipper.Begin(numRows, itemHeight);
+							while (clipper.Step()) {
+								for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
+									for (int col = 0; col < tilesPerRow; col++) {
+										int absIdx = row * tilesPerRow + col;
+										if (absIdx >= tileCount)
+											break;
+										bool isDeleted = std::binary_search(ts.deletedTiles.begin(), ts.deletedTiles.end(), absIdx);
+										if (col > 0)
+											ImGui::SameLine(0.0f, tilePad);
+										//
+										// Deleted slots: shown as disabled placeholders, not selectable.
+										// Size matches ImageButton total size: displaySize + 2 * FramePadding on each axis.
+										//
+										if (isDeleted) {
+											ImGui::BeginDisabled(true);
+											ImGui::PushID(absIdx);
+											ImGui::Button("##Del", ImVec2(displaySize + 2.0f * framePadX, displaySize + 2.0f * framePadY));
+											ImGui::PopID();
+											ImGui::EndDisabled();
+											continue;
 										}
-									} else {
-										if (ImGui::Button("?##Tile", ImVec2(displaySize, displaySize))) {
-											m_selectedTileIdx = i;
-											m_selectedGroupIdx = -1;
+										//
+										// Highlight the currently selected tile with a different button colour.
+										// m_selectedTileIdx is an absolute index, matching layer.data encoding.
+										//
+										bool selected = (m_selectedTileIdx == absIdx);
+										if (selected)
+											ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+										ImGui::PushID(absIdx);
+										auto tileImage = ts.extractor->GetTileAll(absIdx);
+										SDL_Texture* tex = tileImage ? tileImage->GetTexture(Application::GetRenderer()) : nullptr;
+										if (tex) {
+											if (ImGui::ImageButton("##Tile", (ImTextureID)(intptr_t)tex, ImVec2(displaySize, displaySize))) {
+												m_selectedTileIdx = absIdx;
+												m_selectedGroupIdx = -1;
+											}
+										} else {
+											if (ImGui::Button("?##Tile", ImVec2(displaySize, displaySize))) {
+												m_selectedTileIdx = absIdx;
+												m_selectedGroupIdx = -1;
+											}
 										}
+										ImGui::PopID();
+										if (selected)
+											ImGui::PopStyleColor();
 									}
-									ImGui::PopID();
-									if (selected)
-										ImGui::PopStyleColor();
 								}
 							}
+							clipper.End();
 						}
-						clipper.End();
-					}
-					ImGui::EndChild();
+						ImGui::EndChild();
 				}
 			}
 		}
 	}
 	//
-	// Synchronise m_loadedTilesets with the given slot list
+	// Synchronise m_loadedTilesets with the given slot list,
+	// reusing already-loaded entries and reloading when the active variant changes.
+	// After loading, checks all variants in each slot for DeletedTiles discrepancies:
+	// any index deleted in one variant is pushed into all others and a warning is logged.
 	//
 	void DocumentMap::SyncLoadedTilesets(const std::vector<RetrodevLib::TilesetSlot>& slots) {
 		std::vector<LoadedTileset> newList;
@@ -1155,25 +1372,84 @@ namespace RetrodevGui {
 					break;
 				}
 			}
-			if (found)
-				continue;
-			//
-			// New or changed variant: create and load it
-			//
-			LoadedTileset ts;
-			ts.loadedVariantName = activeName;
-			ts.loaded = false;
-			if (!activeName.empty())
-				LoadTileset(ts);
-			newList.push_back(std::move(ts));
+			if (!found) {
+				//
+				// New or changed variant: create and load it
+				//
+				LoadedTileset ts;
+				ts.loadedVariantName = activeName;
+				ts.loaded = false;
+				if (!activeName.empty())
+					LoadTileset(ts);
+				newList.push_back(std::move(ts));
+			}
 		}
 		m_loadedTilesets = std::move(newList);
+		//
+		// Check every slot that has more than one variant for DeletedTiles discrepancies.
+		// Build the union of all deleted indices across the slot's variants, then push
+		// any missing index into variants that don't already have it.
+		//
+		for (int si = 0; si < (int)slots.size(); si++) {
+			const RetrodevLib::TilesetSlot& slot = slots[si];
+			if (slot.variants.size() <= 1)
+				continue;
+			//
+			// Collect every variant's TileExtractionParams pointer and build the union
+			//
+			std::vector<RetrodevLib::TileExtractionParams*> allParams;
+			allParams.reserve(slot.variants.size());
+			for (const auto& variantName : slot.variants) {
+				RetrodevLib::TileExtractionParams* tp = nullptr;
+				RetrodevLib::Project::TilesetGetTileParams(variantName, &tp);
+				allParams.push_back(tp);
+			}
+			std::vector<int> unionDeleted;
+			for (RetrodevLib::TileExtractionParams* tp : allParams) {
+				if (!tp)
+					continue;
+				for (int idx : tp->DeletedTiles) {
+					if (!std::binary_search(unionDeleted.begin(), unionDeleted.end(), idx)) {
+						unionDeleted.push_back(idx);
+						std::sort(unionDeleted.begin(), unionDeleted.end());
+					}
+				}
+			}
+			if (unionDeleted.empty())
+				continue;
+			//
+			// For each variant, push any union index it is missing and warn
+			//
+			for (int vi = 0; vi < (int)slot.variants.size(); vi++) {
+				RetrodevLib::TileExtractionParams* tp = allParams[vi];
+				if (!tp)
+					continue;
+				for (int idx : unionDeleted) {
+					if (!std::binary_search(tp->DeletedTiles.begin(), tp->DeletedTiles.end(), idx)) {
+						AppConsole::AddLogF(AppConsole::LogLevel::Warning, "Map '%s' slot %d: tile %d is deleted in another variant but not in '%s' -- adding to keep index space in sync.",
+							m_name.c_str(), si, idx, slot.variants[vi].c_str());
+						tp->DeletedTiles.push_back(idx);
+						std::sort(tp->DeletedTiles.begin(), tp->DeletedTiles.end());
+					}
+				}
+			}
+			//
+			// Reload any loaded tileset entry whose params were just modified
+			//
+			for (int vi = 0; vi < (int)slot.variants.size(); vi++) {
+				if (allParams[vi] == nullptr)
+					continue;
+				if (si < (int)m_loadedTilesets.size() && m_loadedTilesets[si].loadedVariantName == slot.variants[vi])
+					LoadTileset(m_loadedTilesets[si]);
+			}
+		}
 	}
 	//
 	// Load a single tileset entry: run conversion then tile extraction
 	//
 	void DocumentMap::LoadTileset(LoadedTileset& ts) {
 		ts.loaded = false;
+		ts.deletedTiles.clear();
 		//
 		// Resolve the source file path for this variant
 		//
@@ -1206,7 +1482,17 @@ namespace RetrodevGui {
 		auto convertedImage = ts.converter->GetConverted(gfxParams);
 		if (!convertedImage)
 			return;
+		//
+		// Extract compact (no deleted) tiles for count validation and
+		// extract all tiles (including deleted slots) for absolute-index rendering.
+		//
 		ts.extractor->Extract(convertedImage, tileParams);
+		ts.extractor->ExtractAll(convertedImage, tileParams);
+		//
+		// Copy and sort deleted tile indices so the palette can skip those slots
+		//
+		ts.deletedTiles = tileParams->DeletedTiles;
+		std::sort(ts.deletedTiles.begin(), ts.deletedTiles.end());
 		ts.loaded = true;
 	}
 	//
@@ -1222,7 +1508,10 @@ namespace RetrodevGui {
 		LoadedTileset& ts = m_loadedTilesets[tilesetIdx];
 		if (!ts.loaded || !ts.extractor)
 			return nullptr;
-		auto tileImage = ts.extractor->GetTile(tileIdx);
+		//
+		// tileIdx is an absolute index (project.cpp restores absolute on load)
+		//
+		auto tileImage = ts.extractor->GetTileAll(tileIdx);
 		if (!tileImage)
 			return nullptr;
 		return tileImage->GetTexture(Application::GetRenderer());
@@ -1364,6 +1653,7 @@ namespace RetrodevGui {
 		if (ImGui::Button(ICON_PLUS " Add Layer##AddLayer", ImVec2(-1.0f, 0.0f))) {
 			RetrodevLib::MapLayer newLayer;
 			newLayer.name = "Layer " + std::to_string(params->layers.size() + 1);
+          newLayer.data.resize(newLayer.width * newLayer.height, 0);
 			params->layers.push_back(std::move(newLayer));
 			m_editingLayerIdx = (int)params->layers.size() - 1;
 			m_lastEditingLayerIdx = -1;

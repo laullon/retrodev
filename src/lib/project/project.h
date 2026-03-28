@@ -493,6 +493,11 @@ namespace RetrodevLib {
 		//
 		static bool TilesetGetTileParams(const std::string& name, TileExtractionParams** tileParams);
 		//
+		// Return a const reference to the full buildTiles list.
+		// Used by the UI to build sorted deleted-tile lists for compact<->absolute translation.
+		//
+		static const std::vector<ProjectBuildTilesEntry>& GetBuildTiles();
+		//
 		// Rename a tileset conversion build item in the current project.
 		// Returns false if no project is open, the old name does not exist, or the new name already exists.
 		//
@@ -632,7 +637,7 @@ namespace RetrodevLib {
 		// Each dependency is a build item name (bitmap, tileset, sprite, map, palette) that
 		// must be converted before the build executes.
 		// Returns true if all dependencies were dispatched successfully, false on the first failure.
-		// This is a stub -- actual conversion dispatch is not yet implemented.
+		// A failure aborts the remaining dependencies and stops the build.
 		//
 		static bool BuildProcessDependencies(const std::string& name);
 		//

@@ -11,9 +11,11 @@
 #include "data.export.widget.h"
 #include <app/app.console.h>
 #include <app/app.icons.mdi.h>
+#include <assets/map/map.h>
 #include <export/export.h>
 #include <filesystem>
 #include <cstring>
+#include <algorithm>
 
 namespace RetrodevGui {
 
@@ -631,6 +633,9 @@ namespace RetrodevGui {
 			RetrodevLib::ExportEngine::Initialize();
 			RetrodevLib::ExportEngine::ClearErrors();
 			AppConsole::Clear(AppConsole::Channel::Script);
+			//
+			// mapParams always holds compact indices (lib invariant) -- pass directly to exporter
+			//
 			bool ok = RetrodevLib::ExportEngine::ExportMap(absoluteScript, absoluteOutput, m_exportParams->scriptParams, mapParams);
 			if (ok) {
 				AppConsole::AddLogF(AppConsole::LogLevel::Info, "Export completed: %s", absoluteOutput.c_str());

@@ -14,9 +14,11 @@
 #include "metadata/meta.project.h"
 #include <glaze/glaze.hpp>
 #include <filesystem>
+#include <assets/map/map.h>
 #include <export/export.h>
 #include <assets/palette/palette.h>
 #include <process/image/tile.pack.h>
+#include <algorithm>
 
 namespace RetrodevLib {
 	//
@@ -870,6 +872,12 @@ namespace RetrodevLib {
 		return false;
 	}
 	//
+	// Return a const reference to the full buildTiles list
+	//
+	const std::vector<ProjectBuildTilesEntry>& Project::GetBuildTiles() {
+		return currentProject.buildTiles;
+	}
+	//
 	// Rename a tileset conversion build item in the current project
 	//
 	bool Project::TilesetRename(const std::string& oldName, const std::string& newName) {
@@ -1280,26 +1288,26 @@ namespace RetrodevLib {
 					// Bitmap dependency: load image, create converter, convert and export
 					//
 					if (BitmapGetCfg(depName, &params) && params != nullptr) {
-						Log::Info(LogChannel::Build, "[Dep] Bitmap '%s': loading source image.", depName.c_str());
-						std::string sourcePath = BitmapGetSourcePath(depName);
-						auto image = Image::ImageLoad(sourcePath);
-						if (!image) {
-							Log::Error(LogChannel::Build, "[Dep] Bitmap '%s': failed to load source image '%s'.", depName.c_str(), sourcePath.c_str());
-							continue;
-						}
-						auto converter = Converters::GetBitmapConverter(params);
-						if (!converter) {
-							Log::Error(LogChannel::Build, "[Dep] Bitmap '%s': no suitable converter for the given parameters.", depName.c_str());
-							continue;
-						}
-						converter->SetOriginal(image);
-						Log::Info(LogChannel::Build, "[Dep] Bitmap '%s': converting.", depName.c_str());
-						converter->Convert(params);
-						auto converted = converter->GetConverted(params);
-						if (!converted) {
-							Log::Error(LogChannel::Build, "[Dep] Bitmap '%s': conversion produced no output.", depName.c_str());
-							continue;
-						}
+							Log::Info(LogChannel::Build, "[Dep] Bitmap '%s': loading source image.", depName.c_str());
+							std::string sourcePath = BitmapGetSourcePath(depName);
+							auto image = Image::ImageLoad(sourcePath);
+							if (!image) {
+								Log::Error(LogChannel::Build, "[Dep] Bitmap '%s': failed to load source image '%s'.", depName.c_str(), sourcePath.c_str());
+								return false;
+							}
+							auto converter = Converters::GetBitmapConverter(params);
+							if (!converter) {
+								Log::Error(LogChannel::Build, "[Dep] Bitmap '%s': no suitable converter for the given parameters.", depName.c_str());
+								return false;
+							}
+							converter->SetOriginal(image);
+							Log::Info(LogChannel::Build, "[Dep] Bitmap '%s': converting.", depName.c_str());
+							converter->Convert(params);
+							auto converted = converter->GetConverted(params);
+							if (!converted) {
+								Log::Error(LogChannel::Build, "[Dep] Bitmap '%s': conversion produced no output.", depName.c_str());
+								return false;
+							}
 						ExportParams* exportParams = nullptr;
 						BitmapGetExportParams(depName, &exportParams);
 						if (!exportParams || exportParams->scriptPath.empty()) {
@@ -1310,7 +1318,10 @@ namespace RetrodevLib {
 						std::string absOutput = ExpandPath(exportParams->outputName);
 						Log::Info(LogChannel::Build, "[Dep] Bitmap '%s': exporting to '%s'.", depName.c_str(), absOutput.c_str());
 						ExportEngine::Initialize();
-						ExportEngine::ExportBitmap(absScript, absOutput, exportParams->scriptParams, converted.get(), converter.get(), params);
+						if (!ExportEngine::ExportBitmap(absScript, absOutput, exportParams->scriptParams, converted.get(), converter.get(), params)) {
+							Log::Error(LogChannel::Build, "[Dep] Bitmap '%s': export script failed.", depName.c_str());
+							return false;
+						}
 						continue;
 					}
 					//
@@ -1318,32 +1329,32 @@ namespace RetrodevLib {
 					//
 					if (SpriteGetCfg(depName, &params) && params != nullptr) {
 						Log::Info(LogChannel::Build, "[Dep] Sprite '%s': loading source image.", depName.c_str());
-						std::string sourcePath = SpriteGetSourcePath(depName);
-						auto image = Image::ImageLoad(sourcePath);
-						if (!image) {
-							Log::Error(LogChannel::Build, "[Dep] Sprite '%s': failed to load source image '%s'.", depName.c_str(), sourcePath.c_str());
-							continue;
-						}
-						auto converter = Converters::GetBitmapConverter(params);
-						if (!converter) {
-							Log::Error(LogChannel::Build, "[Dep] Sprite '%s': no suitable converter for the given parameters.", depName.c_str());
-							continue;
-						}
-						converter->SetOriginal(image);
-						Log::Info(LogChannel::Build, "[Dep] Sprite '%s': converting.", depName.c_str());
-						converter->Convert(params);
-						auto converted = converter->GetConverted(params);
-						if (!converted) {
-							Log::Error(LogChannel::Build, "[Dep] Sprite '%s': conversion produced no output.", depName.c_str());
-							continue;
-						}
-						SpriteExtractionParams* spriteParams = nullptr;
-						SpriteGetSpriteParams(depName, &spriteParams);
-						auto spriteExtractor = converter->GetSpriteExtractor();
-						if (!spriteExtractor) {
-							Log::Error(LogChannel::Build, "[Dep] Sprite '%s': failed to allocate sprite extractor.", depName.c_str());
-							continue;
-						}
+							std::string sourcePath = SpriteGetSourcePath(depName);
+							auto image = Image::ImageLoad(sourcePath);
+							if (!image) {
+								Log::Error(LogChannel::Build, "[Dep] Sprite '%s': failed to load source image '%s'.", depName.c_str(), sourcePath.c_str());
+								return false;
+							}
+							auto converter = Converters::GetBitmapConverter(params);
+							if (!converter) {
+								Log::Error(LogChannel::Build, "[Dep] Sprite '%s': no suitable converter for the given parameters.", depName.c_str());
+								return false;
+							}
+							converter->SetOriginal(image);
+							Log::Info(LogChannel::Build, "[Dep] Sprite '%s': converting.", depName.c_str());
+							converter->Convert(params);
+							auto converted = converter->GetConverted(params);
+							if (!converted) {
+								Log::Error(LogChannel::Build, "[Dep] Sprite '%s': conversion produced no output.", depName.c_str());
+								return false;
+							}
+							SpriteExtractionParams* spriteParams = nullptr;
+							SpriteGetSpriteParams(depName, &spriteParams);
+							auto spriteExtractor = converter->GetSpriteExtractor();
+							if (!spriteExtractor) {
+								Log::Error(LogChannel::Build, "[Dep] Sprite '%s': failed to allocate sprite extractor.", depName.c_str());
+								return false;
+							}
 						if (spriteParams) {
 							Log::Info(LogChannel::Build, "[Dep] Sprite '%s': extracting sprites.", depName.c_str());
 							spriteExtractor->Extract(converted, spriteParams);
@@ -1358,7 +1369,10 @@ namespace RetrodevLib {
 						std::string absOutput = ExpandPath(exportParams->outputName);
 						Log::Info(LogChannel::Build, "[Dep] Sprite '%s': exporting to '%s'.", depName.c_str(), absOutput.c_str());
 						ExportEngine::Initialize();
-						ExportEngine::ExportSprites(absScript, absOutput, exportParams->scriptParams, converter.get(), params, spriteExtractor.get(), spriteParams);
+						if (!ExportEngine::ExportSprites(absScript, absOutput, exportParams->scriptParams, converter.get(), params, spriteExtractor.get(), spriteParams)) {
+							Log::Error(LogChannel::Build, "[Dep] Sprite '%s': export script failed.", depName.c_str());
+							return false;
+						}
 						continue;
 					}
 					//
@@ -1366,32 +1380,32 @@ namespace RetrodevLib {
 					//
 					if (TilesetGetCfg(depName, &params) && params != nullptr) {
 						Log::Info(LogChannel::Build, "[Dep] Tileset '%s': loading source image.", depName.c_str());
-						std::string sourcePath = TilesetGetSourcePath(depName);
-						auto image = Image::ImageLoad(sourcePath);
-						if (!image) {
-							Log::Error(LogChannel::Build, "[Dep] Tileset '%s': failed to load source image '%s'.", depName.c_str(), sourcePath.c_str());
-							continue;
-						}
-						auto converter = Converters::GetBitmapConverter(params);
-						if (!converter) {
-							Log::Error(LogChannel::Build, "[Dep] Tileset '%s': no suitable converter for the given parameters.", depName.c_str());
-							continue;
-						}
-						converter->SetOriginal(image);
-						Log::Info(LogChannel::Build, "[Dep] Tileset '%s': converting.", depName.c_str());
-						converter->Convert(params);
-						auto converted = converter->GetConverted(params);
-						if (!converted) {
-							Log::Error(LogChannel::Build, "[Dep] Tileset '%s': conversion produced no output.", depName.c_str());
-							continue;
-						}
-						TileExtractionParams* tileParams = nullptr;
-						TilesetGetTileParams(depName, &tileParams);
-						auto tileExtractor = converter->GetTileExtractor();
-						if (!tileExtractor) {
-							Log::Error(LogChannel::Build, "[Dep] Tileset '%s': failed to allocate tile extractor.", depName.c_str());
-							continue;
-						}
+							std::string sourcePath = TilesetGetSourcePath(depName);
+							auto image = Image::ImageLoad(sourcePath);
+							if (!image) {
+								Log::Error(LogChannel::Build, "[Dep] Tileset '%s': failed to load source image '%s'.", depName.c_str(), sourcePath.c_str());
+								return false;
+							}
+							auto converter = Converters::GetBitmapConverter(params);
+							if (!converter) {
+								Log::Error(LogChannel::Build, "[Dep] Tileset '%s': no suitable converter for the given parameters.", depName.c_str());
+								return false;
+							}
+							converter->SetOriginal(image);
+							Log::Info(LogChannel::Build, "[Dep] Tileset '%s': converting.", depName.c_str());
+							converter->Convert(params);
+							auto converted = converter->GetConverted(params);
+							if (!converted) {
+								Log::Error(LogChannel::Build, "[Dep] Tileset '%s': conversion produced no output.", depName.c_str());
+								return false;
+							}
+							TileExtractionParams* tileParams = nullptr;
+							TilesetGetTileParams(depName, &tileParams);
+							auto tileExtractor = converter->GetTileExtractor();
+							if (!tileExtractor) {
+								Log::Error(LogChannel::Build, "[Dep] Tileset '%s': failed to allocate tile extractor.", depName.c_str());
+								return false;
+							}
 						if (tileParams) {
 							Log::Info(LogChannel::Build, "[Dep] Tileset '%s': extracting tiles.", depName.c_str());
 							//
@@ -1430,11 +1444,15 @@ namespace RetrodevLib {
 						std::string absOutput = ExpandPath(exportParams->outputName);
 						Log::Info(LogChannel::Build, "[Dep] Tileset '%s': exporting to '%s'.", depName.c_str(), absOutput.c_str());
 						ExportEngine::Initialize();
-						ExportEngine::ExportTileset(absScript, absOutput, exportParams->scriptParams, converter.get(), params, tileExtractor.get(), tileParams);
+						if (!ExportEngine::ExportTileset(absScript, absOutput, exportParams->scriptParams, converter.get(), params, tileExtractor.get(), tileParams)) {
+							Log::Error(LogChannel::Build, "[Dep] Tileset '%s': export script failed.", depName.c_str());
+							return false;
+						}
 						continue;
 					}
 					//
-					// Map dependency: grab params and call the exporter directly -- no image loading needed
+					// Map dependency: grab params and call the exporter directly -- no image loading needed.
+					// Map data in currentProject is always compact (UI owns the absolute copy separately).
 					//
 					{
 						MapParams* mapParams = nullptr;
@@ -1449,7 +1467,10 @@ namespace RetrodevLib {
 							std::string absOutput = ExpandPath(exportParams->outputName);
 							Log::Info(LogChannel::Build, "[Dep] Map '%s': exporting to '%s'.", depName.c_str(), absOutput.c_str());
 							ExportEngine::Initialize();
-							ExportEngine::ExportMap(absScript, absOutput, exportParams->scriptParams, mapParams);
+							if (!ExportEngine::ExportMap(absScript, absOutput, exportParams->scriptParams, mapParams)) {
+								Log::Error(LogChannel::Build, "[Dep] Map '%s': export script failed.", depName.c_str());
+								return false;
+							}
 							continue;
 						}
 					}
@@ -1463,14 +1484,14 @@ namespace RetrodevLib {
 							std::string projectFolder = std::filesystem::path(currentProjectPath).parent_path().string();
 							PaletteSolution solution = PaletteSolver::Solve(paletteParams, projectFolder);
 							if (!solution.valid && !paletteParams->userValidated) {
-								//
-								// No perfect fit and the user has not accepted an imperfect solution -- skip.
-								//
-								Log::Error(LogChannel::Build,
-										   "[Dep] Palette '%s': no valid solution found and palette has not been user-validated. Run Solve + Validate in the palette editor.",
-										   depName.c_str());
-								continue;
-							}
+									//
+									// No perfect fit and the user has not accepted an imperfect solution -- stop the build.
+									//
+									Log::Error(LogChannel::Build,
+											   "[Dep] Palette '%s': no valid solution found and palette has not been user-validated. Run Solve + Validate in the palette editor.",
+											   depName.c_str());
+									return false;
+								}
 							if (!solution.valid && paletteParams->userValidated)
 								Log::Warning(LogChannel::Build, "[Dep] Palette '%s': imperfect solution (overflow remaps applied) -- using user-validated assignments.",
 											 depName.c_str());

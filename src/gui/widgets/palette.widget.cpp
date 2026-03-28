@@ -151,6 +151,12 @@ namespace RetrodevGui {
 					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1.0f, 1.0f));
 					if (ImGui::Checkbox("##disabledAll", &m_allDisabled)) {
 						palette->PenEnableAll(!m_allDisabled);
+						if (m_allDisabled) {
+							palette->PenLockAll(false);
+							for (auto& s : m_penStates)
+								s.locked = false;
+							m_allLocked = false;
+						}
 						changed = true;
 					}
 					ImGui::PopStyleVar();
@@ -166,9 +172,14 @@ namespace RetrodevGui {
 				ImGui::PushID(i * 1000 + 1);
 				if (ImGui::Checkbox("##disabled", &m_penStates[i].disabled)) {
 					//
-					// Update palette (which will update params arrays directly)
+					// Update palette (which will update params arrays directly).
+					// Disabling a pen clears its lock so a disabled pen is never locked.
 					//
 					palette->PenEnable(i, !m_penStates[i].disabled);
+					if (m_penStates[i].disabled) {
+						m_penStates[i].locked = false;
+						palette->PenLock(i, false);
+					}
 					changed = true;
 				}
 				ImGui::PopID();
@@ -244,7 +255,17 @@ namespace RetrodevGui {
 					ImGui::SetCursorPos(ImVec2(labelWidth - allCheckboxSize - itemSpacing, rowY + (checkboxSize - allCheckboxSize) * 0.5f));
 					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1.0f, 1.0f));
 					if (ImGui::Checkbox("##lockedAll", &m_allLocked)) {
+						//
+						// Locking all clears disabled on all pens and enables them.
+						// Unlocking all just unlocks -- no side effect on disabled.
+						//
 						palette->PenLockAll(m_allLocked);
+						if (m_allLocked) {
+							palette->PenEnableAll(true);
+							for (auto& s : m_penStates)
+								s.disabled = false;
+							m_allDisabled = false;
+						}
 						changed = true;
 					}
 					ImGui::PopStyleVar();
@@ -259,12 +280,17 @@ namespace RetrodevGui {
 				ImGui::SetCursorPosX(penX + checkboxOffset);
 				ImGui::PushID(i * 1000 + 2);
 				if (ImGui::Checkbox("##locked", &m_penStates[i].locked)) {
-					//
-					// Update palette (which will update params arrays directly)
-					//
-					palette->PenLock(i, m_penStates[i].locked);
-					changed = true;
-				}
+						//
+						// Locking a pen clears disabled and enables it.
+						// Unlocking a pen just unlocks it -- no side effect on disabled.
+						//
+						palette->PenLock(i, m_penStates[i].locked);
+						if (m_penStates[i].locked) {
+							palette->PenEnable(i, true);
+							m_penStates[i].disabled = false;
+						}
+						changed = true;
+					}
 				ImGui::PopID();
 				ImGui::SameLine();
 			}

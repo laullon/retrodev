@@ -535,6 +535,21 @@ int publish(string[] args) {
 	}
 	Msg.Print("GitHub release published: " + releaseTag);
 	//
+	// Write bld/version.json with the real version and URLs so the update checker
+	// can find the latest release without @BUILD@ tokens.
+	//
+	string versionJsonPath = RealPath("bld/version.json");
+	string releaseNotesUrl = "https://github.com/tlotb/retrodev/releases/tag/" + releaseTag;
+	string downloadUrl     = "https://github.com/tlotb/retrodev/releases/download/" + releaseTag + "/" + zipName;
+	string versionJson =
+		"{\n" +
+		"    \"latestVersion\": \"" + versionNumber + "\",\n" +
+		"    \"releaseNotesUrl\": \"" + releaseNotesUrl + "\",\n" +
+		"    \"downloadUrl\": \"" + downloadUrl + "\"\n" +
+		"}\n";
+	System.IO.File.WriteAllText(versionJsonPath, versionJson);
+	Msg.Print("bld/version.json updated to version " + versionNumber);
+	//
 	// Stamp the changelog so future entries are collected for the next release
 	//
 	stampChangelogVersion(changelogPath, versionNumber);

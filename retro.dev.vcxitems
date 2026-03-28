@@ -24,6 +24,7 @@
     <None Include="$(MSBuildThisFileDirectory)bld\ext\clang.doc.csx" />
     <None Include="$(MSBuildThisFileDirectory)bld\ext\git.csx" />
     <None Include="$(MSBuildThisFileDirectory)bld\ext\github.csx" />
+    <None Include="$(MSBuildThisFileDirectory)bld\version.json" />
     <None Include="$(MSBuildThisFileDirectory)doc\changelog.md" />
     <None Include="$(MSBuildThisFileDirectory)doc\tech\adding-systems.md" />
     <None Include="$(MSBuildThisFileDirectory)doc\tech\building.md" />
@@ -98,6 +99,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\app.icons.h.old" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\app.icons.mdi.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\app.resources.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\version.check\version.check.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\app\version.check\version.check.ui.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.about.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.confirm.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.error.h" />
@@ -136,6 +139,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)src\gui\widgets\tile.list.widget.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\image\image.color.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\image\image.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\map\map.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\map\map.params.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\palette\palette.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)src\lib\assets\palette\palette.params.h" />
@@ -218,6 +222,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\app\app.console.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\app\app.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\app\app.resources.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\app\version.check\version.check.ui.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\app\version.check\win\version.check.win.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.about.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.confirm.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\dialogs\dialog.error.cpp" />
@@ -255,6 +261,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)src\gui\widgets\tile.list.widget.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\image\image.color.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\image\image.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\map\map.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\palette\palette.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\source\lnx\source.emulator.native.lnx.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)src\lib\assets\source\osx\source.emulator.native.osx.cpp" />

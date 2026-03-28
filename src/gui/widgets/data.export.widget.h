@@ -77,7 +77,7 @@ namespace RetrodevGui {
 		// Per-instance state -- picker modal flags and metadata cache only.
 		// Path data lives in the project's ExportParams, not here.
 		//
-		bool m_outputOpen = true;
+		bool m_outputOpen = false;
 		bool m_showScriptPicker = false;
 		int m_pickerSelectedIndex = -1;
 		//

@@ -19,8 +19,8 @@ ENDIF
 
 ; GA_SetPalettePremixed -- set N consecutive ink pens from a table of pre-mixed GA colour bytes.
 ;
-; This is the fastest
-; contains the exact byte to write to the GA colour port (bit 6 set, bits 4-0 = hw colour index).
+; The table contains the exact byte to write to the GA colour port
+; (bit 6 set, bits 4-0 = hw colour index).
 ; No conversion is performed -- each byte is written directly to the Gate Array.
 ;
 ; Use this variant when your palette table is exported by the Retrodev export script using
@@ -33,53 +33,89 @@ ENDIF
 ; Each table byte must have the form:  %01xhhhhh
 ;   bit 6    = 1 (GA colour command flag, must be set)
 ;   bits 4-0 = hardware colour index (0-26)
-; Example: hardware colour 0 (white) -> #40 | 0 = #54... see SysToHw table for full mapping.
+; Example: hardware colour 0 (white) -> #40 | 0 = #40; see SysToHw table for full mapping.
 ;
 ; Pens are set starting from pen 0 up to pen C-1, in order.
 ; To set a subset of pens, advance HL to the first desired pen and adjust C accordingly,
 ; but note that the pen index written to the GA always starts at 0 and increments -- to set
 ; arbitrary pens, use the GA_SetBorder macro or write your own indexed loop instead.
 ;
-; Destroys: A, B, C, D, E, HL, F
-; Preserves: IX, IY, BC', DE', HL'
+; Destroys: A, B, C, HL, F
+; Preserves: DE, IX, IY, BC', DE', HL'
 ;
 ; Speed (4 MHz Z80, T-states per iteration):
-;   ld c,e       =  4  (load pen index into C)
-;   out (c),c    = 12  (select pen -- GA pen-select command: C = pen index, bit 7:5 = 000)
-;   ld c,(hl)    =  7  (load pre-mixed colour byte)
-;   inc hl       =  6  (advance table pointer)
-;   out (c),c    = 12  (write colour -- GA colour command: bit 6 set, bits 4-0 = hw colour)
-;   inc e        =  4  (next pen index)
-;   dec d        =  4  (decrement loop counter)
+;   out (c),a    = 12  (select pen -- A = pen index, GA pen-select command bits 7-6 = 00)
+;   outi         = 16  (OUT (BC),(HL++); B--  -- writes colour byte, advances HL, costs B)
+;   inc b        =  4  (restore B to GA_PORT_CMD_B after outi's implicit dec b)
+;   inc a        =  4  (next pen index)
+;   dec c        =  4  (decrement loop counter)
 ;   jr nz        = 12  (loop -- 7 T on final iteration)
 ;                ----
-;                 61 T per iteration (56 T on last)
+;                 52 T per iteration (47 T on last)
 ;
-; For 16 pens: setup(~30 T) + 15*61 + 56 = 971 T ~ 243 uss
+; For 16 pens: setup(~18 T) + 15*52 + 47 = 845 T ~ 211 us
 ;
-; Optimization note: B=GA_PORT_CMD_B is loaded once and held for the entire loop. The GA port address
-; is #7fxx -- B carries the high byte, C carries the command byte. This avoids reloading BC
-; from an immediate (10 T) on every iteration, saving 10 T * N compared to ld bc,nn in loop.
+; Compared to the ld/out/out approach (61 T/iter): saves 9 T per pen (~15% faster).
+; outi = OUT (BC),(HL++) + dec B in 16 T, replacing ld c,(hl)(7) + inc hl(6) + out (c),c(12) = 25 T.
+; B is held at GA_PORT_CMD_B throughout; outi decrements B each time so inc b restores it.
+; A carries the pen index (GA_CMD_PEN_SELECT | pen = pen index since GA_CMD_PEN_SELECT = #00).
+; C is the loop counter; the GA ignores the port low byte so C doubling as counter is safe.
 
 ; GA_SetPalettePremixed -- set N consecutive pens from a table of pre-mixed GA colour bytes.
 ; Entry: HL = pointer to table of pre-mixed GA colour bytes (bit 6 set, bits 4-0 = hw index)
 ;        C  = number of pens to set (1-17; pen 0 = first ink, pen 16 = border)
 ; Exit:  pens 0..C-1 written to the Gate Array
-; Destroys: AF, BC, DE, HL  Preserves: IX, IY
+; Destroys: AF, BC, HL  Preserves: DE, IX, IY
 GA_SetPalettePremixed:
-        ld d,c
-        xor a			; A = 0 -- pen index starts at pen 0
-        ld e,a			; E = pen index (preserved across loop; A is reused for table reads)
-        ld b,GA_PORT_CMD_B	; B = GA port high byte; held for the entire loop
+        ld b,GA_PORT_CMD_B	; B = &7F -- GA port high byte, held for the entire loop
+        xor a			; A = 0 -- pen index starts at pen 0 (GA_CMD_PEN_SELECT | 0)
 .loop:
-        ld c,e			; C = current pen index (pen-select command: bits 7-5=000, bits 4-0=pen)
-        out (c),c		; send pen-select command to Gate Array
-        ld c,(hl)		; C = pre-mixed colour byte (#40 | hw_colour_index) from table
-        inc hl			; advance table pointer to next entry
-        out (c),c		; send colour command to Gate Array (bit 6 = 1 already set in table byte)
-        inc e			; advance to next pen index
-        dec d			; one fewer pen to set
+        out (c),a		; send pen-select command: GA_CMD_PEN_SELECT | pen (bits 7-6 = 00)
+        outi			; OUT (BC),(HL++); B-- -- send pre-mixed colour byte, advance table
+        inc b			; restore B to GA_PORT_CMD_B after outi's implicit dec b
+        inc a			; advance to next pen index
+        dec c			; one fewer pen to set (C safe as counter; GA ignores port low byte)
         jr nz,.loop		; continue until all N pens are written
+        ret
+
+; GA_SetPalettePremixedRev -- set N pens from a reversed table of pre-mixed GA colour bytes.
+;
+; Identical to GA_SetPalettePremixed but the table is stored highest-pen-first so C
+; doubles as both the loop counter and the pen index, eliminating the separate pen
+; register (A) and saving 4 T per pen.
+;
+; Table layout: pen C-1 first, pen 0 last (reversed relative to GA_SetPalettePremixed).
+; Example for 16 pens: table[0]=colour for pen 15, table[15]=colour for pen 0.
+;
+; Use this when the table is under your control (e.g. generated by a custom exporter
+; with reversed pen order) and the 4 T/pen saving matters.
+; For standard low-to-high tables use GA_SetPalettePremixed instead.
+;
+; Entry:
+;   HL = pointer to reversed table of pre-mixed GA colour bytes (highest pen first)
+;   C  = index of the first (highest) pen to set; also the total pen count
+;        e.g. C=16 sets pens 16..0 (border + all 16 inks), C=15 sets pens 15..0
+; Exit:  pens C..0 written to the Gate Array
+; Destroys: AF, BC, HL  Preserves: DE, IX, IY
+;
+; Speed (4 MHz Z80, T-states per iteration):
+;   out (c),c    = 12  (select pen C -- C is pen index and counter simultaneously)
+;   outi         = 16  (OUT (BC),(HL++); B-- -- write colour byte, advance table)
+;   inc b        =  4  (restore B to GA_PORT_CMD_B after outi's implicit dec b)
+;   dec c        =  4  (C-- = next pen index downward and loop counter)
+;   jr nz        = 12  (loop -- 7 T on final iteration)
+;                ----
+;                 48 T per iteration (43 T on last)
+;
+; For 16 pens: setup(~14 T) + 15*48 + 43 = 777 T ~ 194 us  (vs 845 T for GA_SetPalettePremixed)
+GA_SetPalettePremixedRev:
+        ld b,GA_PORT_CMD_B	; B = &7F -- GA port high byte, held for the entire loop
+.loop:
+        out (c),c		; send pen-select command: pen index = C (GA_CMD_PEN_SELECT | C, bits 7-6 = 00)
+        outi			; OUT (BC),(HL++); B-- -- send pre-mixed colour byte, advance table
+        inc b			; restore B to GA_PORT_CMD_B after outi's implicit dec b
+        dec c			; C-- = next pen index downward; also loop counter (Z set when done)
+        jr nz,.loop		; continue until pen 0 is written (C wraps to 0 after pen 0)
         ret
 
 

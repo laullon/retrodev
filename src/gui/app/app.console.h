@@ -78,6 +78,11 @@ namespace RetrodevGui {
 		// Set the auto-hide state (used by INI restore)
 		//
 		static void SetAutoHide(bool value);
+		//
+		// When enabled, script log messages are also mirrored to the Build channel.
+		// Set to true only during a build/debug operation.
+		//
+		static void SetScriptMirrorToBuild(bool enable);
 
 	private:
 		//
@@ -117,6 +122,10 @@ namespace RetrodevGui {
 		// Auto-hide: collapse the panel when the user clicks outside it
 		//
 		static bool m_autoHide;
+		//
+		// When true, script log messages are also mirrored to the Build channel
+		//
+		static bool m_scriptMirrorToBuild;
 		//
 		// Returns true when a message on the given channel and level should trigger a reveal.
 		// Single source of truth used by all AddLog / AddLogF overloads.

@@ -369,6 +369,8 @@ namespace RetrodevGui {
 		ImGui::AlignTextToFramePadding();
 		ImGui::TextDisabled("%s", scopeLabel);
 		ImGui::PopStyleVar();
+		// Advance cursor to next line so editor doesn't overlap with search panel
+		ImGui::NewLine();
 	}
 	//
 	// Renders the text editor with the current font scale.
@@ -378,7 +380,9 @@ namespace RetrodevGui {
 		ImFont* editorFont = Application::EditorFont != nullptr ? Application::EditorFont : ImGui::GetFont();
 		editorFont->Scale = m_fontScale;
 		ImGui::PushFont(editorFont);
-		bool isEditorFocused = m_editor.Render(m_name.c_str(), true, ImGui::GetContentRegionAvail(), false);
+		// Calculate exact remaining space for the editor, accounting for any accumulated cursor position offsets
+		ImVec2 editorSize = ImGui::GetContentRegionAvail();
+		bool isEditorFocused = m_editor.Render(m_name.c_str(), true, editorSize, false);
 		ImGui::PopFont();
 		editorFont->Scale = 1.0f;
 		// Right-click is detected inside HandleMouseInputs (child window scope) where IsWindowHovered()
@@ -503,6 +507,8 @@ namespace RetrodevGui {
 			m_editor.SetText(content);
 			m_originalText = content;
 		}
+		std::error_code ec;
+		m_lastWriteTime = std::filesystem::last_write_time(filepath, ec);
 	}
 
 	DocumentText::~DocumentText() {
@@ -549,6 +555,8 @@ namespace RetrodevGui {
 		}
 		m_originalText = content;
 		SetModified(false);
+		std::error_code ec;
+		m_lastWriteTime = std::filesystem::last_write_time(m_filePath, ec);
 		return true;
 	}
 	//
@@ -557,6 +565,65 @@ namespace RetrodevGui {
 	//
 	void DocumentText::Perform() {
 		SetModified(m_editor.GetText() != m_originalText);
+		//
+		// Poll for external file modification once per frame
+		//
+		if (!m_externalChangeDetected) {
+			std::error_code ec;
+			std::filesystem::file_time_type diskTime = std::filesystem::last_write_time(m_filePath, ec);
+			if (!ec && diskTime != m_lastWriteTime) {
+				m_lastWriteTime = diskTime;
+				if (!IsModified()) {
+					//
+					// No unsaved changes -- reload silently
+					//
+					std::ifstream reloadFile(m_filePath);
+					if (reloadFile.good()) {
+						std::string content((std::istreambuf_iterator<char>(reloadFile)), std::istreambuf_iterator<char>());
+						m_editor.SetText(content);
+						m_originalText = content;
+						SetModified(false);
+					}
+				} else {
+					//
+					// Unsaved changes present -- ask the user
+					//
+					m_externalChangeDetected = true;
+					ImGui::OpenPopup("##ExternalChangeModal");
+				}
+			}
+		}
+		//
+		// External change modal -- only shown when unsaved changes conflict with a disk change
+		//
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+		if (ImGui::BeginPopupModal("##ExternalChangeModal", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			ImGui::PopStyleVar();
+			ImGui::Text("File modified externally:");
+			ImGui::TextDisabled("%s", m_filePath.c_str());
+			ImGui::Spacing();
+			ImGui::Text("You have unsaved changes. Reload from disk?");
+			ImGui::Spacing();
+			if (ImGui::Button("Reload from disk", ImVec2(160.0f, 0.0f))) {
+				std::ifstream reloadFile(m_filePath);
+				if (reloadFile.good()) {
+					std::string content((std::istreambuf_iterator<char>(reloadFile)), std::istreambuf_iterator<char>());
+					m_editor.SetText(content);
+					m_originalText = content;
+					SetModified(false);
+				}
+				m_externalChangeDetected = false;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Keep my changes", ImVec2(160.0f, 0.0f))) {
+				m_externalChangeDetected = false;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		} else {
+			ImGui::PopStyleVar();
+		}
 		//
 		// Apply any pending scroll request targeting this document.
 		// Look up by project-relative path first (the canonical key); fall back to absolute path.

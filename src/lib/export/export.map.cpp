@@ -159,6 +159,10 @@ namespace RetrodevLib {
 			if (!EnsureOutputDirectory(outputPath))
 				return false;
 			//
+			// Reset error flag so a Log_Error() call inside the script is detectable after execute
+			//
+			g_hasError = false;
+			//
 			// Register all bindings required by map export scripts
 			//
 			RegisterAddons(g_engine.engine);
@@ -214,6 +218,8 @@ namespace RetrodevLib {
 				ReportError("[Script] ExportMap: execution did not finish normally (r=" + std::to_string(r) + ")");
 				return false;
 			}
+			if (g_hasError)
+				return false;
 			return true;
 		}
 

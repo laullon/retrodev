@@ -13,6 +13,7 @@
 #include <views/main.view.document.h>
 #include <retrodev.gui.h>
 #include <imgui.text.editor.h>
+#include <filesystem>
 #include <string>
 
 namespace RetrodevGui {
@@ -88,6 +89,15 @@ namespace RetrodevGui {
 		//
 		std::string m_contextMenuSymbolFile;
 		int m_contextMenuSymbolLine = -1;
+		//
+		// Last known file write time, used to detect external modifications.
+		//
+		std::filesystem::file_time_type m_lastWriteTime = {};
+		//
+		// Set when an external modification is detected and the document has unsaved changes.
+		// Cleared once the user resolves the modal dialog.
+		//
+		bool m_externalChangeDetected = false;
 	};
 
 }

@@ -300,22 +300,24 @@ namespace RetrodevLib {
 	// participant.  This prevents those participants from losing access to a color just
 	// because it happens to sit in a pen slot they cannot use.
 	//
-	// fixedPalette   : in/out pen-slot-indexed color list (fixedPalette[penSlot] = colorIdx)
-	// transparentSlots : set of pen slots used as transparent by at least one participant
+	// fixedPalette         : in/out pen-slot-indexed color list (fixedPalette[penSlot] = colorIdx)
+	// transparentSlots     : set of pen slots used as transparent by at least one participant
 	// neededByTransparents : set of color indices that transparency-using participants need
+	// lockedSlots          : set of pen slots that must not be moved (e.g. preloaded pins)
 	//
 	// For every transparent slot whose current color IS needed by transparency-using
-	// participants the function looks for a non-transparent slot whose color is NOT needed
-	// by them and swaps the two.  If no such swap candidate exists the slot is left as-is
-	// (the situation is unresolvable without adding more pens).
+	// participants the function looks for a non-transparent, non-locked slot whose color
+	// is NOT needed by them and swaps the two.  If no such swap candidate exists the slot
+	// is left as-is (the situation is unresolvable without adding more pens).
 	//
 	static void RemapTransparentPenSlots(std::vector<int>& fixedPalette,
 										 const std::vector<int>& transparentSlots,
-										 const std::vector<bool>& neededByTransparents) {
+										 const std::vector<bool>& neededByTransparents,
+										 const std::vector<bool>& lockedSlots = {}) {
 		if (transparentSlots.empty())
 			return;
 		//
-		// Build a quick lookup for which slots are transparent
+		// Build quick lookups for transparent and locked slots
 		//
 		std::vector<bool> isTransparentSlot(fixedPalette.size(), false);
 		for (int t : transparentSlots)
@@ -323,20 +325,28 @@ namespace RetrodevLib {
 				isTransparentSlot[t] = true;
 		//
 		// For each transparent slot: if its color is needed by transparency-using participants,
-		// swap it with the first non-transparent slot whose color is not needed by them.
+		// swap it with the first non-transparent, non-locked slot whose color is not needed.
+		// Locked slots are never moved -- they hold preloaded user-pinned colors.
 		//
 		for (int t : transparentSlots) {
 			if (t < 0 || t >= (int)fixedPalette.size())
+				continue;
+			//
+			// Never touch a locked (preloaded) slot even if it is also a transparent slot
+			//
+			if (t < (int)lockedSlots.size() && lockedSlots[t])
 				continue;
 			int colorAtSlot = fixedPalette[t];
 			bool needed = (colorAtSlot >= 0 && colorAtSlot < (int)neededByTransparents.size() && neededByTransparents[colorAtSlot]);
 			if (!needed)
 				continue;
 			//
-			// Find a non-transparent slot whose color is not needed by transparency-using participants
+			// Find a non-transparent, non-locked slot whose color is not needed
 			//
 			for (int s = 0; s < (int)fixedPalette.size(); s++) {
 				if (isTransparentSlot[s])
+					continue;
+				if (s < (int)lockedSlots.size() && lockedSlots[s])
 					continue;
 				int colorAtS = fixedPalette[s];
 				bool sNeeded = (colorAtS >= 0 && colorAtS < (int)neededByTransparents.size() && neededByTransparents[colorAtS]);
@@ -617,8 +627,9 @@ namespace RetrodevLib {
 	// Pass 3: per level-tag, collect Level participant colors, merge on top of zone base, cap, final-convert.
 	//
 	static PaletteZoneSolution SolveZone(int zoneIndex, const PaletteZone& zone, const std::string& targetSystem, const std::string& targetPaletteType,
-										 const std::string& projectFolder, PaletteOverflowMethod overflowMethod, const std::vector<int>& alwaysColors,
-										 std::vector<PaletteTagSolution::OverflowRemap> alwaysRemaps = {}) {
+									 const std::string& projectFolder, PaletteOverflowMethod overflowMethod, const std::vector<int>& alwaysColors,
+									 std::vector<PaletteTagSolution::OverflowRemap> alwaysRemaps = {},
+									 const std::vector<bool>& lockedSlots = {}) {
 		const std::string& targetMode = zone.targetMode;
 		PaletteZoneSolution zoneSolution;
 		zoneSolution.zoneIndex = zoneIndex;
@@ -714,7 +725,7 @@ namespace RetrodevLib {
 					neededZone[c] = true;
 				}
 			}
-			RemapTransparentPenSlots(zoneFixed, transSlotsZone, neededZone);
+			RemapTransparentPenSlots(zoneFixed, transSlotsZone, neededZone, lockedSlots);
 		}
 		//
 		// Merge always-pass remaps into zone remaps so the base tag solution shows the full picture
@@ -836,7 +847,7 @@ namespace RetrodevLib {
 						neededLevel[c] = true;
 					}
 				}
-				RemapTransparentPenSlots(levelFixed, transSlotsLevel, neededLevel);
+				RemapTransparentPenSlots(levelFixed, transSlotsLevel, neededLevel, lockedSlots);
 			}
 			//
 			// Final-convert all Level participants for this tag against levelFixed
@@ -968,7 +979,24 @@ namespace RetrodevLib {
 		if (alwaysOverflow > 0)
 			totalOverflow++;
 		//
-		// Remap transparent pen slots for Always participants
+		// Build the locked-slot mask from preloaded pins so RemapTransparentPenSlots
+		// never moves a color that the user has explicitly pinned to a specific pen slot.
+		// lockedByPreload[i] is true when pen i was preloaded, locked and has a valid color.
+		//
+		std::vector<bool> lockedByPreload(pensAvailable, false);
+		{
+			int preloadSlot = 0;
+			for (int i = 0; i < (int)params->preloadedColors.size(); i++) {
+				if (i < (int)params->preloadedLocked.size() && params->preloadedLocked[i] && params->preloadedColors[i] >= 0) {
+					if (preloadSlot < pensAvailable)
+						lockedByPreload[preloadSlot] = true;
+					preloadSlot++;
+				}
+			}
+		}
+		//
+		// Remap transparent pen slots for Always participants.
+		// Preloaded locked slots are protected from being moved.
 		//
 		{
 			std::vector<int> transSlotsAlways;
@@ -990,10 +1018,10 @@ namespace RetrodevLib {
 					neededAlways[c] = true;
 				}
 			}
-			RemapTransparentPenSlots(alwaysFixed, transSlotsAlways, neededAlways);
+			RemapTransparentPenSlots(alwaysFixed, transSlotsAlways, neededAlways, lockedByPreload);
 		}
-		//
-		// Warn if participants across all zones use different transparent pen indices.
+			//
+			// Warn if participants across all zones use different transparent pen indices.
 		// This is a design issue: ideally all transparency-using assets share one pen slot.
 		//
 		{
@@ -1047,7 +1075,7 @@ namespace RetrodevLib {
 		//
 		for (int zi = 0; zi < (int)params->zones.size(); zi++) {
 			PaletteZoneSolution zoneSolution =
-				SolveZone(zi, params->zones[zi], params->targetSystem, params->targetPaletteType, projectFolder, params->overflowMethod, alwaysFixed, alwaysRemaps);
+				SolveZone(zi, params->zones[zi], params->targetSystem, params->targetPaletteType, projectFolder, params->overflowMethod, alwaysFixed, alwaysRemaps, lockedByPreload);
 			//
 			// Inject the Always-pass converters into the base tag solution (index 0)
 			//

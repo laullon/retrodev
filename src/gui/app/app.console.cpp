@@ -24,6 +24,7 @@ namespace RetrodevGui {
 	AppConsole::Channel AppConsole::m_revealChannel = AppConsole::Channel::Output;
 	bool AppConsole::m_pendingChannelSwitch = false;
 	bool AppConsole::m_autoHide = true;
+	bool AppConsole::m_scriptMirrorToBuild = false;
 
 	void AppConsole::Render() {
 		// Clear button
@@ -191,6 +192,11 @@ namespace RetrodevGui {
 	void AppConsole::AddLog(Channel channel, LogLevel level, const char* message) {
 		// Full overload -- targets the specified channel
 		m_channels[static_cast<int>(channel)].emplace_back(message, level);
+		//
+		// During a build/debug operation, mirror script messages to the Build channel
+		//
+		if (channel == Channel::Script && m_scriptMirrorToBuild)
+			m_channels[static_cast<int>(Channel::Build)].emplace_back(message, level);
 		if (ShouldReveal(channel, level)) {
 			m_revealPending = true;
 			m_revealChannel = channel;
@@ -206,10 +212,19 @@ namespace RetrodevGui {
 		va_end(args);
 		buffer[sizeof(buffer) - 1] = '\0';
 		m_channels[static_cast<int>(channel)].emplace_back(buffer, level);
+		//
+		// During a build/debug operation, mirror script messages to the Build channel
+		//
+		if (channel == Channel::Script && m_scriptMirrorToBuild)
+			m_channels[static_cast<int>(Channel::Build)].emplace_back(buffer, level);
 		if (ShouldReveal(channel, level)) {
 			m_revealPending = true;
 			m_revealChannel = channel;
 		}
+	}
+
+	void AppConsole::SetScriptMirrorToBuild(bool enable) {
+		m_scriptMirrorToBuild = enable;
 	}
 
 	void AppConsole::Clear() {
