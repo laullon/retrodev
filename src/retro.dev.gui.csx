@@ -123,6 +123,30 @@ int build(string[] args){
 			clang.Options.SwitchesLD += "-Wl,/manifestinput:gui/os/win/retrodev.manifest";
 		}
 	}
+	if (Host.IsMacOS()) {
+		KList Frameworks = new KList {
+			"-framework Cocoa",
+			"-framework IOKit",
+			"-framework CoreFoundation",
+			"-framework CoreVideo",
+			"-framework CoreMedia",
+			"-framework CoreAudio",
+			"-framework AudioToolbox",
+			"-framework AudioUnit",
+			"-framework ForceFeedback",
+			"-framework Carbon",
+			"-framework Metal",
+			"-framework QuartzCore",
+			"-framework GameController",
+			"-framework CoreHaptics",
+			"-framework AVFoundation",
+			"-framework UniformTypeIdentifiers",
+			"-framework CoreServices",
+			"-framework Foundation",
+			"-framework AppKit"
+		};
+		clang.Options.SwitchesLD += Frameworks;
+	}
 	// Output name folder
 	//
 	OutputBin += binname + "/";
@@ -163,7 +187,9 @@ int build(string[] args){
 	// And compile the sources
 	clang.Compile(src, objs);
 	// Use the librarian to generate a static library
-	objs+= OutputTmp + "compiled.resources" + clang.Options.ObjectExtension;
+	if (!Host.IsMacOS()) {
+		objs += OutputTmp + "compiled.resources" + clang.Options.ObjectExtension;
+	}
 	clang.Linker(objs, OutputBin + binname + clang.Options.BinaryExtension);
 	// ------------------------------------------------------------------------
 	Msg.PrintTask("Building binary: " + binname + clang.Options.BinaryExtension);
@@ -253,10 +279,14 @@ private KList CreateSourceList(KValue srcpath){
 			}
 		}
 		if (Host.IsLinux()) {
-			// TODO
+			if (filex.Contains("/win/") || filex.Contains("/osx/")) {
+				continue;
+			}
 		}
 		if (Host.IsMacOS()) {
-			// TODO
+			if (filex.Contains("/win/") || filex.Contains("/lnx/")) {
+				continue;
+			}
 		}
 		srcFiltered += file;
 	}

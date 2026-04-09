@@ -20,10 +20,11 @@ using static Kltv.Kombine.Api.Statics;
 using static Kltv.Kombine.Api.Tool;
 
 
-// Build right now is limited to Windows
+// Build currently works best on Windows. macOS support is still in progress,
+// but we allow the build scripts to run there so the port can advance incrementally.
 //
-if (Host.IsWindows() == false) {
-	Msg.PrintAndAbort("RetroDev can be built only on Windows right now.");
+if (Host.IsLinux()) {
+	Msg.PrintAndAbort("RetroDev can be built only on Windows or macOS right now.");
 }
 
 // Initialize the build flags
@@ -372,6 +373,31 @@ void buildCompilerFlags(Clang clang) {
 	if (Host.IsLinux()){
 	}
 	if (Host.IsMacOS()){
+		clang.Options.Defines = new KList() {
+			"OSX",
+			"MACOS",
+			"__APPLE__"
+		};
+		if (BuildFlags.Flags.BuildMode == "release") {
+			clang.Options.SwitchesCC += "-O2";
+			clang.Options.SwitchesCXX += "-O2";
+			clang.Options.Defines += "NDEBUG";
+			clang.Options.Defines += "RELEASE";
+		} else if (BuildFlags.Flags.BuildMode == "debug") {
+			KList options = new KList() {
+				"-g",
+				"-O0"
+			};
+			clang.Options.SwitchesCC += options;
+			clang.Options.SwitchesCXX += options;
+			clang.Options.Defines += "DEBUG";
+			clang.Options.Defines += "NRELEASE";
+			clang.Options.SwitchesLD = new KList() {
+				"-g"
+			};
+		} else {
+			Msg.PrintAndAbort("Invalid Build Configuration:" + BuildFlags.Flags.BuildMode);
+		}
 	}
 }
 

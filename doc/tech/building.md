@@ -9,9 +9,20 @@ Retrodev uses **[Kombine](https://github.com/kollective-networks/kltv.kombine)**
 | [Kombine](https://github.com/kollective-networks/kltv.kombine) (`mkb`) | The build runner. A single self-contained executable — no .NET runtime, no Python, no additional dependencies. Install so that `mkb` is on `PATH`. |
 | [Clang](https://releases.llvm.org/) | Used as the compiler and linker for all source. Must be on `PATH`. |
 | [Git](https://git-scm.com/) | Required to fetch and update external dependencies. Must be on `PATH`. |
+
+### Windows-specific requirements
+
+| Tool | Notes |
+|---|---|
 | Visual Studio or Microsoft Build Tools | Clang on Windows links against the MSVC CRT and Windows SDK. These are not bundled with Clang — they must be installed separately. See [Windows CRT requirements](#windows-crt-requirements) below. |
 
-Retrodev currently builds on **Windows only**. Kombine itself runs on Windows, macOS and Linux, and both the build scripts and the application code are structured to support other platforms — but the port is not yet complete.
+### macOS-specific requirements
+
+| Tool | Notes |
+|---|---|
+| Xcode Command Line Tools | Provides Clang and required system headers. Install with `xcode-select --install`. |
+
+Retrodev builds on **Windows and macOS**. Kombine itself also runs on Linux, and the build scripts and application code are structured to support it — but the port is not yet complete.
 
 ## Windows CRT requirements
 
@@ -33,6 +44,22 @@ Install the [Build Tools for Visual Studio](https://visualstudio.microsoft.com/v
 The SDK version does not need to match Windows 11 exactly; any recent SDK (10.0.19041 or newer) is sufficient. Clang discovers the installation through the registry; no manual `PATH` or `LIB` configuration is needed.
 
 > **Note:** the Visual Studio Developer Command Prompt / PowerShell sets additional environment variables (`INCLUDE`, `LIB`, `LIBPATH`) that are not required by Kombine's Clang invocations — Kombine passes all necessary paths explicitly. A normal shell with `mkb` and `clang` on `PATH` is sufficient.
+
+### macOS setup
+
+On macOS, the Xcode Command Line Tools provide Clang and the system SDK headers needed for compilation. Install them with:
+
+```sh
+xcode-select --install
+```
+
+Once installed, verify Clang is available:
+
+```sh
+clang --version
+```
+
+No additional runtime or SDK installation is required — Clang on macOS ships with everything needed to compile and link.
 
 ## Cloning
 

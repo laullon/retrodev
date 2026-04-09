@@ -38,6 +38,9 @@ public class Clang {
 			} else {
 				Msg.PrintAndAbort("Error: Unknown OS");
 			}
+			if (Host.IsMacOS()) {
+				AR = "ar";
+			}
 			/// Set the number of concurrent commands to be executed
 			/// By default, the number of cores.
 			ConcurrentBuild = Host.ProcessorCount();
@@ -84,6 +87,16 @@ public class Clang {
 		/// C++ file extension to use
 		/// </summary>
 		public string CppExtension { get; set; } = ".cpp";
+
+		/// <summary>
+		/// Objective-C file extension to use
+		/// </summary>
+		public string ObjCExtension { get; set; } = ".m";
+
+		/// <summary>
+		/// Objective-C++ file extension to use
+		/// </summary>
+		public string ObjCppExtension { get; set; } = ".mm";
 
 		/// <summary>
 		/// Resource file extension to use
@@ -296,12 +309,18 @@ public class Clang {
 				if (ProcessFile != null)
 					additionalArg = ProcessFile.Invoke(src[a]);
 				args = "-c -MMD "+includes+" "+defines+" "+switchesCC+" "+ srcf + " -o " + objf + " " + additionalArg;
-			}else if (src[a].HasExtension(Options.CppExtension)){
+			}else if (src[a].HasExtension(Options.CppExtension) || src[a].HasExtension(Options.ObjCppExtension)){
 				cmd = Options.CXX;
 				KValue additionalArg =string.Empty;
 				if (ProcessFile != null)
 					additionalArg = ProcessFile.Invoke(src[a]);
 				args = "-c -MMD "+includes+" "+defines+" "+switchesCXX+" " + srcf + " -o " + objf + " " + additionalArg;
+			}else if (src[a].HasExtension(Options.ObjCExtension)){
+				cmd = Options.CC;
+				KValue additionalArg = string.Empty;
+				if (ProcessFile != null)
+					additionalArg = ProcessFile.Invoke(src[a]);
+				args = "-c -MMD "+includes+" "+defines+" "+switchesCC+" " + srcf + " -o " + objf + " " + additionalArg;
 			} else if (src[a].HasExtension(Options.ResExtension)) {
 				// Note: We may use the same output extension for compiled resource files
 				// since is provided by the user and a ".res" extension is not required.
@@ -468,7 +487,11 @@ public class Clang {
 		// Compose the command line
 		if (ShouldLink) {
 
-			KValue args = "-fuse-ld=lld " + switchesLD + " " + objs.Flatten() + " " + libdirs + " " + libs + " " + " -o " + output;
+			KValue linkerDriver = string.Empty;
+			if (!Host.IsMacOS()) {
+				linkerDriver = "-fuse-ld=lld ";
+			}
+			KValue args = linkerDriver + switchesLD + " " + objs.Flatten() + " " + libdirs + " " + libs + " " + " -o " + output;
 			ToolResult res;
 			// Check if we need to use a response file
 			// If argument's size is bigger than the Window's limit (32767), we

@@ -22,9 +22,9 @@ KValue sdl3name = "sdl.img";
 // Repository to use for the sdl3 sources
 KValue sdl3repo = "https://github.com/libsdl-org/SDL_image.git";
 
-// SDL Img configuration
-// (Windows only due to dll names)
+// SDL_image configuration
 private KList Defines = new KList();
+		Defines += "SDL_IMAGE_USE_COMMON_BACKEND";
 		Defines += "USE_STBIMAGE";
 		Defines += "LOAD_XCF";
 		Defines += "LOAD_XPM";
@@ -39,14 +39,16 @@ private KList Defines = new KList();
 		Defines += "LOAD_QOI";
 		Defines += "LOAD_SVG";
 		Defines += "LOAD_TGA";
-		Defines += "LOAD_AVIF";
-		Defines += ArgEscape("LOAD_AVIF_DYNAMIC=\"libavif-16.dll\"");
-		Defines += "LOAD_TIF";
-		Defines += ArgEscape("LOAD_TIF_DYNAMIC=\"libtiff-6.dll\"");
-		Defines += "LOAD_WEBP";
-		Defines += ArgEscape("LOAD_WEBP_DYNAMIC=\"libwebp-7.dll\"");
-		Defines += ArgEscape("LOAD_WEBPMUX_DYNAMIC=\"libwebpmux-3.dll\"");
-		Defines += ArgEscape("LOAD_WEBPDEMUX_DYNAMIC=\"libwebpdemux-2.dll\"");
+if (Host.IsWindows()) {
+	Defines += "LOAD_AVIF";
+	Defines += ArgEscape("LOAD_AVIF_DYNAMIC=\"libavif-16.dll\"");
+	Defines += "LOAD_TIF";
+	Defines += ArgEscape("LOAD_TIF_DYNAMIC=\"libtiff-6.dll\"");
+	Defines += "LOAD_WEBP";
+	Defines += ArgEscape("LOAD_WEBP_DYNAMIC=\"libwebp-7.dll\"");
+	Defines += ArgEscape("LOAD_WEBPMUX_DYNAMIC=\"libwebpmux-3.dll\"");
+	Defines += ArgEscape("LOAD_WEBPDEMUX_DYNAMIC=\"libwebpdemux-2.dll\"");
+}
 
 
 //
@@ -138,10 +140,14 @@ int register(string[] args) {
 	OutputLib += sdl3name + "/";
 	// Create an instance of the clang tool.
 	Clang clang = new Clang();
+	string registeredLibName = sdl3name + clang.Options.LibExtension;
+	if (Host.IsMacOS() || Host.IsLinux()) {
+		registeredLibName = sdl3name;
+	}
 	// Register the output to make it available for everyone
 	Msg.Print($"Registering {sdl3friendlyname} library under the name: "+sdl3name);
-	Msg.Print("  libname: " + sdl3name + clang.Options.LibExtension);
-	Share.Register(sdl3name,"libname",sdl3name + clang.Options.LibExtension);
+	Msg.Print("  libname: " + registeredLibName);
+	Share.Register(sdl3name,"libname",registeredLibName);
 	Msg.Print("  libpath: " + RealPath(OutputLib));
 	Share.Register(sdl3name,"libpath",RealPath(OutputLib));
 	Msg.Print("  incpath: " + RealPath(sdl3path+"include/"));
@@ -186,11 +192,9 @@ private KList CreateSourceList(KValue sdl3path){
 	src += sdl3path+"src/IMG_ani.c";
 	src += sdl3path+"src/IMG_anim_decoder.c";
 	src += sdl3path+"src/IMG_anim_encoder.c";
-	src += sdl3path+"src/IMG_avif.c";
 	src += sdl3path+"src/IMG_bmp.c";
 	src += sdl3path+"src/IMG_gif.c";
 	src += sdl3path+"src/IMG_jpg.c";
-	src += sdl3path+"src/IMG_jxl.c";
 	src += sdl3path+"src/IMG_lbm.c";
 	src += sdl3path+"src/IMG_pcx.c";
 	src += sdl3path+"src/IMG_libpng.c";
@@ -200,12 +204,15 @@ private KList CreateSourceList(KValue sdl3path){
 	src += sdl3path+"src/IMG_stb.c";
 	src += sdl3path+"src/IMG_svg.c";
 	src += sdl3path+"src/IMG_tga.c";
-	src += sdl3path+"src/IMG_tif.c";
-	src += sdl3path+"src/IMG_webp.c";
-	src += sdl3path+"src/IMG_WIC.c";
 	src += sdl3path+"src/IMG_xcf.c";
 	src += sdl3path+"src/IMG_xpm.c";
 	src += sdl3path+"src/IMG_xv.c";
 	src += sdl3path+"src/xmlman.c";
+	if (Host.IsWindows()) {
+		src += sdl3path+"src/IMG_avif.c";
+		src += sdl3path+"src/IMG_tif.c";
+		src += sdl3path+"src/IMG_webp.c";
+		src += sdl3path+"src/IMG_WIC.c";
+	}
 	return src;
 }

@@ -74,6 +74,10 @@ int build(string[] args){
 	Flags += "-Wno-deprecated-declarations";
 	// The list of defines to use
 	KList Defines = new KList { "FT2_BUILD_LIBRARY" };
+	if (Host.IsMacOS() || Host.IsLinux()) {
+		Defines += "HAVE_UNISTD_H";
+		Defines += "HAVE_FCNTL_H";
+	}
 	// Include directories
 	KList Includes = new KList();
 	Includes += libpath+"include/";
@@ -116,10 +120,14 @@ int register(string[] args) {
 	OutputLib += libname + "/";
 	// Create an instance of the clang tool.
 	Clang clang = new Clang();
+	string registeredLibName = libname + clang.Options.LibExtension;
+	if (Host.IsMacOS() || Host.IsLinux()) {
+		registeredLibName = libname;
+	}
 	// Register the output to make it available for everyone
 	Msg.Print($"Registering {libfriendlyname} library under the name: "+libname);
-	Msg.Print("  libname: " + libname + clang.Options.LibExtension);
-	Share.Register(libname,"libname",libname + clang.Options.LibExtension);
+	Msg.Print("  libname: " + registeredLibName);
+	Share.Register(libname,"libname",registeredLibName);
 	Msg.Print("  libpath: " + RealPath(OutputLib));
 	Share.Register(libname,"libpath",RealPath(OutputLib));
 	Msg.Print("  incpath: " + RealPath(libpath+"include/"));
@@ -190,6 +198,7 @@ private KList CreateSourceList(KValue libpath){
 	src += libpath + "src/base/ftbdf.c";
 	src += libpath + "src/base/ftbitmap.c";
 	src += libpath + "src/base/ftcid.c";
+	src += libpath + "src/base/ftdebug.c";
 	src += libpath + "src/base/ftfstype.c";
 	src += libpath + "src/base/ftgasp.c";
 	src += libpath + "src/base/ftglyph.c";
@@ -208,11 +217,10 @@ private KList CreateSourceList(KValue libpath){
 		src += libpath + "builds/windows/ftsystem.c";
 	}
 	if (Host.IsMacOS()){
-		// Not yet.
+		src += libpath + "builds/unix/ftsystem.c";
 	}
 	if (Host.IsLinux()){
-		// Not yet.
-
+		src += libpath + "builds/unix/ftsystem.c";
 	}
 	return src;
 }

@@ -155,11 +155,15 @@ int register(string[] args) {
 	OutputLib += libname + "/";
 	// Create an instance of the clang tool.
 	Clang clang = new Clang();
+	string registeredLibName = libname + clang.Options.LibExtension;
+	if (Host.IsMacOS() || Host.IsLinux()) {
+		registeredLibName = libname;
+	}
 	// Register the output to make it available for everyone
 	Msg.Print($"Registering {libfriendlyname} library under the name: " + libname);
 	Msg.BeginIndent();
-	Msg.Print("  libname: " + libname + clang.Options.LibExtension);
-	Share.Register(libname, "libname", libname + clang.Options.LibExtension);
+	Msg.Print("  libname: " + registeredLibName);
+	Share.Register(libname, "libname", registeredLibName);
 	Msg.Print("  libpath: " + RealPath(OutputLib));
 	Share.Register(libname, "libpath", RealPath(OutputLib));
 	Msg.Print("  incpath: " + RealPath(CurrentScriptFolder + "/lib/"));
@@ -260,4 +264,3 @@ public string CustomParameters(string file) {
 	}
 	return addArgs;
 }
-

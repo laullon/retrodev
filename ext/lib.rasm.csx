@@ -71,24 +71,28 @@ int build(string[] args){
 	KValue OutputTmp = KValue.Import("OutputTmp");
 	// Compilation flags
 	KList Flags = new KList {
-		"--target=x86_64-pc-windows-msvc",
-		"-fms-extensions",
-		"-fms-compatibility",
-		"-fms-compatibility-version=19",
-		"-include intrin.h",
 		"-Wno-deprecated-declarations",
 		"-Wno-pointer-sign",
 		"-Wno-constant-conversion",
 		"-Wno-sizeof-pointer-memaccess",
 		"-Wno-dangling-else"
 	};
+	if (Host.IsWindows()) {
+		Flags += "--target=x86_64-pc-windows-msvc";
+		Flags += "-fms-extensions";
+		Flags += "-fms-compatibility";
+		Flags += "-fms-compatibility-version=19";
+		Flags += "-include intrin.h";
+	}
 	
 	// The list of defines to use
 	KList Defines = new KList { 
 		"INTEGRATED_ASSEMBLY", 
-		"NOAPULTRA=1",
-		"DOS_WIN=1"
+		"NOAPULTRA=1"
 	};
+	if (Host.IsWindows()) {
+		Defines += "DOS_WIN=1";
+	}
 	
 	// Include directories
 	KList Includes = new KList();
@@ -142,10 +146,14 @@ int register(string[] args) {
 	OutputLib += libname + "/";
 	// Create an instance of the clang tool.
 	Clang clang = new Clang();
+	string registeredLibName = libname + clang.Options.LibExtension;
+	if (Host.IsMacOS() || Host.IsLinux()) {
+		registeredLibName = libname;
+	}
 	// Register the output to make it available for everyone
 	Msg.Print($"Registering {libfriendlyname} library under the name: "+libname);
-	Msg.Print("  libname: " + libname + clang.Options.LibExtension);
-	Share.Register(libname,"libname",libname + clang.Options.LibExtension);
+	Msg.Print("  libname: " + registeredLibName);
+	Share.Register(libname,"libname",registeredLibName);
 	Msg.Print("  libpath: " + RealPath(OutputLib));
 	Share.Register(libname,"libpath",RealPath(OutputLib));
 	Msg.Print("  incpath: " + RealPath(libpath));

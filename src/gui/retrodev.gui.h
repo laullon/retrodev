@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <cstring>
+
 //
 // ImGui and SDL3 includes
 //
@@ -30,3 +32,14 @@
 // Log facility
 //
 #include <app/app.console.h>
+
+#if !defined(_WIN32)
+inline int strncpy_s(char* dest, const char* src, size_t count) {
+	if (!dest || count == 0) {
+		return 0;
+	}
+	std::strncpy(dest, src ? src : "", count);
+	dest[count] = '\0';
+	return 0;
+}
+#endif

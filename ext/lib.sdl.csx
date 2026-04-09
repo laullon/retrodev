@@ -73,15 +73,20 @@ int build(string[] args){
 	KValue OutputLib = KValue.Import("OutputLib");
 	KValue OutputTmp = KValue.Import("OutputTmp");
 	// Compilation flags
-	KList Flags = new KList { 
-		"-msse3", 
+	KList Flags = new KList {
 		"-Wno-empty-body",
 		"-Wno-unused-parameter",
 		"-Wno-language-extension-token",
 		"-Wno-missing-field-initializers"
 	};
+	if (Host.IsWindows()) {
+		Flags += "-msse3";
+	}
 	// The list of defines to use
 	KList Defines = new KList { "SDL_STATIC","SDL_STATIC_LIB", "SDL_USE_BUILTIN_OPENGL_DEFINITIONS" };
+	if (Host.IsMacOS()) {
+		Defines += "SDL_PLATFORM_MACOS=1";
+	}
 	// Include directories
 	KList Includes = new KList();
 	Includes += sdl3path+"include/build_config/";
@@ -101,6 +106,9 @@ int build(string[] args){
 	clang.Options.IncludeDirs += Includes;
 	// Generate the list of object files to be used as output
 	KList objs = src.WithExtension(clang.Options.ObjectExtension).WithPrefix(OutputTmp);
+	if (Host.IsMacOS()) {
+		clang.ProcessFile += CustomParameters;
+	}
 	// And compile the sources
 	clang.Compile(src, objs);
 	// Use the librarian to generate a static library
@@ -124,10 +132,14 @@ int register(string[] args) {
 	OutputLib += sdl3name + "/";
 	// Create an instance of the clang tool.
 	Clang clang = new Clang();
+	string registeredLibName = sdl3name + clang.Options.LibExtension;
+	if (Host.IsMacOS() || Host.IsLinux()) {
+		registeredLibName = sdl3name;
+	}
 	// Register the output to make it available for everyone
 	Msg.Print($"Registering {sdlfriendlyname} library under the name: "+sdl3name);
-	Msg.Print("  libname: " + sdl3name + clang.Options.LibExtension);
-	Share.Register(sdl3name,"libname",sdl3name + clang.Options.LibExtension);
+	Msg.Print("  libname: " + registeredLibName);
+	Share.Register(sdl3name,"libname",registeredLibName);
 	Msg.Print("  libpath: " + RealPath(OutputLib));
 	Share.Register(sdl3name,"libpath",RealPath(OutputLib));
 	Msg.Print("  incpath: " + RealPath(sdl3path+"include/"));
@@ -191,12 +203,9 @@ private KList CreateSourceList(KValue sdl3path){
 	src += Glob(sdl3path+"src/events/*.c");
 	// Filesystem
 	src += Glob(sdl3path+"src/filesystem/*.c");
-	// GPU
-	src += Glob(sdl3path+"src/gpu/*.c");
 	// Haptic
 	src += Glob(sdl3path+"src/haptic/*.c");
 	src += Glob(sdl3path+"src/haptic/dummy/*.c");
-	src += Glob(sdl3path+"src/haptic/hidapi/*.c");
 
 	// IO system
 	src += Glob(sdl3path+"src/io/*.c");
@@ -204,7 +213,6 @@ private KList CreateSourceList(KValue sdl3path){
 	// Joystick
 	src += Glob(sdl3path+"src/joystick/*.c");
 	src += Glob(sdl3path+"src/joystick/dummy/*.c");
-	src += Glob(sdl3path+"src/joystick/hidapi/*.c");
 	src += Glob(sdl3path+"src/joystick/virtual/*.c");
 	// LibM (as per defined only is needed s_modf.c, we include all) 
 	src += Glob(sdl3path+"src/libm/*.c");
@@ -224,7 +232,6 @@ private KList CreateSourceList(KValue sdl3path){
 	src += Glob(sdl3path+"src/render/opengl/*.c");
 	src += Glob(sdl3path+"src/render/opengles2/*.c");
 	src += Glob(sdl3path+"src/render/software/*.c");
-	src += Glob(sdl3path+"src/render/gpu/*.c");
 	// Sensors
 	src += Glob(sdl3path+"src/sensor/*.c");
 	src += Glob(sdl3path+"src/sensor/dummy/*.c");
@@ -252,6 +259,8 @@ private KList CreateSourceList(KValue sdl3path){
 	// 
 	//
 	if (Host.IsWindows()){
+		src += Glob(sdl3path+"src/gpu/*.c");
+		src += Glob(sdl3path+"src/render/gpu/*.c");
 		//=== SDL3 windows source code
 		// Audio
 		src += Glob(sdl3path+"src/audio/directsound/*.c");
@@ -276,6 +285,7 @@ private KList CreateSourceList(KValue sdl3path){
 		src += Glob(sdl3path+"src/io/windows/*.c");
 		// Joystick
 		src += Glob(sdl3path+"src/joystick/gdk/*.cpp");
+		src += Glob(sdl3path+"src/joystick/hidapi/*.c");
 		src += Glob(sdl3path+"src/joystick/windows/*.c");
 		// Loadso
 		src += Glob(sdl3path+"src/loadso/windows/*.c");
@@ -309,11 +319,46 @@ private KList CreateSourceList(KValue sdl3path){
 		src += Glob(sdl3path+"src/video/windows/*.cpp");
 	}
 	if (Host.IsMacOS()){
-		// Not yet.
+		//=== SDL3 macOS source code
+		src += Glob(sdl3path+"src/gpu/*.c");
+		src += Glob(sdl3path+"src/audio/coreaudio/*.m");
+		src += Glob(sdl3path+"src/camera/coremedia/*.m");
+		src += Glob(sdl3path+"src/core/unix/*.c");
+		src += Glob(sdl3path+"src/dialog/cocoa/*.m");
+		src += Glob(sdl3path+"src/filesystem/cocoa/*.m");
+		src += Glob(sdl3path+"src/filesystem/posix/*.c");
+		src += Glob(sdl3path+"src/haptic/darwin/*.c");
+		src += Glob(sdl3path+"src/hidapi/*.c");
+		src += Glob(sdl3path+"src/hidapi/mac/*.c");
+		src += Glob(sdl3path+"src/joystick/apple/*.c");
+		src += Glob(sdl3path+"src/joystick/apple/*.m");
+		src += Glob(sdl3path+"src/joystick/darwin/*.c");
+		src += Glob(sdl3path+"src/loadso/dlopen/*.c");
+		src += Glob(sdl3path+"src/locale/macos/*.m");
+		src += Glob(sdl3path+"src/main/macos/*.m");
+		src += Glob(sdl3path+"src/misc/macos/*.m");
+		src += Glob(sdl3path+"src/power/macos/*.c");
+		src += Glob(sdl3path+"src/process/posix/*.c");
+		src += Glob(sdl3path+"src/render/gpu/*.c");
+		src += Glob(sdl3path+"src/gpu/metal/*.m");
+		src += Glob(sdl3path+"src/render/metal/*.m");
+		src += Glob(sdl3path+"src/sensor/coremotion/*.m");
+		src += Glob(sdl3path+"src/thread/pthread/*.c");
+		src += Glob(sdl3path+"src/time/unix/*.c");
+		src += Glob(sdl3path+"src/timer/unix/*.c");
+		src += Glob(sdl3path+"src/tray/cocoa/*.m");
+		src += Glob(sdl3path+"src/video/cocoa/*.m");
 	}
 	if (Host.IsLinux()){
 		// Not yet.
 
 	}
 	return src;
+}
+
+public string CustomParameters(string file) {
+	if (Host.IsMacOS() && (file.EndsWith(".m") || file.EndsWith(".mm"))) {
+		return " -fobjc-arc";
+	}
+	return string.Empty;
 }
